@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #eee9dd;
+  --muted: #adb5bb;
+  --paper: #0b1219;
+  --line: #2b3540;
+  --gold: #e6bf73;
+  --green: #94c7b2;
+  --red: #eaa3a0;
+  --surface: #131d27;
+  --serif: Georgia, "Times New Roman", serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at 75% 0, #1b2c32 0, transparent 50%), var(--paper);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.75;
+}
+
+/* Acessibilidade de foco */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 4px;
+}
+
+/* Scrollbar estilizada */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b1219;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2b3540;
+  border-radius: 4px;
+  border: 1px solid #514733;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8d784f;
+}
+
+/* Estilos de impressão otimizados para manuais de mesa */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  body {
+    background: white !important;
+    color: #17212b !important;
+    font-size: 10pt;
+  }
+
+  nav,
+  .no-print,
+  button,
+  .lightbox-modal {
+    display: none !important;
+  }
+
+  .print-break-inside-avoid {
+    break-inside: avoid;
+  }
+}
