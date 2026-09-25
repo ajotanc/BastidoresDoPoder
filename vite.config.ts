@@ -16,7 +16,7 @@ export default defineConfig({
         enabled: true,
         type: 'module'
       },
-      includeAssets: ['images/logo.png', 'images/*.png', 'images/cards/*.png', 'images/icons/*.svg'],
+      includeAssets: ['images/bdp.webp', 'images/*.png', 'images/cards/*.png', 'images/icons/*.png'],
       manifest: {
         name: 'Bastidores do Poder — Manual & Regras',
         short_name: 'Bastidores Poder',
@@ -27,13 +27,13 @@ export default defineConfig({
         orientation: 'portrait',
         icons: [
           {
-            src: '/images/logo.png',
+            src: '/images/bdp.webp',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: '/images/logo.png',
+            src: '/images/bdp.webp',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'

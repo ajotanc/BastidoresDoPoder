@@ -16,7 +16,7 @@ import { UserCheck, UserX } from 'lucide-vue-next';
     <p class="text-sm text-ink-muted leading-relaxed mb-6">
       Declare tudo antes de abrir para contestações ou defesas:
       <strong class="text-gold-light font-serif">“Pago C$ 5 e uso Investigador contra Bruno, procurando Advogado.”</strong>
-      Resolva primeiro o desafio à alegação do Investigador e eventuais bloqueios de Advogado ou Coronel. Somente se o mandado for aprovado, consulte as influências vivas que o alvo possui naquele instante.
+      Resolva primeiro o desafio à alegação do Investigador e eventuais bloqueios de Advogado ou Coronel. Somente se o mandado for aprovado, consulte os apoios vivos que o alvo possui naquele instante.
     </p>
 
     <!-- Comparativo de Resultado -->
@@ -25,7 +25,7 @@ import { UserCheck, UserX } from 'lucide-vue-next';
         <div class="flex items-start gap-3">
           <UserCheck class="w-6 h-6 text-status-green flex-shrink-0 mt-1" aria-hidden="true" />
           <p class="text-sm text-ink-muted leading-relaxed mb-0">
-            O alvo <strong class="text-ink">revela e perde imediatamente</strong> uma influência daquele personagem procurado. A carta fica aberta na mesa. Os C$ 5 de taxa judicial continuam no cofre.
+            O alvo <strong class="text-ink">revela e perde imediatamente</strong> um apoio daquele personagem procurado. A carta fica aberta na mesa. Os C$ 5 de taxa judicial continuam no cofre.
           </p>
         </div>
       </AppPanel>
@@ -34,7 +34,7 @@ import { UserCheck, UserX } from 'lucide-vue-next';
         <div class="flex items-start gap-3">
           <UserX class="w-6 h-6 text-status-red flex-shrink-0 mt-1" aria-hidden="true" />
           <p class="text-sm text-ink-muted leading-relaxed mb-0">
-            O alvo declara firmemente <strong class="text-ink">“Nada encontrado”</strong>. Ele NÃO mostra as cartas da sua mão para provar a ausência, nem perde influências. Os C$ 5 de taxa continuam gastos no cofre.
+            O alvo declara firmemente <strong class="text-ink">“Nada encontrado”</strong>. Ele NÃO mostra as cartas da sua mão para provar a ausência, nem perde apoios. Os C$ 5 de taxa continuam gastos no cofre.
           </p>
         </div>
       </AppPanel>

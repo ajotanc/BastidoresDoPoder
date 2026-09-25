@@ -26,10 +26,10 @@ const closeCardRules = (): void => {
 };
 
 const filterCategories = [
-  { id: 'all', label: 'Todos (8)' },
+  { id: 'all', label: `Todos (${ROLE_CARDS.length})` },
   { id: 'attack', label: 'Ataque & Eliminação' },
   { id: 'defense', label: 'Blindagem & Defesa' },
-  { id: 'economy', label: 'Economia & Troca' },
+  { id: 'economy', label: 'Economia & Negociação' },
 ] as const;
 
 const filteredCards = computed<readonly RoleCard[]>(() => {
@@ -59,7 +59,7 @@ const filteredCards = computed<readonly RoleCard[]>(() => {
       return ['untouchable', 'lawyer'].includes(card.slug);
     }
     if (selectedCategory.value === 'economy') {
-      return ['baron', 'marketer'].includes(card.slug);
+      return ['baron', 'marketer', 'coordinator'].includes(card.slug);
     }
 
     return true;
@@ -68,11 +68,11 @@ const filteredCards = computed<readonly RoleCard[]>(() => {
 </script>
 
 <template>
-  <section id="personagens" class="border-t border-line/70">
+  <section id="personagens" class="pt-12 border-t border-line/70">
     <AppSectionHeader
       label="Cartas e guia de ajuda"
-      title="Sete personagens. Um guia de mesa."
-      description="Cada personagem possui sua própria identidade e poderes secretos. Toque na carta para ampliar e abra as regras para consultar os detalhes. A oitava carta é o Guia de Mesa e não entra no baralho de influência."
+      title="Oito personagens. Um guia de mesa."
+      description="Cada personagem possui sua própria identidade e poderes secretos. Toque na carta para ampliar e abra as regras para consultar os detalhes. A nona carta é o Guia de Mesa e não entra no baralho de apoio."
     />
 
     <!-- Controles de filtro e busca -->

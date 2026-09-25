@@ -62,13 +62,13 @@ import { AlertTriangle } from 'lucide-vue-next';
       <div class="flex items-start gap-2.5">
         <AlertTriangle class="w-5 h-5 text-gold flex-shrink-0 mt-0.5" aria-hidden="true" />
         <p class="text-sm mb-0">
-          Você <strong class="text-ink">deve obrigatoriamente</strong> realizar um Impeachment definitivo. Ter exatamente C$ 10 já obriga o ataque. Não é permitido escolher Caixa 2, Salário, Vaquinha, Extorsão ou Troca. O alvo atacado não tem defesa e perde uma influência à escolha dele.
+          Você <strong class="text-ink">deve obrigatoriamente</strong> realizar um Impeachment definitivo. Ter exatamente C$ 10 já obriga o ataque. Não é permitido escolher Caixa 2, Salário, Vaquinha, Extorsão ou Troca. O alvo atacado não tem defesa e perde um apoio à escolha dele.
         </p>
       </div>
     </AppCallout>
 
     <p class="text-xs text-ink-muted italic border-l-2 border-line pl-3 py-1">
-      <strong class="text-ink">Ninguém é imune:</strong> qualquer combinação de personagens perde influência para o Impeachment definitivo. O Intocável protege exclusivamente do comum e somente mediante o pagamento de C$ 3 ao cofre.
+      <strong class="text-ink">Ninguém é imune:</strong> qualquer combinação de personagens perde apoio para o Impeachment definitivo. O Intocável protege exclusivamente do comum e somente mediante o pagamento de C$ 3 ao cofre.
     </p>
   </section>
 </template>

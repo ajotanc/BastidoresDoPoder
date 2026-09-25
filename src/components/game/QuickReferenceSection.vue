@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { QUICK_REFERENCE_DATA, ICON_LEGEND_ITEMS } from '@/constants/gameData';
+import {
+  QUICK_REFERENCE_DATA,
+  ICON_LEGEND_ITEMS,
+  SUPPORT_CARDS_PER_ROLE,
+  CARDS_LENGTH
+} from '@/constants/gameData';
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
 import AppCallout from '@/components/ui/AppCallout.vue';
 import AppBadge from '@/components/ui/AppBadge.vue';
@@ -99,12 +104,12 @@ import RoleIcon from '@/components/game/RoleIcon.vue';
 
     <AppCallout variant="gold" title="Antes de começar a partida:">
       <p class="text-xs sm:text-sm mb-0">
-        Todos os jogadores devem estar cientes de que há exatamente 3 cópias de cada personagem no baralho, que custos de ataque ou mandado nunca são reembolsados, que um blefe defensivo mal calculado pode eliminar duas influências de uma vez só e que C$ 10 no início da rodada obriga a execução do Impeachment definitivo.
+        Todos os jogadores devem estar cientes de que há exatamente {{ SUPPORT_CARDS_PER_ROLE }} cópias de cada personagem no baralho, que custos de ataque ou mandado nunca são reembolsados, que um blefe defensivo mal calculado pode eliminar dois apoios de uma vez só e que C$ 10 no início da rodada obriga a execução do Impeachment definitivo.
       </p>
     </AppCallout>
 
     <p class="text-xs text-ink-muted italic border-l-2 border-line pl-3 py-1 mt-4">
-      Esta versão consolida as regras oficiais do protótipo com os 7 personagens balanceados para 3 a 8 jogadores.
+      Esta versão consolida as regras oficiais do protótipo com os {{ CARDS_LENGTH }} personagens balanceados para 3 a 8 jogadores.
     </p>
   </section>
 </template>

@@ -11,16 +11,6 @@ import type {
 } from '@/types/game';
 
 /**
- * Estatísticas rápidas exibidas no banner principal (Masthead)
- */
-export const GAME_META_STATS: readonly MetaStat[] = [
-  { value: '3–8', label: 'jogadores' },
-  { value: '7', label: 'personagens' },
-  { value: '21', label: 'cartas de influência' },
-  { value: 'C$', label: 'Conto · moeda do jogo' },
-] as const;
-
-/**
  * Navegação rápida do manual
  */
 export const NAVIGATION_SECTIONS: readonly NavigationItem[] = [
@@ -50,8 +40,8 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     summary: 'Ataque econômico com bloqueio próprio e defesa contra Investigador.',
     imageSrc: '/images/cards/colonel.png',
     imageAlt: 'Carta Coronel de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
-    characterSrc: '/images/characters/colonel.png',
-    iconSrc: '/images/icons/colonel.svg',
+    characterSrc: '/images/characters/colonel.webp',
+    iconSrc: '/images/icons/colonel.webp',
     rules: [
       {
         title: 'Extorsão (ação)',
@@ -82,12 +72,12 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     summary: 'Eliminação rápida com custo moderado, bloqueável por Advogado.',
     imageSrc: '/images/cards/executor.png',
     imageAlt: 'Carta Executor de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
-    characterSrc: '/images/characters/executor.png',
-    iconSrc: '/images/icons/executor.svg',
+    characterSrc: '/images/characters/executor.webp',
+    iconSrc: '/images/icons/executor.webp',
     rules: [
       {
         title: 'Execução (ação)',
-        description: 'Pague C$ 3 ao cofre e escolha um adversário vivo. Se não houver contestação nem bloqueio, ele perde uma influência à escolha dele.',
+        description: 'Pague C$ 3 ao cofre e escolha um adversário vivo. Se não houver contestação nem bloqueio, ele perde um apoio à escolha dele.',
         type: 'action'
       }
     ],
@@ -104,8 +94,8 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     summary: 'Defesa paga contra Impeachment comum. Não protege do definitivo.',
     imageSrc: '/images/cards/untouchable.png',
     imageAlt: 'Carta Intocável de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
-    characterSrc: '/images/characters/untouchable.png',
-    iconSrc: '/images/icons/untouchable.svg',
+    characterSrc: '/images/characters/untouchable.webp',
+    iconSrc: '/images/icons/untouchable.webp',
     rules: [
       {
         title: 'Bloqueio de Impeachment comum (defesa)',
@@ -126,8 +116,8 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     summary: 'Defesa contra eliminação e contra investigação.',
     imageSrc: '/images/cards/lawyer.png',
     imageAlt: 'Carta Advogado de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
-    characterSrc: '/images/characters/lawyer.png',
-    iconSrc: '/images/icons/lawyer.svg',
+    characterSrc: '/images/characters/lawyer.webp',
+    iconSrc: '/images/icons/lawyer.webp',
     rules: [
       {
         title: 'Bloqueio de Execução (defesa)',
@@ -153,8 +143,8 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     summary: 'Receita rápida e bloqueio de Vaquinha Virtual.',
     imageSrc: '/images/cards/baron.png',
     imageAlt: 'Carta Barão de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
-    characterSrc: '/images/characters/baron.png',
-    iconSrc: '/images/icons/baron.svg',
+    characterSrc: '/images/characters/baron.webp',
+    iconSrc: '/images/icons/baron.webp',
     rules: [
       {
         title: 'Caixa 2 (ação)',
@@ -180,12 +170,12 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     summary: 'Troca de cartas no baralho e bloqueio de Extorsão.',
     imageSrc: '/images/cards/marketer.png',
     imageAlt: 'Carta Marqueteiro de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
-    characterSrc: '/images/characters/marketer.png',
-    iconSrc: '/images/icons/marketer.svg',
+    characterSrc: '/images/characters/marketer.webp',
+    iconSrc: '/images/icons/marketer.webp',
     rules: [
       {
         title: 'Troca de Cartas (ação)',
-        description: 'Compre 2 cartas do baralho central. Junte-as às suas influências vivas, escolha duas para devolver ao baralho e reembaralhe-o.',
+        description: 'Compre 2 cartas do baralho central. Junte-as aos seus apoios vivos, escolha duas para devolver ao baralho e reembaralhe-o.',
         type: 'action'
       },
       {
@@ -194,7 +184,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         type: 'defense'
       }
     ],
-    officialRuleNotice: 'Se possuir apenas uma influência viva, compra 2 cartas, fica com 3 temporariamente e devolve 2, mantendo uma viva.'
+    officialRuleNotice: 'Se possuir apenas um apoio vivo, compra 2 cartas, fica com 3 temporariamente e devolve 2, mantendo um vivo.'
   },
   {
     id: 'card-investigator',
@@ -207,8 +197,8 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     summary: 'Ataque focado por nome de personagem contra um rival.',
     imageSrc: '/images/cards/investigator.png',
     imageAlt: 'Carta Investigador de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
-    characterSrc: '/images/characters/investigator.png',
-    iconSrc: '/images/icons/investigator.svg',
+    characterSrc: '/images/characters/investigator.webp',
+    iconSrc: '/images/icons/investigator.webp',
     rules: [
       {
         title: 'Mandado de Busca (ação)',
@@ -217,6 +207,33 @@ export const ROLE_CARDS: readonly RoleCard[] = [
       }
     ],
     officialRuleNotice: 'Pode ser bloqueado pelo alvo se alegar Advogado ou Coronel. O custo de C$ 5 é gasto mesmo se o palpite errar.'
+  },
+  {
+    id: 'card-coordinator',
+    slug: 'coordinator',
+    name: 'Articuladora',
+    category: 'Negociação',
+    copies: '3 cópias',
+    roleColor: '#c9b77e',
+    kind: 'Acordo de Bastidor',
+    summary: 'Receba C$ 2 e favoreça outro jogador com C$ 1, ambos do cofre.',
+    imageSrc: '/images/cards/coordinator.png',
+    imageAlt: 'Carta Articuladora de Bastidores do Poder: personagem oferecendo a mão para um acordo e resumo das habilidades',
+    characterSrc: '/images/characters/coordinator.webp',
+    iconSrc: '/images/icons/coordinator.webp',
+    rules: [
+      {
+        title: 'Acordo de Bastidor (ação gratuita)',
+        description: 'Escolha outro jogador vivo ao declarar a ação. Após resolver a contestação, receba C$ 2 do cofre; o escolhido recebe C$ 1 do cofre. Ele não precisa aceitar e também pode contestar.',
+        type: 'action'
+      },
+      {
+        title: 'Sem bloqueio',
+        description: 'A Articuladora não bloqueia ações. O Acordo de Bastidor não pode ser bloqueado, mas pode ser contestado por qualquer adversário vivo.',
+        type: 'passive'
+      }
+    ],
+    officialRuleNotice: 'Distribua os Contos somente após resolver a contestação. Se a alegação não for comprovada, aplique a perda habitual de apoio e ninguém recebe moedas. Se o beneficiário for eliminado no desafio, cancele o acordo para ambos, sem escolher outro. Promessas não são obrigatórias. Com C$ 10 ou mais no início do turno, o Impeachment definitivo continua obrigatório.',
   },
   {
     id: 'card-guide',
@@ -237,9 +254,35 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         type: 'passive'
       }
     ],
-    officialRuleNotice: 'Não entra no baralho de influências nem pode ser perdida em desafios ou ataques.'
+    officialRuleNotice: 'Não entra no baralho de apoios nem pode ser perdido em desafios ou ataques.'
   }
 ] as const;
+
+/**
+ * Número de personagens no jogo.
+ */
+export const CARDS_LENGTH = ROLE_CARDS.filter((card) => card.slug !== 'guide').length;
+
+/**
+ * Número de cópias de cada personagem no baralho.
+ */
+export const SUPPORT_CARDS_PER_ROLE = 3;
+
+/**
+ * Número total de cartas no baralho de apoios.
+ */
+export const SUPPORT_CARDS_LENGTH = (CARDS_LENGTH * SUPPORT_CARDS_PER_ROLE);
+
+/**
+ * Estatísticas rápidas exibidas no banner principal (Masthead)
+ */
+export const GAME_META_STATS: readonly MetaStat[] = [
+  { value: '3–8', label: 'jogadores' },
+  { value: CARDS_LENGTH, label: 'personagens' },
+  { value: SUPPORT_CARDS_LENGTH, label: 'cartas de apoio' },
+  { value: 'C$', label: 'Conto · moeda do jogo' },
+] as const;
+
 
 /**
  * Ações gerais que qualquer jogador vivo pode realizar sem alegar personagem
@@ -260,14 +303,14 @@ export const GENERAL_ACTIONS: readonly GeneralAction[] = [
   {
     name: 'Impeachment comum',
     cost: 'C$ 7',
-    effect: 'Escolha um adversário vivo; ele perde uma influência à escolha dele.',
+    effect: 'Escolha um adversário vivo; ele perde um apoio à escolha dele.',
     defense: 'Somente o alvo pode alegar Intocável e pagar C$ 3 ao cofre para bloquear.',
     isAggressive: true
   },
   {
     name: 'Impeachment definitivo',
     cost: 'C$ 10',
-    effect: 'Escolha um adversário vivo; ele perde uma influência à escolha dele.',
+    effect: 'Escolha um adversário vivo; ele perde um apoio à escolha dele.',
     defense: 'Ninguém. Não pode ser bloqueado nem contestado.',
     isAggressive: true
   }
@@ -287,8 +330,8 @@ export const TURN_STEPS: readonly TurnStep[] = [
     title: 'Resolva o desafio à ação',
     description: 'Se a ação exige personagem, os adversários podem contestar antes de qualquer efeito.',
     details: [
-      'Alegação comprovada: o declarante mostra uma influência viva do personagem; o contestador perde uma influência. Se a partida continuar, a carta comprovada volta ao baralho, é embaralhada e substituída por uma carta secreta. A ação segue para a etapa de bloqueio.',
-      'Alegação não comprovada: o declarante perde uma influência à escolha dele; a ação é cancelada e o turno termina. Ele também pode optar por não comprovar, aceitando a penalidade.',
+      'Alegação comprovada: o declarante mostra um apoio vivo do personagem; o contestador perde um apoio. Se a partida continuar, a carta comprovada volta ao baralho, é embaralhada e substituída por uma carta secreta. A ação segue para a etapa de bloqueio.',
+      'Alegação não comprovada: o declarante perde um apoio à escolha dele; a ação é cancelada e o turno termina. Ele também pode optar por não comprovar, aceitando a penalidade.',
       'Sem contestação: avance normalmente. A carta permanece secreta.'
     ]
   },
@@ -302,15 +345,15 @@ export const TURN_STEPS: readonly TurnStep[] = [
     title: 'Resolva o desafio ao bloqueio',
     description: 'Qualquer outro jogador vivo, inclusive o autor da ação, pode contestar o bloqueio declarado.',
     details: [
-      'Bloqueio comprovado: o contestador perde uma influência. O defensor devolve a carta comprovada, embaralha e compra uma substituta. O bloqueio vale e a ação é cancelada.',
-      'Bloqueio não comprovado: o defensor perde uma influência, o bloqueio é cancelado e a ação original continua.',
+      'Bloqueio comprovado: o contestador perde um apoio. O defensor devolve a carta comprovada, embaralha e compra uma substituta. O bloqueio vale e a ação é cancelada.',
+      'Bloqueio não comprovado: o defensor perde um apoio, o bloqueio é cancelado e a ação original continua.',
       'Sem contestação: o bloqueio vale e a ação é cancelada, mesmo que tenha sido um blefe.'
     ]
   },
   {
     stepNumber: 5,
     title: 'Aplique o efeito e encerre o turno',
-    description: 'Se a ação ainda estiver válida, receba ou transfira dinheiro, faça a troca ou aplique a perda de influência. O próximo jogador vivo inicia o turno.'
+    description: 'Se a ação ainda estiver válida, receba ou transfira dinheiro, faça a troca ou aplique a perda de apoio. O próximo jogador vivo inicia o turno.'
   }
 ] as const;
 
@@ -333,31 +376,31 @@ export const GAME_EXAMPLES: readonly GameExample[] = [
   {
     id: 'ex-1',
     title: 'Intocável + Advogado',
-    description: 'Bruno tem essa dupla. Pode bloquear Executor gratuitamente com Advogado. Se Ana pagar C$ 7 pelo Impeachment comum, Bruno pode pagar C$ 3 com Intocável para bloquear. Mas se Ana pagar C$ 10 pelo Impeachment definitivo, Bruno é obrigado a perder uma de suas influências. A dupla é forte, mas não é imune.',
+    description: 'Bruno tem essa dupla. Pode bloquear Executor gratuitamente com Advogado. Se Ana pagar C$ 7 pelo Impeachment comum, Bruno pode pagar C$ 3 com Intocável para bloquear. Mas se Ana pagar C$ 10 pelo Impeachment definitivo, Bruno é obrigado a perder um de seus apoios. A dupla é forte, mas não é imune.',
     highlight: 'A dupla é forte, mas não é imune.'
   },
   {
     id: 'ex-2',
     title: 'Intocável sem saldo',
-    description: 'Bruno tem Intocável e apenas C$ 2. Ana paga C$ 7 pelo Impeachment comum. Bruno não pode declarar a defesa porque precisa de C$ 3 no momento do bloqueio. Ele escolhe uma influência e a perde.',
+    description: 'Bruno tem Intocável e apenas C$ 2. Ana paga C$ 7 pelo Impeachment comum. Bruno não pode declarar a defesa porque precisa de C$ 3 no momento do bloqueio. Ele escolhe um apoio e o perde.',
     highlight: 'Saldo insuficiente impede a declaração de bloqueio do Intocável.'
   },
   {
     id: 'ex-3',
     title: 'O Advogado era um blefe',
-    description: 'Ana usa Executor contra Bruno. Ele alega Advogado para se defender sem tê-lo. Ana contesta. Bruno não comprova: perde a influência no desafio e o ataque termina ali.',
+    description: 'Ana usa Executor contra Bruno. Ele alega Advogado para se defender sem tê-lo. Ana contesta. Bruno não comprova: perde o apoio no desafio e o ataque termina ali.',
     highlight: 'Desafio ao bloqueio elimina o blefe defensivo.'
   },
   {
     id: 'ex-4',
     title: 'Provar Executor não vence Advogado',
-    description: 'Ana declara Executor. Um terceiro contesta. Ana prova a carta; o contestador perde influência. Em seguida, Bruno alega Advogado. A ação é bloqueada se ninguém contestar Bruno. Ana não recebe os C$ 3 de volta.',
+    description: 'Ana declara Executor. Um terceiro contesta. Ana prova a carta; o contestador perde apoio. Em seguida, Bruno alega Advogado. A ação é bloqueada se ninguém contestar Bruno. Ana não recebe os C$ 3 de volta.',
     highlight: 'Provar o ataque na etapa 2 não anula o direito de bloqueio na etapa 3.'
   },
   {
     id: 'ex-5',
     title: 'Bloqueio falso do Intocável',
-    description: 'Ana paga C$ 7 para atacar Bruno com Impeachment. Bruno paga C$ 3 e blefa Intocável. Ana contesta. Bruno perde uma influência pelo blefe e depois perde outra influência pelo ataque de Ana que seguiu válido. Os dois pagamentos permanecem no cofre.',
+    description: 'Ana paga C$ 7 para atacar Bruno com Impeachment. Bruno paga C$ 3 e blefa Intocável. Ana contesta. Bruno perde um apoio pelo blefe e depois perde outro apoio pelo ataque de Ana que seguiu válido. Os dois pagamentos permanecem no cofre.',
     highlight: 'Cuidado extremo: blefar o Intocável e falhar resulta na perda de duas cartas!'
   },
   {
@@ -374,14 +417,14 @@ export const GAME_EXAMPLES: readonly GameExample[] = [
   },
   {
     id: 'ex-8',
-    title: 'Marqueteiro com uma influência',
-    description: 'Bruno perdeu uma carta e conserva apenas uma influência viva. Usa Marqueteiro: compra 2 cartas, fica com 3 na mão, escolhe duas para devolver ao baralho e mantém uma secreta viva. A carta já perdida permanece aberta na mesa.',
+    title: 'Marqueteiro com um apoio',
+    description: 'Bruno perdeu uma carta e conserva apenas um apoio vivo. Usa Marqueteiro: compra 2 cartas, fica com 3 na mão, escolhe duas para devolver ao baralho e mantém um secreto vivo. A carta já perdida permanece aberta na mesa.',
     highlight: 'A troca permite reorganizar a estratégia mesmo à beira da eliminação.'
   },
   {
     id: 'ex-9',
     title: 'Começou com exatamente C$ 10',
-    description: 'Ana inicia o turno com C$ 10. Deve pagar os C$ 10 pelo Impeachment definitivo. Não pode escolher Caixa 2, Executor, troca, Mandado ou Impeachment comum. O alvo escolhe uma influência e a perde, mesmo que tenha Intocável.',
+    description: 'Ana inicia o turno com C$ 10. Deve pagar os C$ 10 pelo Impeachment definitivo. Não pode escolher Caixa 2, Executor, troca, Mandado ou Impeachment comum. O alvo escolhe um apoio e o perde, mesmo que tenha Intocável.',
     highlight: 'Com C$ 10 ou mais no início do turno, o Impeachment definitivo é compulsório.'
   }
 ] as const;
@@ -454,43 +497,43 @@ export const ICON_LEGEND_ITEMS: readonly IconLegendItem[] = [
     role: 'Coronel',
     iconName: 'Moedas e Pressão',
     roleColor: '#d39071',
-    iconSrc: '/images/icons/colonel.svg'
+    iconSrc: '/images/icons/colonel.webp'
   },
   {
     role: 'Executor',
     iconName: 'Alvo e Eliminação',
     roleColor: '#bf9955',
-    iconSrc: '/images/icons/executor.svg'
+    iconSrc: '/images/icons/executor.webp'
   },
   {
     role: 'Intocável',
     iconName: 'Escudo e Blindagem',
     roleColor: '#6ba292',
-    iconSrc: '/images/icons/untouchable.svg'
+    iconSrc: '/images/icons/untouchable.webp'
   },
   {
     role: 'Advogado',
     iconName: 'Balança da Justiça',
     roleColor: '#c4ac7b',
-    iconSrc: '/images/icons/lawyer.svg'
+    iconSrc: '/images/icons/lawyer.webp'
   },
   {
     role: 'Barão',
     iconName: 'Coroa e Finanças',
     roleColor: '#e5a93c',
-    iconSrc: '/images/icons/baron.svg'
+    iconSrc: '/images/icons/baron.webp'
   },
   {
     role: 'Marqueteiro',
     iconName: 'Megafone e Mídia',
     roleColor: '#c67b93',
-    iconSrc: '/images/icons/marketer.svg'
+    iconSrc: '/images/icons/marketer.webp'
   },
   {
     role: 'Investigador',
     iconName: 'Lupa e Mandado',
     roleColor: '#7ba0c0',
-    iconSrc: '/images/icons/investigator.svg'
+    iconSrc: '/images/icons/investigator.webp'
   },
   {
     role: 'Guia de Mesa',
@@ -504,10 +547,10 @@ export const ICON_LEGEND_ITEMS: readonly IconLegendItem[] = [
  * Tabela de preparação por número de jogadores
  */
 export const SETUP_PLAYERS_TABLE: readonly PlayerSetupCount[] = [
-  { players: 3, cardsPerRole: 3, totalDeckCards: 21, initialCoins: 2 },
-  { players: 4, cardsPerRole: 3, totalDeckCards: 21, initialCoins: 2 },
-  { players: 5, cardsPerRole: 3, totalDeckCards: 21, initialCoins: 2 },
-  { players: 6, cardsPerRole: 3, totalDeckCards: 21, initialCoins: 2 },
-  { players: 7, cardsPerRole: 3, totalDeckCards: 21, initialCoins: 2 },
-  { players: 8, cardsPerRole: 3, totalDeckCards: 21, initialCoins: 2 },
+  { players: 3, cardsPerRole: SUPPORT_CARDS_PER_ROLE, totalDeckCards: SUPPORT_CARDS_LENGTH, initialCoins: 2 },
+  { players: 4, cardsPerRole: SUPPORT_CARDS_PER_ROLE, totalDeckCards: SUPPORT_CARDS_LENGTH, initialCoins: 2 },
+  { players: 5, cardsPerRole: SUPPORT_CARDS_PER_ROLE, totalDeckCards: SUPPORT_CARDS_LENGTH, initialCoins: 2 },
+  { players: 6, cardsPerRole: SUPPORT_CARDS_PER_ROLE, totalDeckCards: SUPPORT_CARDS_LENGTH, initialCoins: 2 },
+  { players: 7, cardsPerRole: SUPPORT_CARDS_PER_ROLE, totalDeckCards: SUPPORT_CARDS_LENGTH, initialCoins: 2 },
+  { players: 8, cardsPerRole: SUPPORT_CARDS_PER_ROLE, totalDeckCards: SUPPORT_CARDS_LENGTH, initialCoins: 2 },
 ] as const;

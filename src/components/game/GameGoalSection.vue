@@ -9,14 +9,14 @@ import AppCallout from '@/components/ui/AppCallout.vue';
     <AppSectionHeader
       label="O jogo"
       title="Seu poder está nas cartas secretas."
-      description="Você é uma figura poderosa disputando a hegemonia nos bastidores da política nacional. O objetivo é eliminar todas as influências dos seus adversários e ser o único sobrevivente à mesa."
+      description="Você é uma figura poderosa disputando a hegemonia nos bastidores da política nacional. O objetivo é eliminar todos os apoios dos seus adversários e ser o único sobrevivente à mesa."
     />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
-      <AppPanel title="Influência e Eliminação">
+      <AppPanel title="Apoio e Eliminação">
         <p class="text-sm text-ink-muted leading-relaxed mb-3">
-          Cada carta virada para baixo representa uma <strong class="text-ink">influência viva</strong>.
-          Você começa com duas influências secretas. Quando for forçado a perder uma influência por ataque ou desafio perdido, você escolhe qual das suas cartas vivas revelará.
+          Cada carta virada para baixo representa um <strong class="text-ink">apoio vivo</strong>.
+          Você começa com dois apoios secretos. Quando for forçado a perder um apoio por ataque ou desafio perdido, você escolhe qual das suas cartas vivas revelará.
         </p>
         <p class="text-sm text-ink-muted leading-relaxed mb-0">
           Cartas perdidas permanecem abertas na mesa até o fim da partida. Se perder ambas as cartas, você é <strong class="text-status-red">imediatamente eliminado</strong> e devolve todo o seu dinheiro ao cofre central.
@@ -28,7 +28,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
           Você pode reivindicar os poderes de qualquer personagem que quiser, no momento em que a ação for permitida — mesmo que não tenha a respectiva carta na mão!
         </p>
         <p class="text-sm text-ink-muted leading-relaxed mb-0">
-          Seus adversários precisam decidir se acreditam em você ou se arriscam uma <strong class="text-gold">contestação</strong>. Quem contesta e erra, perde influência. Quem blefa e é pego, também perde influência.
+          Seus adversários precisam decidir se acreditam em você ou se arriscam uma <strong class="text-gold">contestação</strong>. Quem contesta e erra, perde apoio. Quem blefa e é pego, também perde apoio.
         </p>
       </AppPanel>
     </div>

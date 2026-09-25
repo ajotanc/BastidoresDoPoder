@@ -11,6 +11,7 @@ export type RoleSlug =
   | 'baron'
   | 'marketer'
   | 'investigator'
+  | 'coordinator'
   | 'guide';
 
 export interface RoleCardRuleItem {
@@ -37,7 +38,7 @@ export interface RoleCard {
 }
 
 export interface MetaStat {
-  readonly value: string;
+  readonly value: string | number;
   readonly label: string;
 }
 

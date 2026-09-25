@@ -10,7 +10,7 @@ import { ArrowDown, BookOpen } from 'lucide-vue-next';
     <!-- Imagem de fundo com gradiente sutil -->
     <img class="absolute inset-0 w-full h-full bg-center object-cover object-[100%_100%] z-0"
       alt="Ilustração dos personagens em torno de uma mesa de cartas nos bastidores de Brasília"
-      src="/images/hero-art.png" loading="eager" />
+      src="/images/hero-art.webp" loading="eager" />
     <div
       class="absolute inset-0 z-[1] bg-gradient-to-r from-[#0d1721] via-[#0d1721ee] sm:via-[#0d1721b3] to-transparent pointer-events-none">
     </div>
@@ -21,7 +21,7 @@ import { ArrowDown, BookOpen } from 'lucide-vue-next';
     <!-- Conteúdo principal -->
     <div class="relative flex flex-col gap-6 z-10 max-w-xl">
       <div class="flex justify-center items-center gap-3">
-        <img src="/images/logo.png" alt="Brasão Oficial de Bastidores do Poder"
+        <img src="/images/bdp.webp" alt="Brasão Oficial de Bastidores do Poder"
           class="w-20 h-20 sm:w-32 sm:h-32 object-contain drop-shadow-md rounded-md" />
         <h1 class="font-serif font-bold text-3xl sm:text-5xl lg:text-6xl text-[#f7f0df] tracking-tight leading-tight">
           Bastidores <span class="text-gold">do Poder</span>
@@ -29,7 +29,7 @@ import { ArrowDown, BookOpen } from 'lucide-vue-next';
       </div>
       <p class="text-ink-muted text-base sm:text-lg leading-relaxed max-w-lg">
         Blefe, chantagem, conspiração e sobrevivência nos corredores de Brasília.
-        Gerencie seus Contos, declare suas influências e elimine seus rivais até que reste apenas um no poder.
+        Gerencie seus Contos, declare seus apoios e elimine seus rivais até que reste apenas um no poder.
       </p>
 
       <div>

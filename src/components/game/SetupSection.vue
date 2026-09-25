@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { SETUP_PLAYERS_TABLE } from '@/constants/gameData';
+import {
+  SETUP_PLAYERS_TABLE,
+  SUPPORT_CARDS_LENGTH,
+  SUPPORT_CARDS_PER_ROLE,
+  CARDS_LENGTH
+} from '@/constants/gameData';
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
 import AppPanel from '@/components/ui/AppPanel.vue';
 import AppCallout from '@/components/ui/AppCallout.vue';
@@ -10,7 +15,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
     <AppSectionHeader
       label="Cartas e preparação"
       title="Quantas cartas usar?"
-      description="Bastidores do Poder utiliza sempre as 21 cartas de influência (3 cópias de cada um dos 7 personagens), independentemente do número de participantes de 3 a 8 jogadores."
+      :description="`Bastidores do Poder utiliza sempre as ${SUPPORT_CARDS_LENGTH} cartas de apoio (${SUPPORT_CARDS_PER_ROLE} cópias de cada um dos ${CARDS_LENGTH} personagens), independentemente do número de participantes de 3 a 8 jogadores.`"
     />
 
     <!-- Tabela de contagem por número de jogadores -->
@@ -20,7 +25,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
           <tr class="bg-surface-elevated text-gold-light border-b border-line">
             <th class="py-3 px-4 font-semibold">Jogadores</th>
             <th class="py-3 px-4 font-semibold text-center">Cartas por personagem</th>
-            <th class="py-3 px-4 font-semibold text-center">Influências no baralho</th>
+            <th class="py-3 px-4 font-semibold text-center">Apoios no baralho</th>
             <th class="py-3 px-4 font-semibold text-center">Cartas de ajuda física</th>
             <th class="py-3 px-4 font-semibold text-center">Saldo inicial</th>
           </tr>
@@ -51,7 +56,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
         <tfoot>
           <tr class="bg-[#2e2a21] text-gold-light border-t border-gold-dark/60 font-semibold text-xs">
             <td class="py-2.5 px-4" colspan="5">
-              Cada jogador recebe 2 influências secretas + 1 carta de ajuda + C$ 2 no início da partida.
+              Cada jogador recebe 2 apoios secretos + 1 carta de ajuda + C$ 2 no início da partida.
             </td>
           </tr>
         </tfoot>
@@ -60,7 +65,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
 
     <AppCallout variant="gold" title="Carta de ajuda de mesa:">
       <p class="text-sm">
-        Prepare uma cópia da carta de ajuda por jogador, separada das 21 influências. Assim, mesas de 3, 4, 5, 6, 7 e 8 jogadores usam respectivamente <strong>24, 25, 26, 27, 28 e 29 cartas físicas</strong>, contando as ajudas. A distribuição de influências continua sendo duas por pessoa.
+        Prepare uma cópia da carta de ajuda por jogador, separada dos {{ SUPPORT_CARDS_LENGTH }} apoios. Assim, mesas de 3, 4, 5, 6, 7 e 8 jogadores usam respectivamente <strong>{{ SUPPORT_CARDS_LENGTH + 3 }}, {{ SUPPORT_CARDS_LENGTH + 4 }}, {{ SUPPORT_CARDS_LENGTH + 5 }}, {{ SUPPORT_CARDS_LENGTH + 6 }}, {{ SUPPORT_CARDS_LENGTH + 7 }} e {{ SUPPORT_CARDS_LENGTH + 8 }} cartas físicas</strong>, contando as ajudas. A distribuição de apoios continua sendo dois por pessoa.
       </p>
     </AppCallout>
 
@@ -79,7 +84,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
             1
           </span>
           <p class="text-ink-muted mb-0 pt-0.5">
-            Embaralhe as 21 cartas e distribua <strong class="text-ink">duas cartas secretas</strong> para cada jogador. Cartas repetidas na mesma mão são permitidas.
+            Embaralhe as {{ SUPPORT_CARDS_LENGTH }} cartas e distribua <strong class="text-ink">duas cartas secretas</strong> para cada jogador. Cartas repetidas na mesma mão são permitidas.
           </p>
         </li>
         <li
@@ -91,7 +96,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
             2
           </span>
           <p class="text-ink-muted mb-0 pt-0.5">
-            Deixe o restante virado para baixo como <strong class="text-ink">baralho central</strong>. Todos podem consultar as próprias influências vivas em segredo, mas não mostrá-las livremente.
+            Deixe o restante virado para baixo como <strong class="text-ink">baralho central</strong>. Todos podem consultar os próprios apoios vivos em segredo, mas não mostrá-las livremente.
           </p>
         </li>
         <li
@@ -144,18 +149,18 @@ import AppCallout from '@/components/ui/AppCallout.vue';
         </p>
       </AppPanel>
 
-      <AppPanel title="Influência não se recupera">
+      <AppPanel title="Apoio não se recupera">
         <p class="text-xs sm:text-sm text-ink-muted leading-relaxed mb-2">
           Cartas perdidas permanecem abertas e fora do jogo até o final. As trocas do Marqueteiro e cartas comprovadas em desafios mantêm a contagem de cartas vivas.
         </p>
         <p class="text-xs sm:text-sm text-ink-muted leading-relaxed mb-0">
-          Acordos de boca são permitidos, mas não obrigatórios. É expressamente proibido doar ou emprestar Contos ou influências entre jogadores.
+          Acordos de boca são permitidos, mas não obrigatórios. É expressamente proibido doar ou emprestar Contos ou apoios entre jogadores.
         </p>
       </AppPanel>
     </div>
 
     <p class="text-xs text-ink-muted italic border-l-2 border-line pl-3 py-1">
-      <strong>Variante para 2 jogadores (duelo):</strong> use as mesmas 21 cartas e duas influências por pessoa. Quem começa recebe C$ 1; o segundo jogador recebe C$ 2. Sobram 17 cartas no baralho. O restante das regras segue inalterado.
+      <strong>Variante para 2 jogadores (duelo):</strong> use as mesmas {{ SUPPORT_CARDS_LENGTH }} cartas e dois apoios por pessoa. Quem começa recebe C$ 1; o segundo jogador recebe C$ 2. Sobram {{ SUPPORT_CARDS_LENGTH - 4 }} cartas no baralho. O restante das regras segue inalterado.
     </p>
   </section>
 </template>
