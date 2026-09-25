@@ -6,9 +6,9 @@ import AppCallout from '@/components/ui/AppCallout.vue';
 </script>
 
 <template>
-  <section id="preparacao" class="scroll-mt-24 pt-12 border-t border-line/70">
+  <section id="preparacao" class="pt-12 border-t border-line/70">
     <AppSectionHeader
-      label="03 / Cartas e preparação"
+      label="Cartas e preparação"
       title="Quantas cartas usar?"
       description="Bastidores do Poder utiliza sempre as 21 cartas de influência (3 cópias de cada um dos 7 personagens), independentemente do número de participantes de 3 a 8 jogadores."
     />
@@ -135,9 +135,9 @@ import AppCallout from '@/components/ui/AppCallout.vue';
 
     <!-- Painéis complementares -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
-      <AppPanel title="Contos e Fichas">
+      <AppPanel title="Contos">
         <p class="text-xs sm:text-sm text-ink-muted leading-relaxed mb-2">
-          Bronze ou prata: <strong>C$ 1</strong>. Dourada: <strong>C$ 5</strong>. Platinada: <strong>C$ 10</strong>. Trocar fichas menores por maiores não altera o saldo nem consome sua ação do turno.
+          Bronze: <strong>C$ 1</strong>. Prata: <strong>C$ 5</strong>. Ouro: <strong>C$ 10</strong>. Trocar contos menores por maiores não altera o saldo nem consome sua ação do turno.
         </p>
         <p class="text-xs sm:text-sm text-ink-muted leading-relaxed mb-0">
           O saldo de um jogador nunca fica negativo. Custos de ações devem ser pagos integralmente.

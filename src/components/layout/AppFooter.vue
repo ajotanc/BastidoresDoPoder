@@ -1,5 +1,14 @@
 <script setup lang="ts">
 import { Shield } from 'lucide-vue-next';
+import { scrollToSection } from '@/utils/navigation';
+import { APP_VERSION } from '@/constants/appVersion';
+
+/**
+ * Rola suavemente até o topo sem expor #manual na URL
+ */
+const handleBackToTop = (event: MouseEvent): void => {
+  scrollToSection('manual', event);
+};
 </script>
 
 <template>
@@ -9,9 +18,16 @@ import { Shield } from 'lucide-vue-next';
   >
     <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-6">
       <div class="space-y-1">
-        <p class="font-serif font-bold text-gold-light text-base">
-          Bastidores do Poder <span class="font-sans font-normal text-xs text-ink-muted">· Manual v1.0 para testes</span>
-        </p>
+        <div class="flex items-center justify-center sm:justify-start gap-2.5">
+          <img
+            src="/images/logo.png"
+            alt="Logo Bastidores do Poder"
+            class="w-7 h-7 object-contain rounded"
+          />
+          <p class="font-serif font-bold text-gold-light text-base">
+            Bastidores do Poder <span class="font-sans font-normal text-xs text-ink-muted">· Manual v{{ APP_VERSION }} para testes</span>
+          </p>
+        </div>
         <p class="text-xs text-ink-muted max-w-xl">
           Adaptação independente inspirada em Coup com temática política brasileira. Este manual descreve as regras próprias do protótipo e consolidou o balanço para 3 a 8 jogadores.
         </p>
@@ -24,6 +40,7 @@ import { Shield } from 'lucide-vue-next';
         </span>
         <a
           href="#manual"
+          @click="handleBackToTop"
           class="text-gold hover:text-gold-light hover:underline transition-colors"
         >
           Voltar ao topo ↑

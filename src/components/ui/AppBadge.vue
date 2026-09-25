@@ -16,7 +16,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const badgeClasses = computed(() => {
   const base =
-    'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors';
+    'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold tracking-wider uppercase transition-colors';
   const variants: Record<NonNullable<Props['variant']>, string> = {
     gold: 'bg-gold/15 text-gold-light border border-gold/40',
     role: 'bg-surface-elevated text-ink border border-line-gold',

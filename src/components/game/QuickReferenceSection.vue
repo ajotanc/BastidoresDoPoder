@@ -7,9 +7,9 @@ import RoleIcon from '@/components/game/RoleIcon.vue';
 </script>
 
 <template>
-  <section id="consulta" class="scroll-mt-24 pt-12 border-t border-line/70">
+  <section id="consulta" class="pt-12 border-t border-line/70">
     <AppSectionHeader
-      label="08 / Consulta rápida"
+      label="Consulta rápida"
       title="O que bloqueia o quê?"
       description="Consulte rapidamente os bloqueios permitidos, os defensores elegíveis e se cabe contestação em cada ação durante a partida."
     />
@@ -23,19 +23,25 @@ import RoleIcon from '@/components/game/RoleIcon.vue';
         <div
           v-for="item in ICON_LEGEND_ITEMS"
           :key="item.role"
-          class="flex items-center gap-3 p-3 rounded bg-surface border border-line hover:border-gold-dark/60 transition-colors"
+          class="flex items-center gap-3.5 p-3.5 rounded-lg bg-surface border border-line hover:border-gold-dark/60 transition-colors"
         >
           <div
-            class="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded"
-            :style="{ color: item.roleColor }"
+            class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded bg-surface-elevated/80 border border-line-subtle p-1.5"
           >
+            <img
+              v-if="item.iconSrc"
+              :src="item.iconSrc"
+              :alt="`Ícone oficial de ${item.role}`"
+              class="w-full h-full object-contain"
+            />
             <RoleIcon
+              v-else
               :role="item.role"
               :color="item.roleColor"
               :size="26"
             />
           </div>
-          <div class="leading-tight">
+          <div class="flex flex-col justify-center leading-tight">
             <strong class="block text-xs sm:text-sm text-ink font-semibold">
               {{ item.role }}
             </strong>

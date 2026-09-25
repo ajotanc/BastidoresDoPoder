@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { NAVIGATION_SECTIONS } from '@/constants/gameData';
 import { useActiveSection } from '@/composables/useActiveSection';
+import { clearUrlHash, scrollToSection } from '@/utils/navigation';
 import AppNavbar from '@/components/layout/AppNavbar.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
 import HeroMasthead from '@/components/game/HeroMasthead.vue';
-import RoleCardsSection from '@/components/game/RoleCardsSection.vue';
 import GameGoalSection from '@/components/game/GameGoalSection.vue';
+import RoleCardsSection from '@/components/game/RoleCardsSection.vue';
 import SetupSection from '@/components/game/SetupSection.vue';
 import GeneralActionsSection from '@/components/game/GeneralActionsSection.vue';
 import TurnOrderSection from '@/components/game/TurnOrderSection.vue';
@@ -16,6 +18,10 @@ import CardLightboxModal from '@/components/game/CardLightboxModal.vue';
 
 const sectionIds = NAVIGATION_SECTIONS.map((s) => s.id);
 const { activeSectionId } = useActiveSection(sectionIds);
+
+onMounted(() => {
+  clearUrlHash();
+});
 </script>
 
 <template>
@@ -23,6 +29,7 @@ const { activeSectionId } = useActiveSection(sectionIds);
     <!-- Link de acessibilidade para navegação por teclado -->
     <a
       href="#manual"
+      @click="scrollToSection('manual', $event)"
       class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-gold focus:text-surface-elevated focus:font-bold focus:rounded focus:shadow-lg"
     >
       Pular para o manual principal
@@ -36,11 +43,11 @@ const { activeSectionId } = useActiveSection(sectionIds);
       <!-- Masthead com Arte Heroica -->
       <HeroMasthead />
 
-      <!-- 01 / Cartas e Guia de Ajuda -->
-      <RoleCardsSection />
-
-      <!-- 02 / O Jogo e Objetivos -->
+      <!-- 01 / O Jogo e Objetivos -->
       <GameGoalSection />
+
+      <!-- 02 / Cartas e Guia de Ajuda -->
+      <RoleCardsSection />
 
       <!-- 03 / Preparação e Montagem -->
       <SetupSection />

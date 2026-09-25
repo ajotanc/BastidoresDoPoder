@@ -4,14 +4,14 @@
  */
 
 export type RoleSlug =
-  | 'coronel'
+  | 'colonel'
   | 'executor'
-  | 'intocavel'
-  | 'advogado'
-  | 'barao'
-  | 'marqueteiro'
-  | 'investigador'
-  | 'ajuda';
+  | 'untouchable'
+  | 'lawyer'
+  | 'baron'
+  | 'marketer'
+  | 'investigator'
+  | 'guide';
 
 export interface RoleCardRuleItem {
   readonly title: string;
@@ -30,6 +30,7 @@ export interface RoleCard {
   readonly summary: string;
   readonly imageSrc: string;
   readonly imageAlt: string;
+  readonly characterSrc?: string;
   readonly iconSrc?: string;
   readonly rules: readonly RoleCardRuleItem[];
   readonly officialRuleNotice: string;
@@ -42,7 +43,6 @@ export interface MetaStat {
 
 export interface NavigationItem {
   readonly id: string;
-  readonly number: string;
   readonly label: string;
 }
 
@@ -79,7 +79,6 @@ export interface IconLegendItem {
   readonly role: string;
   readonly iconName: string;
   readonly roleColor: string;
-  readonly pathD: readonly string[];
   readonly iconSrc?: string;
 }
 

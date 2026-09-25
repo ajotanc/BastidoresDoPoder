@@ -58,8 +58,8 @@ export default {
         }
       },
       fontFamily: {
-        serif: ['Georgia', '"Times New Roman"', 'serif'],
-        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        serif: ['"Cinzel"', 'Georgia', '"Times New Roman"', 'serif'],
+        sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
       },
       boxShadow: {
         card: '0 16px 34px rgba(0, 0, 0, 0.35)',

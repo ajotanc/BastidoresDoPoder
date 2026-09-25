@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { cn } from '@/utils/cn';
+import { scrollToSection } from '@/utils/navigation';
 
 interface Props {
   variant?: 'primary' | 'gold' | 'outline' | 'ghost' | 'secondary';
@@ -24,9 +25,23 @@ const props = withDefaults(defineProps<Props>(), {
 
 const isLink = computed(() => !!props.href);
 
+const emit = defineEmits<{
+  (e: 'click', event: MouseEvent): void;
+}>();
+
+/**
+ * Trata o clique para rolar suavemente e prevenir hash na URL quando for âncora interna
+ */
+const handleClick = (event: MouseEvent): void => {
+  if (props.href?.startsWith('#')) {
+    scrollToSection(props.href, event);
+  }
+  emit('click', event);
+};
+
 const buttonClasses = computed(() => {
   const base =
-    'inline-flex items-center justify-center gap-2 rounded-md font-bold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none focus-visible:outline-none';
+    'inline-flex items-center justify-center text-center gap-2.5 rounded-md font-bold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none focus-visible:outline-none leading-none';
 
   const variants: Record<NonNullable<Props['variant']>, string> = {
     gold: 'bg-gold text-surface-elevated hover:bg-gold-light border border-gold shadow-sm active:scale-[0.98]',
@@ -57,6 +72,7 @@ const buttonClasses = computed(() => {
     :target="props.target"
     :class="buttonClasses"
     :rel="props.target === '_blank' ? 'noopener noreferrer' : undefined"
+    @click="handleClick"
   >
     <slot />
   </a>
@@ -65,6 +81,7 @@ const buttonClasses = computed(() => {
     :type="props.type"
     :disabled="props.disabled"
     :class="buttonClasses"
+    @click="emit('click', $event)"
   >
     <slot />
   </button>

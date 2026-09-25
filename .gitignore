@@ -1,5 +1,47 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Production and development build outputs
+dist/
+dist-ssr/
+dev-dist/
+build/
+*.local
+
+# Vite and cache
+.vite/
+.cache/
+vite.config.js
+vite.config.d.ts
+
+# TypeScript cache
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+tsconfig.node.tsbuildinfo
+
+# Environment variables and local configs
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Netlify deployment
+.netlify/
+
+# Testing & Automation
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+.playwright-mcp/
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,21 +49,32 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# IDEs and Editors
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+!.vscode/settings.json
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.sublime-project
+*.sublime-workspace
 
-# Testing & temp
-.playwright-mcp
+# Operating System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+
+# Temporary and backup files
+*.bak
+*.backup
+*.tmp
+*.temp
+*~

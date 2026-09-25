@@ -1,103 +1,181 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { ref, watch } from 'vue';
 import { useLightbox } from '@/composables/useLightbox';
+import AppDialog from '@/components/ui/AppDialog.vue';
 import AppButton from '@/components/ui/AppButton.vue';
-import { X, Download } from 'lucide-vue-next';
+import { X, Download, RotateCw } from 'lucide-vue-next';
 
 const { isOpen, activeCard, closeCardLightbox } = useLightbox();
 
+const isFlipped = ref<boolean>(false);
+
 /**
- * Fecha o modal ao pressionar a tecla Escape
+ * Alterna a rotação 3D da carta entre frente e verso
  */
-const handleKeyDown = (event: KeyboardEvent): void => {
-  if (event.key === 'Escape' && isOpen.value) {
-    closeCardLightbox();
-  }
+const toggleFlip = (): void => {
+  isFlipped.value = !isFlipped.value;
 };
 
-onMounted(() => {
-  if (typeof window !== 'undefined') {
-    window.addEventListener('keydown', handleKeyDown);
+// Sempre que o lightbox abre ou muda de carta, reseta para a frente
+watch(
+  () => activeCard.value,
+  () => {
+    isFlipped.value = false;
   }
-});
-
-onUnmounted(() => {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('keydown', handleKeyDown);
-  }
-});
+);
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition
-      enter-active-class="transition duration-200 ease-out"
-      enter-from-class="opacity-0 scale-95"
-      enter-to-class="opacity-100 scale-100"
-      leave-active-class="transition duration-150 ease-in"
-      leave-from-class="opacity-100 scale-100"
-      leave-to-class="opacity-0 scale-95"
-    >
-      <div
-        v-if="isOpen && activeCard"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md"
-        role="dialog"
-        aria-modal="true"
-        :aria-label="`Carta ${activeCard.name}`"
-        @click.self="closeCardLightbox"
-      >
-        <div
-          class="relative w-full max-w-xl max-h-[92vh] flex flex-col rounded-xl overflow-hidden bg-surface-elevated border border-gold-dark shadow-modal"
-          @click.stop
-        >
-          <!-- Cabeçalho do Modal -->
+  <AppDialog
+    :is-open="isOpen && !!activeCard"
+    :aria-label="activeCard ? `Carta ${activeCard.name}` : 'Visualizador de Carta'"
+    :bg-image-src="activeCard?.imageSrc"
+    max-width-class="max-w-xl"
+    @close="closeCardLightbox"
+  >
+    <!-- Cabeçalho Fixo do Modal -->
+    <template #header>
+      <div v-if="activeCard" class="flex items-center justify-between gap-4">
+        <!-- Lado Esquerdo: Ícone + Título + Tag + Metadados -->
+        <div class="flex items-center gap-3.5 min-w-0">
+          <!-- Ícone / Brasão da Carta -->
           <div
-            class="flex items-center justify-between px-5 py-3.5 border-b border-line bg-surface"
+            class="w-10 h-10 rounded-lg flex items-center justify-center bg-[#091017] border border-gold-dark/70 shadow-inner flex-shrink-0"
           >
-            <div>
-              <h2 class="font-serif font-bold text-xl text-gold-light tracking-tight">
-                {{ activeCard.name }}
-              </h2>
-              <span class="text-xs text-ink-muted">
-                {{ activeCard.category }} · {{ activeCard.kind }}
-              </span>
-            </div>
-            <button
-              type="button"
-              @click="closeCardLightbox"
-              class="p-2 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-hover transition-colors focus-visible:outline-none"
-              aria-label="Fechar visualização"
-            >
-              <X class="w-5 h-5" aria-hidden="true" />
-            </button>
-          </div>
-
-          <!-- Imagem da Carta Ampliada -->
-          <div class="flex-1 overflow-auto p-4 sm:p-6 flex items-center justify-center bg-[#070d13]">
             <img
-              :src="activeCard.imageSrc"
-              :alt="activeCard.imageAlt"
-              class="max-w-full max-h-[65vh] object-contain rounded-md shadow-2xl border border-line"
+              v-if="!isFlipped && activeCard.iconSrc"
+              :src="activeCard.iconSrc"
+              :alt="`Símbolo de ${activeCard.name}`"
+              class="w-6 h-6 object-contain"
+            />
+            <img
+              v-else
+              src="/images/logo.png"
+              alt="Brasão Bastidores do Poder"
+              class="w-6 h-6 object-contain"
             />
           </div>
 
-          <!-- Rodapé com Ação de Download -->
-          <div
-            class="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 border-t border-line bg-surface text-xs text-ink-muted"
-          >
-            <span>Carta em alta definição para impressão</span>
-            <AppButton
-              variant="gold"
-              size="sm"
-              :href="activeCard.imageSrc"
-              :download="`bastidores-do-poder-${activeCard.slug}.png`"
-            >
-              <Download class="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Baixar esta carta</span>
-            </AppButton>
+          <!-- Informações e Tag Oficial -->
+          <div class="min-w-0">
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h2
+                class="font-serif font-bold text-xl sm:text-2xl text-[#f7f0e2] tracking-tight leading-none whitespace-nowrap"
+              >
+                {{ isFlipped ? 'Verso' : activeCard.name }}
+              </h2>
+
+              <!-- Tag Refinada com Insígnia Governamental -->
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[0.68rem] uppercase font-bold tracking-[0.14em] border shadow-sm backdrop-blur-sm select-none whitespace-nowrap flex-shrink-0"
+                :style="
+                  isFlipped
+                    ? {
+                        backgroundColor: '#e6bf7315',
+                        borderColor: '#e6bf7360',
+                        color: '#f5dcad'
+                      }
+                    : {
+                        backgroundColor: activeCard.roleColor + '18',
+                        borderColor: activeCard.roleColor + '60',
+                        color: activeCard.roleColor
+                      }
+                "
+              >
+                <span
+                  class="w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse"
+                  :style="{ backgroundColor: isFlipped ? '#e6bf73' : activeCard.roleColor }"
+                ></span>
+                <span>{{ isFlipped ? 'Deck' : activeCard.kind }}</span>
+              </span>
+            </div>
+
+            <!-- Metadados de Linha -->
+            <div class="flex items-center gap-2 mt-1.5 text-xs text-ink-muted whitespace-nowrap">
+              <span>{{ isFlipped ? 'Padrão' : activeCard.category }}</span>
+              <span class="w-1 h-1 rounded-full bg-gold-dark/60" aria-hidden="true"></span>
+              <span class="text-gold-light/90">{{ isFlipped ? '21 cartas do baralho' : activeCard.copies }}</span>
+            </div>
           </div>
         </div>
+
+        <!-- Lado Direito: Fechar -->
+        <button
+          type="button"
+          @click="closeCardLightbox"
+          class="p-2 rounded-lg text-ink-muted hover:text-gold-light hover:bg-surface-hover border border-transparent hover:border-line transition-all focus-visible:outline-none flex-shrink-0"
+          aria-label="Fechar visualização"
+        >
+          <X class="w-5 h-5" aria-hidden="true" />
+        </button>
       </div>
-    </Transition>
-  </Teleport>
+    </template>
+
+    <!-- Conteúdo com Scroll Exclusivo: Área 3D da Carta com Flip -->
+    <div v-if="activeCard" class="flex flex-col items-center justify-center py-2">
+      <div
+        class="flex flex-col gap-6 relative cursor-pointer select-none group/flip py-2 [perspective:1200px]"
+        @click="toggleFlip"
+        :title="isFlipped ? 'Clique para ver a frente' : 'Clique para ver o verso'"
+      >
+        <div
+          class="relative w-[320px] sm:w-[256px] aspect-[2/3] transition-transform duration-700 [transform-style:preserve-3d] shadow-2xl rounded-xl"
+          :class="{ '[transform:rotateY(180deg)]': isFlipped }"
+        >
+          <!-- Face Frontal (Frente da Carta) -->
+          <div
+            class="absolute inset-0 [backface-visibility:hidden] rounded-xl overflow-hidden border border-line-gold bg-[#0d1620] shadow-card flex items-center justify-center"
+          >
+            <img
+              :src="activeCard.imageSrc"
+              :alt="activeCard.imageAlt"
+              class="w-full h-full object-cover pointer-events-none"
+            />
+          </div>
+
+          <!-- Face Traseira (Verso da Carta) -->
+          <div
+            class="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-xl overflow-hidden border border-gold-dark bg-[#0a111a] shadow-card flex items-center justify-center"
+          >
+            <img
+              src="/images/cards/back-card.png"
+              alt="Verso oficial das cartas de Bastidores do Poder"
+              class="w-full h-full object-cover pointer-events-none"
+            />
+          </div>
+        </div>
+
+        <!-- Dica interativa para virar a carta -->
+        <div class="text-center">
+          <span
+            class="inline-flex items-center gap-1.5 text-[0.75rem] text-gold-muted/80 bg-surface/90 px-3 py-1 rounded-md border border-line shadow-sm group-hover/flip:border-gold/60 transition-colors"
+          >
+            <RotateCw class="w-3 h-3 text-gold" aria-hidden="true" />
+            Clique na carta para virar em 3D
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rodapé Fixo Separado do Scroll com as Mesmas Cores e Estilo -->
+    <template #footer>
+      <div
+        v-if="activeCard"
+        class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-muted"
+      >
+        <span>
+          {{ isFlipped ? 'Verso oficial para impressão e confecção' : 'Carta oficial em alta resolução' }}
+        </span>
+        <AppButton
+          variant="gold"
+          size="sm"
+          :href="isFlipped ? '/images/cards/back-card.png' : activeCard.imageSrc"
+          :download="isFlipped ? 'bastidores-do-poder-verso.png' : `bastidores-do-poder-${activeCard.slug}.png`"
+        >
+          <Download class="w-3.5 h-3.5" aria-hidden="true" />
+          <span>{{ isFlipped ? 'Baixar verso da carta' : 'Baixar esta carta' }}</span>
+        </AppButton>
+      </div>
+    </template>
+  </AppDialog>
 </template>

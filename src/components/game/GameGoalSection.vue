@@ -5,9 +5,9 @@ import AppCallout from '@/components/ui/AppCallout.vue';
 </script>
 
 <template>
-  <section id="objetivo" class="scroll-mt-24 pt-12 border-t border-line/70">
+  <section id="objetivo" class="pt-12 border-t border-line/70">
     <AppSectionHeader
-      label="02 / O jogo"
+      label="O jogo"
       title="Seu poder está nas cartas secretas."
       description="Você é uma figura poderosa disputando a hegemonia nos bastidores da política nacional. O objetivo é eliminar todas as influências dos seus adversários e ser o único sobrevivente à mesa."
     />

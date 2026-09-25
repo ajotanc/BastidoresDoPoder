@@ -7,9 +7,9 @@ import { AlertTriangle } from 'lucide-vue-next';
 </script>
 
 <template>
-  <section id="acoes" class="scroll-mt-24 pt-12 border-t border-line/70">
+  <section id="acoes" class="pt-12 border-t border-line/70">
     <AppSectionHeader
-      label="04 / Ações gerais"
+      label="Ações gerais"
       title="Não precisa de personagem."
       description="Qualquer jogador vivo pode escolher uma destas ações no próprio turno, desde que consiga pagar o custo. Elas nunca podem ser contestadas, pois não exigem alegação de personagem."
     />

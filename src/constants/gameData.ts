@@ -24,14 +24,15 @@ export const GAME_META_STATS: readonly MetaStat[] = [
  * Navegação rápida do manual
  */
 export const NAVIGATION_SECTIONS: readonly NavigationItem[] = [
-  { id: 'personagens', number: '01', label: 'Cartas' },
-  { id: 'objetivo', number: '02', label: 'O jogo' },
-  { id: 'preparacao', number: '03', label: 'Preparação' },
-  { id: 'acoes', number: '04', label: 'Ações' },
-  { id: 'resolucao', number: '05', label: 'Resolução' },
-  { id: 'investigacao', number: '06', label: 'Investigação' },
-  { id: 'exemplos', number: '07', label: 'Exemplos' },
-  { id: 'consulta', number: '08', label: 'Consulta' },
+  { id: 'manual', label: 'Home' },
+  { id: 'objetivo', label: 'O jogo' },
+  { id: 'personagens', label: 'Cartas' },
+  { id: 'preparacao', label: 'Preparação' },
+  { id: 'acoes', label: 'Ações' },
+  { id: 'resolucao', label: 'Resolução' },
+  { id: 'investigacao', label: 'Investigação' },
+  { id: 'exemplos', label: 'Exemplos' },
+  { id: 'consulta', label: 'Consulta' },
 ] as const;
 
 /**
@@ -39,16 +40,17 @@ export const NAVIGATION_SECTIONS: readonly NavigationItem[] = [
  */
 export const ROLE_CARDS: readonly RoleCard[] = [
   {
-    id: 'carta-coronel',
-    slug: 'coronel',
+    id: 'card-colonel',
+    slug: 'colonel',
     name: 'Coronel',
-    category: '01 / Pressão',
+    category: 'Pressão',
     copies: '3 cópias',
     roleColor: '#d39071',
     kind: 'Extorsão',
     summary: 'Ataque econômico com bloqueio próprio e defesa contra Investigador.',
     imageSrc: '/images/cards/colonel.png',
     imageAlt: 'Carta Coronel de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
+    characterSrc: '/images/characters/colonel.png',
     iconSrc: '/images/icons/colonel.svg',
     rules: [
       {
@@ -70,16 +72,17 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     officialRuleNotice: 'O Coronel bloqueia o próprio ataque (Extorsão) e também a investigação alheia.'
   },
   {
-    id: 'carta-executor',
+    id: 'card-executor',
     slug: 'executor',
     name: 'Executor',
-    category: '02 / Eliminação',
+    category: 'Eliminação',
     copies: '3 cópias',
     roleColor: '#bf9955',
     kind: 'Eliminação',
     summary: 'Eliminação rápida com custo moderado, bloqueável por Advogado.',
     imageSrc: '/images/cards/executor.png',
     imageAlt: 'Carta Executor de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
+    characterSrc: '/images/characters/executor.png',
     iconSrc: '/images/icons/executor.svg',
     rules: [
       {
@@ -91,16 +94,17 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     officialRuleNotice: 'O custo de C$ 3 é pago na declaração e nunca é devolvido, mesmo se a ação for bloqueada ou contestada.'
   },
   {
-    id: 'carta-intocavel',
-    slug: 'intocavel',
+    id: 'card-untouchable',
+    slug: 'untouchable',
     name: 'Intocável',
-    category: '03 / Blindagem',
+    category: 'Blindagem',
     copies: '3 cópias',
     roleColor: '#6ba292',
     kind: 'Blindagem',
     summary: 'Defesa paga contra Impeachment comum. Não protege do definitivo.',
     imageSrc: '/images/cards/untouchable.png',
     imageAlt: 'Carta Intocável de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
+    characterSrc: '/images/characters/untouchable.png',
     iconSrc: '/images/icons/untouchable.svg',
     rules: [
       {
@@ -112,16 +116,17 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     officialRuleNotice: 'Requer saldo prévio de C$ 3 para declarar a defesa. O valor vai para o cofre e nunca retorna.'
   },
   {
-    id: 'carta-advogado',
-    slug: 'advogado',
+    id: 'card-lawyer',
+    slug: 'lawyer',
     name: 'Advogado',
-    category: '04 / Habeas Corpus',
+    category: 'Habeas Corpus',
     copies: '3 cópias',
     roleColor: '#c4ac7b',
     kind: 'Habeas Corpus',
     summary: 'Defesa contra eliminação e contra investigação.',
     imageSrc: '/images/cards/lawyer.png',
     imageAlt: 'Carta Advogado de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
+    characterSrc: '/images/characters/lawyer.png',
     iconSrc: '/images/icons/lawyer.svg',
     rules: [
       {
@@ -138,16 +143,17 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     officialRuleNotice: 'Não possui ação própria em seu turno; atua exclusivamente como defesa contra ataques direcionados.'
   },
   {
-    id: 'carta-barao',
-    slug: 'barao',
+    id: 'card-baron',
+    slug: 'baron',
     name: 'Barão',
-    category: '05 / Finanças',
+    category: 'Finanças',
     copies: '3 cópias',
     roleColor: '#e5a93c',
     kind: 'Finanças',
     summary: 'Receita rápida e bloqueio de Vaquinha Virtual.',
     imageSrc: '/images/cards/baron.png',
     imageAlt: 'Carta Barão de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
+    characterSrc: '/images/characters/baron.png',
     iconSrc: '/images/icons/baron.svg',
     rules: [
       {
@@ -164,16 +170,17 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     officialRuleNotice: 'O bloqueio da Vaquinha pode ser declarado por qualquer adversário, não apenas pelo jogador seguinte.'
   },
   {
-    id: 'carta-marqueteiro',
-    slug: 'marqueteiro',
+    id: 'card-marketer',
+    slug: 'marketer',
     name: 'Marqueteiro',
-    category: '06 / Manipulação',
+    category: 'Manipulação',
     copies: '3 cópias',
     roleColor: '#c67b93',
     kind: 'Manipulação',
     summary: 'Troca de cartas no baralho e bloqueio de Extorsão.',
     imageSrc: '/images/cards/marketer.png',
     imageAlt: 'Carta Marqueteiro de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
+    characterSrc: '/images/characters/marketer.png',
     iconSrc: '/images/icons/marketer.svg',
     rules: [
       {
@@ -190,16 +197,17 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     officialRuleNotice: 'Se possuir apenas uma influência viva, compra 2 cartas, fica com 3 temporariamente e devolve 2, mantendo uma viva.'
   },
   {
-    id: 'carta-investigador',
-    slug: 'investigador',
+    id: 'card-investigator',
+    slug: 'investigator',
     name: 'Investigador',
-    category: '07 / Investigação',
+    category: 'Investigação',
     copies: '3 cópias',
     roleColor: '#7ba0c0',
     kind: 'Mandado de Busca',
     summary: 'Ataque focado por nome de personagem contra um rival.',
     imageSrc: '/images/cards/investigator.png',
     imageAlt: 'Carta Investigador de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
+    characterSrc: '/images/characters/investigator.png',
     iconSrc: '/images/icons/investigator.svg',
     rules: [
       {
@@ -211,17 +219,17 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     officialRuleNotice: 'Pode ser bloqueado pelo alvo se alegar Advogado ou Coronel. O custo de C$ 5 é gasto mesmo se o palpite errar.'
   },
   {
-    id: 'carta-ajuda',
-    slug: 'ajuda',
+    id: 'card-guide',
+    slug: 'guide',
     name: 'Guia de Mesa',
-    category: '08 / Guia de mesa',
+    category: 'Guia de mesa',
     copies: 'Fora do baralho',
     roleColor: '#e4c682',
     kind: 'Referência',
     summary: 'Carta de consulta rápida com resumo de todos os poderes e ações.',
     imageSrc: '/images/cards/guide.png',
     imageAlt: 'Carta de ajuda com ícones, ações, bloqueios dos sete personagens e ações gerais',
-    iconSrc: undefined,
+    iconSrc: '/images/icons/guide.webp',
     rules: [
       {
         title: 'Distribuição',
@@ -439,94 +447,56 @@ export const QUICK_REFERENCE_DATA: readonly QuickReferenceRow[] = [
 ] as const;
 
 /**
- * Legenda de ícones com definição SVG geométrica
+ * Legenda de ícones dos personagens
  */
 export const ICON_LEGEND_ITEMS: readonly IconLegendItem[] = [
   {
     role: 'Coronel',
     iconName: 'Moedas e Pressão',
     roleColor: '#d39071',
-    iconSrc: '/images/icons/colonel.svg',
-    pathD: [
-      'M13.744 17.736a6 6 0 1 1-7.48-7.48',
-      'M15 6h1v4',
-      'm6.134 14.768.866-.5 2 3.464',
-      'circle cx="16" cy="8" r="6"'
-    ]
+    iconSrc: '/images/icons/colonel.svg'
   },
   {
     role: 'Executor',
     iconName: 'Alvo e Eliminação',
     roleColor: '#bf9955',
-    iconSrc: '/images/icons/executor.svg',
-    pathD: [
-      'circle cx="12" cy="12" r="10"',
-      'line x1="22" y1="12" x2="18" y2="12"',
-      'line x1="6" y1="12" x2="2" y2="12"',
-      'line x1="12" y1="6" x2="12" y2="2"',
-      'line x1="12" y1="22" x2="12" y2="18"'
-    ]
+    iconSrc: '/images/icons/executor.svg'
   },
   {
     role: 'Intocável',
     iconName: 'Escudo e Blindagem',
     roleColor: '#6ba292',
-    iconSrc: '/images/icons/untouchable.svg',
-    pathD: [
-      'path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"'
-    ]
+    iconSrc: '/images/icons/untouchable.svg'
   },
   {
     role: 'Advogado',
     iconName: 'Balança da Justiça',
     roleColor: '#c4ac7b',
-    iconSrc: '/images/icons/lawyer.svg',
-    pathD: [
-      'path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"',
-      'path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"',
-      'path d="M7 21h10"',
-      'path d="M12 3v18"',
-      'path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"'
-    ]
+    iconSrc: '/images/icons/lawyer.svg'
   },
   {
     role: 'Barão',
     iconName: 'Coroa e Finanças',
     roleColor: '#e5a93c',
-    iconSrc: '/images/icons/baron.svg',
-    pathD: [
-      'path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"'
-    ]
+    iconSrc: '/images/icons/baron.svg'
   },
   {
     role: 'Marqueteiro',
     iconName: 'Megafone e Mídia',
     roleColor: '#c67b93',
-    iconSrc: '/images/icons/marketer.svg',
-    pathD: [
-      'path d="m3 11 18-5v12L3 14v-3z"',
-      'path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"'
-    ]
+    iconSrc: '/images/icons/marketer.svg'
   },
   {
     role: 'Investigador',
     iconName: 'Lupa e Mandado',
     roleColor: '#7ba0c0',
-    iconSrc: '/images/icons/investigator.svg',
-    pathD: [
-      'circle cx="11" cy="11" r="8"',
-      'line x1="21" y1="21" x2="16.65" y2="16.65"'
-    ]
+    iconSrc: '/images/icons/investigator.svg'
   },
   {
     role: 'Guia de Mesa',
     iconName: 'Referência',
     roleColor: '#e4c682',
-    iconSrc: undefined,
-    pathD: [
-      'path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"',
-      'path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"'
-    ]
+    iconSrc: '/images/icons/guide.webp'
   }
 ] as const;
 

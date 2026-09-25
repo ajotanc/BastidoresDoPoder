@@ -6,9 +6,9 @@ import { CheckCircle2, AlertOctagon } from 'lucide-vue-next';
 </script>
 
 <template>
-  <section id="resolucao" class="scroll-mt-24 pt-12 border-t border-line/70">
+  <section id="resolucao" class="pt-12 border-t border-line/70">
     <AppSectionHeader
-      label="05 / Ordem da jogada"
+      label="Ordem da jogada"
       title="Declare. Resolva. Só então aplique."
       description="Cada rodada segue uma sequência rigorosa de etapas. Respeitar essa ordem garante que contestações, blefes e bloqueios funcionem com total clareza matemática e estratégica."
     />

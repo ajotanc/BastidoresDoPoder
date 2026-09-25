@@ -7,7 +7,11 @@ export default defineConfig({
         vue(),
         VitePWA({
             registerType: 'autoUpdate',
-            includeAssets: ['favicon.svg', 'images/*.png', 'images/cards/*.png'],
+            devOptions: {
+                enabled: true,
+                type: 'module'
+            },
+            includeAssets: ['images/logo.png', 'images/*.png', 'images/cards/*.png', 'images/icons/*.svg'],
             manifest: {
                 name: 'Bastidores do Poder — Manual & Regras',
                 short_name: 'Bastidores Poder',
@@ -18,15 +22,15 @@ export default defineConfig({
                 orientation: 'portrait',
                 icons: [
                     {
-                        src: '/favicon.svg',
+                        src: '/images/logo.png',
                         sizes: '192x192',
-                        type: 'image/svg+xml',
+                        type: 'image/png',
                         purpose: 'any maskable'
                     },
                     {
-                        src: '/favicon.svg',
+                        src: '/images/logo.png',
                         sizes: '512x512',
-                        type: 'image/svg+xml',
+                        type: 'image/png',
                         purpose: 'any maskable'
                     }
                 ]
@@ -43,8 +47,10 @@ export default defineConfig({
         }
     },
     server: {
-        port: 3000,
-        open: false,
-        host: true
+        port: 5173,
+        host: true,
+        allowedHosts: [
+            'dev.ajotanc.com.br'
+        ]
     }
 });

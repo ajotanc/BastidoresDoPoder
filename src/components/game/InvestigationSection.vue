@@ -6,9 +6,9 @@ import { UserCheck, UserX } from 'lucide-vue-next';
 </script>
 
 <template>
-  <section id="investigacao" class="scroll-mt-24 pt-12 border-t border-line/70">
+  <section id="investigacao" class="pt-12 border-t border-line/70">
     <AppSectionHeader
-      label="06 / Mandado de Busca"
+      label="Mandado de Busca"
       title="O personagem pode ser blefe. O resultado, não."
       description="O Investigador permite vasculhar a mão de um adversário por um personagem específico com um mandado judicial implacável."
     />
