@@ -12,7 +12,7 @@ import RoleIcon from '@/components/game/RoleIcon.vue';
 </script>
 
 <template>
-  <section id="consulta" class="pt-12 border-t border-line/70">
+  <section id="reference" class="pt-12 border-t border-line/70">
     <AppSectionHeader
       label="Consulta rápida"
       title="O que bloqueia o quê?"
@@ -104,12 +104,12 @@ import RoleIcon from '@/components/game/RoleIcon.vue';
 
     <AppCallout variant="gold" title="Antes de começar a partida:">
       <p class="text-sm text-ink-muted leading-relaxed mb-0">
-        Todos os jogadores devem estar cientes de que há exatamente {{ SUPPORT_CARDS_PER_ROLE }} cópias de cada personagem no baralho, que custos de ataque ou mandado nunca são reembolsados, que um blefe defensivo mal calculado pode eliminar dois apoios de uma vez só e que C$ 10 no início da rodada obriga a execução do Impeachment definitivo.
+        Todos os jogadores devem estar cientes de que há exatamente {{ SUPPORT_CARDS_PER_ROLE }} cópias de cada personagem no baralho, que custos de ataque ou mandado nunca são reembolsados, que um blefe defensivo mal calculado pode eliminar dois apoios de uma vez só e que C$ 10 no início do turno obriga a execução do Impeachment definitivo.
       </p>
     </AppCallout>
 
     <p class="text-sm text-ink-muted leading-relaxed italic border-l-2 border-line pl-3 py-1 mt-4">
-      Esta versão consolida as regras oficiais do protótipo com os {{ CARDS_LENGTH }} personagens balanceados para 3 a 8 jogadores.
+      Esta versão consolida as regras oficiais do protótipo com os {{ CARDS_LENGTH }} personagens em testes de equilíbrio para 3 a 8 jogadores.
     </p>
   </section>
 </template>

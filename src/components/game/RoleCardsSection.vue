@@ -5,6 +5,7 @@ import type { RoleCard } from '@/types/game';
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
 import RoleCardItem from '@/components/game/RoleCardItem.vue';
 import RoleCardRulesModal from '@/components/game/RoleCardRulesModal.vue';
+import { normalizeSearch } from '@/utils/search';
 import { Search } from 'lucide-vue-next';
 
 const searchQuery = ref<string>('');
@@ -33,19 +34,19 @@ const filterCategories = [
 ] as const;
 
 const filteredCards = computed<readonly RoleCard[]>(() => {
-  const query = searchQuery.value.trim().toLowerCase();
+  const query = normalizeSearch(searchQuery.value);
 
   return ROLE_CARDS.filter((card) => {
     // Filtro por texto
     const matchesQuery =
       !query ||
-      card.name.toLowerCase().includes(query) ||
-      card.summary.toLowerCase().includes(query) ||
-      card.kind.toLowerCase().includes(query) ||
+      normalizeSearch(card.name).includes(query) ||
+      normalizeSearch(card.summary).includes(query) ||
+      normalizeSearch(card.kind).includes(query) ||
       card.rules.some(
         (r) =>
-          r.title.toLowerCase().includes(query) ||
-          r.description.toLowerCase().includes(query)
+          normalizeSearch(r.title).includes(query) ||
+          normalizeSearch(r.description).includes(query)
       );
 
     if (!matchesQuery) return false;
@@ -68,7 +69,7 @@ const filteredCards = computed<readonly RoleCard[]>(() => {
 </script>
 
 <template>
-  <section id="personagens" class="pt-12 border-t border-line/70">
+  <section id="cards" class="pt-12 border-t border-line/70">
     <AppSectionHeader
       label="Cartas e guia de ajuda"
       title="Oito personagens. Um guia de mesa."
@@ -83,6 +84,7 @@ const filteredCards = computed<readonly RoleCard[]>(() => {
           :key="cat.id"
           type="button"
           @click="selectedCategory = cat.id"
+          :aria-pressed="selectedCategory === cat.id"
           :class="[
             'px-3 py-1.5 rounded-md text-xs font-semibold transition-all whitespace-nowrap',
             selectedCategory === cat.id
@@ -102,6 +104,7 @@ const filteredCards = computed<readonly RoleCard[]>(() => {
         <input
           v-model="searchQuery"
           type="search"
+          aria-label="Buscar personagem ou poder"
           placeholder="Buscar personagem ou poder..."
           class="w-full bg-surface border border-line rounded-lg pl-9 pr-3 py-1.5 text-xs sm:text-sm text-ink placeholder:text-ink-muted/60 focus:border-gold focus:outline-none transition-colors"
         />

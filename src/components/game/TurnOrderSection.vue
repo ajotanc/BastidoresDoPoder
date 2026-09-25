@@ -6,7 +6,7 @@ import { CheckCircle2, AlertOctagon } from 'lucide-vue-next';
 </script>
 
 <template>
-  <section id="resolucao" class="pt-12 border-t border-line/70">
+  <section id="turn-order" class="pt-12 border-t border-line/70">
     <AppSectionHeader
       label="Ordem da jogada"
       title="Declare. Resolva. Só então aplique."

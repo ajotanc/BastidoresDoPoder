@@ -50,7 +50,7 @@ const handleShowRules = (): void => {
           :aria-label="`Ampliar carta ${props.card.name}`"
         >
           <img
-            :src="props.card.imageSrc"
+            :src="props.card.previewSrc ?? props.card.imageSrc"
             :alt="props.card.imageAlt"
             loading="lazy"
             class="w-full h-auto aspect-[2/3] object-cover transition-transform duration-300 group-hover/preview:scale-[1.02]"

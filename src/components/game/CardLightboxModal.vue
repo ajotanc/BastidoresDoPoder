@@ -28,13 +28,13 @@ watch(
 
 <template>
   <AppDialog :is-open="isOpen && !!activeCard"
-    :aria-label="activeCard ? `Carta ${activeCard.name}` : 'Visualizador de Carta'" :bg-image-src="activeCard?.imageSrc"
+    :aria-label="activeCard ? `Carta ${activeCard.name}` : 'Visualizador de Carta'" :bg-image-src="activeCard?.previewSrc ?? activeCard?.imageSrc"
     max-width-class="max-w-xl" @close="closeCardLightbox">
     <!-- Cabeçalho Fixo do Modal -->
     <template #header>
       <div v-if="activeCard" class="flex items-center justify-between gap-4">
         <!-- Lado Esquerdo: Ícone + Título + Tag + Metadados -->
-        <div class="flex items-center gap-3.5 min-w-0">
+        <div class="flex flex-1 items-center gap-3.5 min-w-0">
           <!-- Ícone / Brasão da Carta -->
           <div
             class="w-16 h-16 rounded-lg flex items-center justify-center bg-[#091017] border border-gold-dark/70 shadow-inner flex-shrink-0">
@@ -45,16 +45,16 @@ watch(
           </div>
 
           <!-- Informações e Tag Oficial -->
-          <div class="min-w-0">
+          <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2.5 flex-wrap">
               <h2
-                class="font-serif font-bold text-xl sm:text-2xl text-[#f7f0e2] tracking-tight leading-none whitespace-nowrap">
+                class="font-serif font-bold text-xl sm:text-2xl text-[#f7f0e2] tracking-tight leading-tight break-words">
                 {{ isFlipped ? 'Verso' : activeCard.name }}
               </h2>
 
               <!-- Tag Refinada com Insígnia Governamental -->
               <span
-                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[0.68rem] uppercase font-bold tracking-[0.14em] border shadow-sm backdrop-blur-sm select-none whitespace-nowrap flex-shrink-0"
+                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[0.68rem] uppercase font-bold tracking-[0.14em] border shadow-sm backdrop-blur-sm select-none max-w-full"
                 :style="isFlipped
                   ? {
                     backgroundColor: '#e6bf7315',
@@ -74,7 +74,7 @@ watch(
             </div>
 
             <!-- Metadados de Linha -->
-            <div class="flex items-center gap-2 mt-1.5 text-xs text-ink-muted whitespace-nowrap">
+            <div class="flex items-center gap-2 mt-1.5 text-xs text-ink-muted flex-wrap">
               <span>{{ isFlipped ? 'Padrão' : activeCard.category }}</span>
               <span class="w-1 h-1 rounded-full bg-gold-dark/60" aria-hidden="true"></span>
               <span class="text-gold-light/90">{{ isFlipped ? `${SUPPORT_CARDS_LENGTH} cartas do baralho` :
@@ -94,22 +94,22 @@ watch(
 
     <!-- Conteúdo com Scroll Exclusivo: Área 3D da Carta com Flip -->
     <div v-if="activeCard" class="flex flex-col items-center justify-center py-2">
-      <div class="flex flex-col gap-6 relative cursor-pointer select-none group/flip py-2 [perspective:1200px]"
+      <button type="button" class="flex w-full flex-col items-center gap-6 relative cursor-pointer select-none group/flip py-2 [perspective:1200px]" :aria-pressed="isFlipped" aria-label="Virar carta"
         @click="toggleFlip" :title="isFlipped ? 'Clique para ver a frente' : 'Clique para ver o verso'">
         <div
-          class="relative w-[320px] sm:w-[256px] aspect-[2/3] transition-transform duration-700 [transform-style:preserve-3d] shadow-2xl rounded-xl"
+          class="relative w-full max-w-[320px] sm:max-w-[256px] aspect-[2/3] transition-transform duration-700 [transform-style:preserve-3d] shadow-2xl rounded-xl"
           :class="{ '[transform:rotateY(180deg)]': isFlipped }">
           <!-- Face Frontal (Frente da Carta) -->
           <div
             class="absolute inset-0 [backface-visibility:hidden] rounded-xl overflow-hidden border border-line-gold bg-[#0d1620] shadow-card flex items-center justify-center">
-            <img :src="activeCard.imageSrc" :alt="activeCard.imageAlt"
+            <img :src="activeCard.previewSrc ?? activeCard.imageSrc" :alt="activeCard.imageAlt"
               class="w-full h-full object-cover pointer-events-none" />
           </div>
 
           <!-- Face Traseira (Verso da Carta) -->
           <div
             class="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-xl overflow-hidden border border-gold-dark bg-[#0a111a] shadow-card flex items-center justify-center">
-            <img src="/images/cards/back-card.png" alt="Verso oficial das cartas de Bastidores do Poder"
+            <img src="/images/previews/back-card.webp" alt="Verso oficial das cartas de Bastidores do Poder"
               class="w-full h-full object-cover pointer-events-none" />
           </div>
         </div>
@@ -122,7 +122,7 @@ watch(
             Clique na carta para virar em 3D
           </span>
         </div>
-      </div>
+      </button>
     </div>
 
     <!-- Rodapé Fixo Separado do Scroll com as Mesmas Cores e Estilo -->

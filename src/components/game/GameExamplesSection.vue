@@ -4,7 +4,7 @@ import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
 </script>
 
 <template>
-  <section id="exemplos" class="pt-12 border-t border-line/70">
+  <section id="examples" class="pt-12 border-t border-line/70">
     <AppSectionHeader
       label="Situações de mesa"
       title="Veja a resolução na prática."

@@ -6,6 +6,7 @@ import { ArrowDown, BookOpen } from 'lucide-vue-next';
 
 <template>
   <header
+    id="home"
     class="relative overflow-hidden isolate border border-[#5b4b32] min-h-[380px] p-8 sm:p-12 flex flex-col justify-between rounded-lg shadow-card bg-[#0d1721]">
     <!-- Imagem de fundo com gradiente sutil -->
     <img class="absolute inset-0 w-full h-full bg-center object-cover object-[100%_100%] z-0"
@@ -43,11 +44,11 @@ import { ArrowDown, BookOpen } from 'lucide-vue-next';
 
       <!-- Botões de atalho -->
       <div class="flex flex-wrap items-center gap-3">
-        <AppButton variant="gold" size="md" href="#personagens">
+        <AppButton variant="gold" size="md" href="#cards">
           <BookOpen class="w-4 h-4 flex-shrink-0" aria-hidden="true" />
           <span class="leading-none">Ver as Cartas</span>
         </AppButton>
-        <AppButton variant="primary" size="md" href="#acoes">
+        <AppButton variant="primary" size="md" href="#actions">
           <ArrowDown class="w-4 h-4 flex-shrink-0" aria-hidden="true" />
           <span class="leading-none">Ações do Turno</span>
         </AppButton>

@@ -14,9 +14,6 @@ export function useLightbox() {
   const openCardLightbox = (card: RoleCard): void => {
     activeCard.value = card;
     isOpen.value = true;
-    if (typeof document !== 'undefined') {
-      document.body.classList.add('modal-open');
-    }
   };
 
   /**
@@ -25,9 +22,6 @@ export function useLightbox() {
   const closeCardLightbox = (): void => {
     isOpen.value = false;
     activeCard.value = null;
-    if (typeof document !== 'undefined') {
-      document.body.classList.remove('modal-open');
-    }
   };
 
   return {

@@ -7,7 +7,7 @@ import { AlertTriangle } from 'lucide-vue-next';
 </script>
 
 <template>
-  <section id="acoes" class="pt-12 border-t border-line/70">
+  <section id="actions" class="pt-12 border-t border-line/70">
     <AppSectionHeader
       label="Ações gerais"
       title="Não precisa de personagem."

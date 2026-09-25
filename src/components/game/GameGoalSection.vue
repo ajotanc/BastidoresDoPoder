@@ -5,7 +5,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
 </script>
 
 <template>
-  <section id="objetivo" class="pt-12 border-t border-line/70">
+  <section id="game" class="pt-12 border-t border-line/70">
     <AppSectionHeader
       label="O jogo"
       title="Seu poder está nas cartas secretas."

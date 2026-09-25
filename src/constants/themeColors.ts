@@ -24,12 +24,22 @@ export const THEME_COLORS = {
 } as const;
 
 export const ROLE_THEME_COLORS = {
-  coronel: '#d39071',
+  colonel: '#d39071',
   executor: '#bf9955',
+  untouchable: '#6ba292',
+  lawyer: '#c4ac7b',
+  baron: '#e5a93c',
+  marketer: '#c67b93',
+  investigator: '#7ba0c0',
+  coordinator: '#c9b77e',
+  guide: '#e4c682',
+  // Aliases em português para compatibilidade
+  coronel: '#d39071',
   intocavel: '#6ba292',
   advogado: '#c4ac7b',
   barao: '#e5a93c',
   marqueteiro: '#c67b93',
   investigador: '#7ba0c0',
+  articuladora: '#c9b77e',
   ajuda: '#e4c682',
 } as const;

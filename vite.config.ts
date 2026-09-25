@@ -21,11 +21,10 @@ export default defineConfig({
         'images/bdp.webp',
         'images/hero-art.webp',
         'images/pwa/*.png',
-        'images/cards/*.png',
+        'images/previews/*.webp',
         'images/icons/*.webp',
         'images/characters/*.webp',
-        'images/coins/*.webp',
-        'coins/*.webp'
+        'images/coins/*.webp'
       ],
       manifest: {
         name: 'Bastidores do Poder — Manual & Regras',
@@ -61,7 +60,17 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,ico,woff2}', 'images/previews/*.webp'],
+        runtimeCaching: [{
+          urlPattern: ({ url }) => url.pathname.startsWith('/images/cards/'),
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'card-originals-v1',
+            networkTimeoutSeconds: 5,
+            cacheableResponse: { statuses: [200] },
+            expiration: { maxEntries: 12, maxAgeSeconds: 30 * 24 * 60 * 60 }
+          }
+        }],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024
       }
     })

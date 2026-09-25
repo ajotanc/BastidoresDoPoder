@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import { THEME_COLORS, ROLE_THEME_COLORS } from './src/constants/themeColors';
 
 export default {
   darkMode: ['class'],
@@ -10,52 +11,43 @@ export default {
     extend: {
       colors: {
         paper: {
-          DEFAULT: '#0b1219',
+          DEFAULT: THEME_COLORS.paper,
           deep: '#060a0e',
         },
         surface: {
-          DEFAULT: '#131d27',
-          elevated: '#17232e',
-          hover: '#1e2c38',
+          DEFAULT: THEME_COLORS.surface,
+          elevated: THEME_COLORS.surfaceElevated,
+          hover: THEME_COLORS.surfaceHover,
           card: '#efe9d9',
         },
         ink: {
-          DEFAULT: '#eee9dd',
-          muted: '#adb5bb',
-          subtle: '#8a9298',
+          DEFAULT: THEME_COLORS.ink,
+          muted: THEME_COLORS.muted,
+          subtle: THEME_COLORS.subtle,
           dark: '#20242a',
         },
         line: {
-          DEFAULT: '#2b3540',
+          DEFAULT: THEME_COLORS.line,
           subtle: '#1d2731',
-          gold: '#514733',
-          'gold-accent': '#8d784f',
+          gold: THEME_COLORS.lineGold,
+          'gold-accent': THEME_COLORS.goldDark,
         },
         gold: {
-          DEFAULT: '#e6bf73',
-          light: '#f5dcad',
-          muted: '#ad9873',
-          dark: '#8d784f',
-          deep: '#514733',
+          DEFAULT: THEME_COLORS.gold,
+          light: THEME_COLORS.goldLight,
+          muted: THEME_COLORS.goldMuted,
+          dark: THEME_COLORS.goldDark,
+          deep: THEME_COLORS.lineGold,
         },
         status: {
-          green: '#94c7b2',
-          'green-bg': '#152b28',
+          green: THEME_COLORS.statusGreen,
+          'green-bg': THEME_COLORS.statusGreenBg,
           'green-border': '#3a5f53',
-          red: '#eaa3a0',
-          'red-bg': '#2d2028',
+          red: THEME_COLORS.statusRed,
+          'red-bg': THEME_COLORS.statusRedBg,
           'red-border': '#704649',
         },
-        role: {
-          coronel: '#d39071',
-          executor: '#bf9955',
-          intocavel: '#6ba292',
-          advogado: '#c4ac7b',
-          barao: '#e5a93c',
-          marqueteiro: '#c67b93',
-          investigador: '#7ba0c0',
-          ajuda: '#e4c682',
-        }
+        role: ROLE_THEME_COLORS
       },
       fontFamily: {
         serif: ['"Cinzel"', 'Georgia', '"Times New Roman"', 'serif'],

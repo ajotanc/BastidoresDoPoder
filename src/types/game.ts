@@ -30,6 +30,7 @@ export interface RoleCard {
   readonly kind: string;
   readonly summary: string;
   readonly imageSrc: string;
+  readonly previewSrc?: string;
   readonly imageAlt: string;
   readonly characterSrc?: string;
   readonly iconSrc?: string;
@@ -104,5 +105,6 @@ export interface GameCoin {
   readonly description: string;
   readonly usage: string;
   readonly imageSrc: string;
+  readonly previewSrc?: string;
   readonly imageAlt: string;
 }

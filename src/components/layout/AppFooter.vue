@@ -7,7 +7,7 @@ import { APP_VERSION } from '@/constants/appVersion';
  * Rola suavemente até o topo sem expor #manual na URL
  */
 const handleBackToTop = (event: MouseEvent): void => {
-  scrollToSection('manual', event);
+  scrollToSection('home', event);
 };
 </script>
 
@@ -34,7 +34,7 @@ const handleBackToTop = (event: MouseEvent): void => {
           <Shield class="w-3.5 h-3.5 text-gold" aria-hidden="true" />
           Protótipo Ativo
         </span>
-        <a href="#manual" @click="handleBackToTop"
+        <a href="#home" @click="handleBackToTop"
           class="text-gold hover:text-gold-light hover:underline transition-colors">
           Voltar ao topo ↑
         </a>

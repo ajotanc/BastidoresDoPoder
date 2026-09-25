@@ -17,7 +17,7 @@ const { isOpen, activeCoin, closeCoinLightbox } = useCoinLightbox();
     <!-- Cabeçalho Fixo do Modal -->
     <template #header>
       <div v-if="activeCoin" class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3.5 min-w-0">
+        <div class="flex flex-1 items-center gap-3.5 min-w-0">
           <!-- Ícone / Emblema da Moeda -->
           <div
             class="w-12 h-12 rounded-lg flex items-center justify-center bg-[#091017] border border-gold-dark/70 shadow-inner flex-shrink-0 p-1"
@@ -31,9 +31,9 @@ const { isOpen, activeCoin, closeCoinLightbox } = useCoinLightbox();
           </div>
 
           <!-- Informações e Tag Oficial -->
-          <div class="min-w-0">
+          <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2.5 flex-wrap">
-              <h2 class="font-serif font-bold text-xl sm:text-2xl text-[#f7f0e2] tracking-tight leading-none whitespace-nowrap">
+              <h2 class="font-serif font-bold text-xl sm:text-2xl text-[#f7f0e2] tracking-tight leading-tight break-words">
                 {{ activeCoin.name }}
               </h2>
 
@@ -50,7 +50,7 @@ const { isOpen, activeCoin, closeCoinLightbox } = useCoinLightbox();
               </span>
             </div>
 
-            <div class="flex items-center gap-2 mt-1.5 text-xs text-ink-muted whitespace-nowrap">
+            <div class="flex items-center gap-2 mt-1.5 text-xs text-ink-muted flex-wrap">
               <span>Metal: {{ activeCoin.material }}</span>
               <span class="w-1 h-1 rounded-sm bg-gold-dark/60" aria-hidden="true"></span>
               <span class="text-gold-light/90">Moeda Oficial de Brasília</span>

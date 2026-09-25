@@ -9,12 +9,17 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const emit = defineEmits<{
+  (e: 'navigate', sectionId: string): void;
+}>();
+
 const { isInstallable, installApp } = usePwaInstall();
 
 /**
  * Realiza a rolagem suave até a seção sem expor o hash na barra de endereços
  */
 const handleNavigate = (sectionId: string, event: MouseEvent): void => {
+  emit('navigate', sectionId);
   scrollToSection(sectionId, event);
 };
 </script>
@@ -25,7 +30,7 @@ const handleNavigate = (sectionId: string, event: MouseEvent): void => {
     role="banner">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
       <!-- Marca do Jogo com Logo Oficial -->
-      <a href="#manual" @click="handleNavigate('manual', $event)"
+      <a href="#home" @click="handleNavigate('home', $event)"
         class="flex items-center gap-3 group text-decoration-none focus-visible:outline-none"
         aria-label="Bastidores do Poder, início do manual">
         <img src="/images/bdp.webp" alt="Logo Bastidores do Poder"

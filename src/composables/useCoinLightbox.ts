@@ -14,9 +14,6 @@ export function useCoinLightbox() {
   const openCoinLightbox = (coin: GameCoin): void => {
     activeCoin.value = coin;
     isOpen.value = true;
-    if (typeof document !== 'undefined') {
-      document.body.classList.add('modal-open');
-    }
   };
 
   /**
@@ -25,9 +22,6 @@ export function useCoinLightbox() {
   const closeCoinLightbox = (): void => {
     isOpen.value = false;
     activeCoin.value = null;
-    if (typeof document !== 'undefined') {
-      document.body.classList.remove('modal-open');
-    }
   };
 
   return {

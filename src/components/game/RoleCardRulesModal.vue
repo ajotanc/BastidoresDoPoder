@@ -23,7 +23,7 @@ const { openCardLightbox } = useLightbox();
  * Obtém a imagem da pasta characters para o personagem atual diretamente da definição da carta
  */
 const characterBgImage = computed<string | undefined>(() => {
-  return props.card?.characterSrc ?? props.card?.imageSrc;
+  return props.card?.characterSrc ?? props.card?.previewSrc ?? props.card?.imageSrc;
 });
 
 /**
@@ -60,7 +60,7 @@ const handleOpenLightbox = (): void => {
     <template #header>
       <div v-if="props.card" class="flex items-center justify-between gap-4">
         <!-- Lado Esquerdo: Ícone + Título + Tag -->
-        <div class="flex items-center gap-3.5 min-w-0">
+        <div class="flex flex-1 items-center gap-3.5 min-w-0">
           <div
             class="w-16 h-16 rounded-lg flex items-center justify-center bg-[#091017] border border-gold-dark/70 shadow-inner flex-shrink-0">
             <img v-if="props.card.iconSrc" :src="props.card.iconSrc" :alt="`Símbolo de ${props.card.name}`"
@@ -69,15 +69,15 @@ const handleOpenLightbox = (): void => {
               class="w-full h-full p-2 object-contain" />
           </div>
 
-          <div class="min-w-0">
+          <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2.5 flex-wrap">
               <h2
-                class="font-serif font-bold text-xl sm:text-2xl text-[#f7f0e2] tracking-tight leading-none whitespace-nowrap">
+                class="font-serif font-bold text-xl sm:text-2xl text-[#f7f0e2] tracking-tight leading-tight break-words">
                 {{ props.card.name }}
               </h2>
 
               <span
-                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[0.68rem] uppercase font-bold tracking-[0.14em] border shadow-sm backdrop-blur-sm select-none whitespace-nowrap flex-shrink-0"
+                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[0.68rem] uppercase font-bold tracking-[0.14em] border shadow-sm backdrop-blur-sm select-none max-w-full"
                 :style="{
                   backgroundColor: props.card.roleColor + '18',
                   borderColor: props.card.roleColor + '60',
@@ -89,7 +89,7 @@ const handleOpenLightbox = (): void => {
               </span>
             </div>
 
-            <div class="flex items-center gap-2 mt-1.5 text-xs text-ink-muted whitespace-nowrap">
+            <div class="flex items-center gap-2 mt-1.5 text-xs text-ink-muted flex-wrap">
               <span>{{ props.card.category }}</span>
               <span class="w-1 h-1 rounded-full bg-gold-dark/60" aria-hidden="true"></span>
               <span class="text-gold-light/90">{{ props.card.copies }}</span>

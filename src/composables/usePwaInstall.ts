@@ -1,71 +1,48 @@
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
-  userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
-    platform: string;
-  }>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
 }
 
-/**
- * Composable para gerenciar a instalação do PWA na mesa de jogo.
- */
 export function usePwaInstall() {
-  const isInstallable = ref<boolean>(false);
-  const deferredPrompt = ref<BeforeInstallPromptEvent | null>(null);
-  const isInstalled = ref<boolean>(false);
+  const isInstallable = ref(false);
+  const isInstalled = ref(false);
+  let deferredPrompt: BeforeInstallPromptEvent | null = null;
 
+  const onPrompt = (event: Event): void => {
+    event.preventDefault();
+    deferredPrompt = event as BeforeInstallPromptEvent;
+    isInstallable.value = !isInstalled.value;
+  };
+  const onInstalled = (): void => {
+    isInstalled.value = true;
+    isInstallable.value = false;
+    deferredPrompt = null;
+  };
   onMounted(() => {
-    try {
-      if (typeof window === 'undefined') return;
-
-      // Detecta se já está rodando em modo standalone (PWA instalado)
-      if (window.matchMedia('(display-mode: standalone)').matches) {
-        isInstalled.value = true;
-      }
-
-      window.addEventListener('beforeinstallprompt', (event: Event) => {
-        event.preventDefault();
-        deferredPrompt.value = event as BeforeInstallPromptEvent;
-        isInstallable.value = true;
-      });
-
-      window.addEventListener('appinstalled', () => {
-        isInstalled.value = true;
-        isInstallable.value = false;
-        deferredPrompt.value = null;
-      });
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.warn('Erro ao configurar listener de PWA:', error.message);
-      }
-    }
+    isInstalled.value = window.matchMedia('(display-mode: standalone)').matches;
+    window.addEventListener('beforeinstallprompt', onPrompt);
+    window.addEventListener('appinstalled', onInstalled);
+  });
+  onUnmounted(() => {
+    window.removeEventListener('beforeinstallprompt', onPrompt);
+    window.removeEventListener('appinstalled', onInstalled);
+    deferredPrompt = null;
   });
 
-  /**
-   * Dispara o prompt nativo de instalação do PWA.
-   */
   const installApp = async (): Promise<void> => {
-    if (!deferredPrompt.value) return;
-
+    const promptEvent = deferredPrompt;
+    if (!promptEvent) return;
+    // Each browser prompt may only be used once, including a dismissed prompt.
+    deferredPrompt = null;
+    isInstallable.value = false;
     try {
-      await deferredPrompt.value.prompt();
-      const choice = await deferredPrompt.value.userChoice;
-      if (choice.outcome === 'accepted') {
-        isInstallable.value = false;
-      }
-      deferredPrompt.value = null;
+      await promptEvent.prompt();
+      await promptEvent.userChoice;
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error('Falha ao instalar o aplicativo:', error.message);
-      }
+      console.error('Falha ao instalar o aplicativo:', error);
     }
   };
-
-  return {
-    isInstallable,
-    isInstalled,
-    installApp,
-  };
+  return { isInstallable, isInstalled, installApp };
 }

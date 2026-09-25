@@ -12,7 +12,7 @@ import CoinsShowcase from '@/components/game/CoinsShowcase.vue';
 </script>
 
 <template>
-  <section id="preparacao" class="pt-12 border-t border-line/70">
+  <section id="setup" class="pt-12 border-t border-line/70">
     <AppSectionHeader label="Cartas e preparação" title="Quantas cartas usar?"
       :description="`Bastidores do Poder utiliza sempre as ${SUPPORT_CARDS_LENGTH} cartas de apoio (${SUPPORT_CARDS_PER_ROLE} cópias de cada um dos ${CARDS_LENGTH} personagens), independentemente do número de participantes de 3 a 8 jogadores.`" />
 
