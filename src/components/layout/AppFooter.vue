@@ -24,8 +24,7 @@ const handleBackToTop = (event: MouseEvent): void => {
           </p>
         </div>
         <p class="text-xs text-ink-muted max-w-xl">
-          Adaptação independente inspirada em Coup com temática política brasileira. Este manual descreve as regras
-          próprias do protótipo e consolidou o balanço para 3 a 8 jogadores.
+          Jogo de blefe e disputa política brasileira para 3 a 8 jogadores. Este manual apresenta as regras do protótipo, sujeitas a ajustes após testes de equilíbrio.
         </p>
       </div>
 

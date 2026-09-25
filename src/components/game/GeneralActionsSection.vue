@@ -43,11 +43,13 @@ import { AlertTriangle } from 'lucide-vue-next';
                 </AppBadge>
               </div>
             </th>
-            <td class="py-3.5 px-4 text-center font-bold text-gold whitespace-nowrap">
-              {{ action.cost }}
+            <td class="py-3.5 px-4 text-center font-bold whitespace-nowrap">
+              <span :class="action.cost === 'Grátis' ? 'text-ink-muted' : 'text-gold'">
+                {{ action.cost }}
+              </span>
             </td>
             <td class="py-3.5 px-4 text-ink">
-              {{ action.effect }}
+              <span>{{ action.effect }}</span>
             </td>
             <td class="py-3.5 px-4 text-xs sm:text-sm">
               {{ action.defense }}
@@ -59,15 +61,17 @@ import { AlertTriangle } from 'lucide-vue-next';
 
     <!-- Regra de C$ 10 compulsório -->
     <AppCallout variant="gold" title="C$ 10 ou mais no início do seu turno?">
-      <div class="flex items-start gap-2.5">
+      <div class="flex items-start gap-3">
         <AlertTriangle class="w-5 h-5 text-gold flex-shrink-0 mt-0.5" aria-hidden="true" />
-        <p class="text-sm mb-0">
-          Você <strong class="text-ink">deve obrigatoriamente</strong> realizar um Impeachment definitivo. Ter exatamente C$ 10 já obriga o ataque. Não é permitido escolher Caixa 2, Salário, Vaquinha, Extorsão ou Troca. O alvo atacado não tem defesa e perde um apoio à escolha dele.
-        </p>
+        <div>
+          <p class="text-sm leading-relaxed mb-0">
+            Você <strong class="text-ink">deve obrigatoriamente</strong> realizar um Impeachment definitivo. Ter exatamente C$ 10 já obriga o ataque. Não é permitido escolher Caixa 2, Salário, Vaquinha, Extorsão ou Troca. O alvo atacado não tem defesa e perde um apoio à escolha dele.
+          </p>
+        </div>
       </div>
     </AppCallout>
 
-    <p class="text-xs text-ink-muted italic border-l-2 border-line pl-3 py-1">
+    <p class="text-sm text-ink-muted leading-relaxed italic border-l-2 border-line pl-3 py-1">
       <strong class="text-ink">Ninguém é imune:</strong> qualquer combinação de personagens perde apoio para o Impeachment definitivo. O Intocável protege exclusivamente do comum e somente mediante o pagamento de C$ 3 ao cofre.
     </p>
   </section>

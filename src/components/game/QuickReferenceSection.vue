@@ -97,18 +97,18 @@ import RoleIcon from '@/components/game/RoleIcon.vue';
       </table>
     </div>
 
-    <p class="text-xs sm:text-sm text-ink-muted leading-relaxed mb-6">
+    <p class="text-sm text-ink-muted leading-relaxed mb-6">
       <strong class="text-ink">Todo bloqueio da tabela pode ser contestado.</strong>
       Bloquear cancela o efeito pretendido da ação; contestar verifica a posse real da carta alegada. São etapas cronológicas diferentes na rodada.
     </p>
 
     <AppCallout variant="gold" title="Antes de começar a partida:">
-      <p class="text-xs sm:text-sm mb-0">
+      <p class="text-sm text-ink-muted leading-relaxed mb-0">
         Todos os jogadores devem estar cientes de que há exatamente {{ SUPPORT_CARDS_PER_ROLE }} cópias de cada personagem no baralho, que custos de ataque ou mandado nunca são reembolsados, que um blefe defensivo mal calculado pode eliminar dois apoios de uma vez só e que C$ 10 no início da rodada obriga a execução do Impeachment definitivo.
       </p>
     </AppCallout>
 
-    <p class="text-xs text-ink-muted italic border-l-2 border-line pl-3 py-1 mt-4">
+    <p class="text-sm text-ink-muted leading-relaxed italic border-l-2 border-line pl-3 py-1 mt-4">
       Esta versão consolida as regras oficiais do protótipo com os {{ CARDS_LENGTH }} personagens balanceados para 3 a 8 jogadores.
     </p>
   </section>

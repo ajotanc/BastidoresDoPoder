@@ -24,7 +24,8 @@ export default defineConfig({
         'images/cards/*.png',
         'images/icons/*.webp',
         'images/characters/*.webp',
-        'images/coins/*.png'
+        'images/coins/*.webp',
+        'coins/*.webp'
       ],
       manifest: {
         name: 'Bastidores do Poder — Manual & Regras',

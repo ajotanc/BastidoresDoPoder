@@ -15,6 +15,7 @@ import InvestigationSection from '@/components/game/InvestigationSection.vue';
 import GameExamplesSection from '@/components/game/GameExamplesSection.vue';
 import QuickReferenceSection from '@/components/game/QuickReferenceSection.vue';
 import CardLightboxModal from '@/components/game/CardLightboxModal.vue';
+import CoinLightboxModal from '@/components/game/CoinLightboxModal.vue';
 
 const sectionIds = NAVIGATION_SECTIONS.map((s) => s.id);
 const { activeSectionId } = useActiveSection(sectionIds);
@@ -73,5 +74,8 @@ onMounted(() => {
 
     <!-- Modal Lightbox para Ampliação e Download de Cartas -->
     <CardLightboxModal />
+
+    <!-- Modal Lightbox para Ampliação e Download de Moedas (Contos) -->
+    <CoinLightboxModal />
   </div>
 </template>

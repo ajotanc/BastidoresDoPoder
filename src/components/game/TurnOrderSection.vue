@@ -15,9 +15,9 @@ import { CheckCircle2, AlertOctagon } from 'lucide-vue-next';
 
     <!-- Alerta crítico de custos -->
     <AppCallout variant="red" title="Regra Universal de Pagamento:">
-      <div class="flex items-start gap-2.5">
+      <div class="flex items-start gap-3">
         <AlertOctagon class="w-5 h-5 text-status-red flex-shrink-0 mt-0.5" aria-hidden="true" />
-        <p class="text-sm mb-0">
+        <p class="text-sm leading-relaxed mb-0">
           <strong class="text-ink">Todo custo é pago no momento da declaração e NUNCA é devolvido</strong>.
           Isso inclui ataque bloqueado, personagem desmascarado, palpite errado no Mandado, defesa falsa do Intocável ou alvo eliminado antes do ataque. Se não houver saldo suficiente na mão no momento da declaração, a jogada é ilegal.
         </p>
@@ -50,7 +50,7 @@ import { CheckCircle2, AlertOctagon } from 'lucide-vue-next';
             <li
               v-for="(detail, dIdx) in step.details"
               :key="dIdx"
-              class="flex items-start gap-2 text-xs sm:text-sm text-ink-muted bg-surface/70 p-3 rounded border border-line/60"
+              class="flex items-start gap-2.5 text-sm text-ink-muted leading-relaxed bg-surface/70 p-3 rounded border border-line/60"
             >
               <CheckCircle2 class="w-4 h-4 text-gold-dark flex-shrink-0 mt-0.5" aria-hidden="true" />
               <span>{{ detail }}</span>
@@ -69,7 +69,7 @@ import { CheckCircle2, AlertOctagon } from 'lucide-vue-next';
         <div
           v-for="(rule, rIdx) in RESOLUTION_RULES"
           :key="rIdx"
-          class="p-3.5 rounded bg-surface-elevated/70 border border-line text-xs sm:text-sm text-ink-muted leading-relaxed"
+          class="p-4 rounded-lg bg-surface-elevated/70 border border-line text-sm text-ink-muted leading-relaxed"
         >
           {{ rule }}
         </div>

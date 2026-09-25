@@ -33,9 +33,11 @@ const calloutClasses = computed(() => {
 
 <template>
   <aside :class="calloutClasses" role="note">
-    <strong v-if="props.title" class="block font-bold mb-1.5 text-base text-ink">
+    <strong v-if="props.title" class="block font-bold mb-2 text-base text-ink">
       {{ props.title }}
     </strong>
-    <slot />
+    <div class="leading-relaxed [&_p]:leading-relaxed">
+      <slot />
+    </div>
   </aside>
 </template>

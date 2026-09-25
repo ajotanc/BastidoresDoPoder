@@ -61,6 +61,11 @@ export default {
         serif: ['"Cinzel"', 'Georgia', '"Times New Roman"', 'serif'],
         sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
       },
+      fontSize: {
+        xs: ['0.75rem', { lineHeight: '1.625' }],
+        sm: ['0.875rem', { lineHeight: '1.625' }],
+        base: ['1rem', { lineHeight: '1.625' }],
+      },
       boxShadow: {
         card: '0 16px 34px rgba(0, 0, 0, 0.35)',
         'card-hover': '0 24px 44px rgba(0, 0, 0, 0.55)',

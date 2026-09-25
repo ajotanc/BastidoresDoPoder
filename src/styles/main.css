@@ -28,7 +28,11 @@ body {
   background: radial-gradient(ellipse at 75% 0, #1b2c32 0, transparent 50%), var(--paper);
   color: var(--ink);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.75;
+  line-height: 1.625;
+}
+
+p {
+  line-height: 1.625;
 }
 
 /* Acessibilidade de foco */

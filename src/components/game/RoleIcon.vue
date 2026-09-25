@@ -14,18 +14,8 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <svg
-    :width="props.size"
-    :height="props.size"
-    viewBox="0 0 24 24"
-    fill="none"
-    :stroke="props.color"
-    stroke-width="1.8"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    aria-hidden="true"
-    class="flex-shrink-0"
-  >
+  <svg :width="props.size" :height="props.size" viewBox="0 0 24 24" fill="none" :stroke="props.color" stroke-width="1.8"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="flex-shrink-0">
     <!-- Coronel / Colonel: Moedas -->
     <template v-if="props.role.toLowerCase().includes('coronel') || props.role.toLowerCase().includes('colonel')">
       <path d="M13.744 17.736a6 6 0 1 1-7.48-7.48" />
@@ -48,7 +38,7 @@ const props = withDefaults(defineProps<Props>(), {
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </template>
 
-    <!-- Advogado / Lawyer: Balança -->
+    <!-- Advogada / Lawyer: Balança -->
     <template v-else-if="props.role.toLowerCase().includes('advogado') || props.role.toLowerCase().includes('lawyer')">
       <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z" />
       <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z" />
@@ -62,8 +52,9 @@ const props = withDefaults(defineProps<Props>(), {
       <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" />
     </template>
 
-    <!-- Marqueteiro / Marketer: Megafone -->
-    <template v-else-if="props.role.toLowerCase().includes('marqueteiro') || props.role.toLowerCase().includes('market')">
+    <!-- Marqueteira / Marketer: Megafone -->
+    <template
+      v-else-if="props.role.toLowerCase().includes('marqueteiro') || props.role.toLowerCase().includes('market')">
       <path d="m3 11 18-5v12L3 14v-3z" />
       <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
     </template>

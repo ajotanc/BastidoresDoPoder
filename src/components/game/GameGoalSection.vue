@@ -34,7 +34,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
     </div>
 
     <AppCallout variant="gold" title="Atenção à Regra de Ouro:">
-      <p class="text-sm">
+      <p class="text-sm leading-relaxed mb-0">
         Nunca revele suas cartas voluntariamente fora de um desafio oficial. A única forma legítima de mostrar uma carta é ao ser contestado para comprovar sua alegação, ou ao ser eliminado.
       </p>
     </AppCallout>

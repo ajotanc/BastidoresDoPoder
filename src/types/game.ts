@@ -89,3 +89,20 @@ export interface PlayerSetupCount {
   readonly totalDeckCards: number;
   readonly initialCoins: number;
 }
+
+export type CoinSlug = 'bronze' | 'silver' | 'gold';
+
+export interface GameCoin {
+  readonly id: string;
+  readonly slug: CoinSlug;
+  readonly name: string;
+  readonly value: number;
+  readonly label: string;
+  readonly material: string;
+  readonly color: string;
+  readonly summary: string;
+  readonly description: string;
+  readonly usage: string;
+  readonly imageSrc: string;
+  readonly imageAlt: string;
+}
