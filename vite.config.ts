@@ -16,7 +16,16 @@ export default defineConfig({
         enabled: true,
         type: 'module'
       },
-      includeAssets: ['images/bdp.webp', 'images/*.png', 'images/cards/*.png', 'images/icons/*.png'],
+      includeAssets: [
+        'favicon.ico',
+        'images/bdp.webp',
+        'images/hero-art.webp',
+        'images/pwa/*.png',
+        'images/cards/*.png',
+        'images/icons/*.webp',
+        'images/characters/*.webp',
+        'images/coins/*.png'
+      ],
       manifest: {
         name: 'Bastidores do Poder — Manual & Regras',
         short_name: 'Bastidores Poder',
@@ -25,23 +34,33 @@ export default defineConfig({
         background_color: '#0b1219',
         display: 'standalone',
         orientation: 'portrait',
+        lang: 'pt-BR',
         icons: [
           {
-            src: '/images/bdp.webp',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any maskable'
+            src: '/images/pwa/pwa-64x64.png',
+            sizes: '64x64',
+            type: 'image/png'
           },
           {
-            src: '/images/bdp.webp',
+            src: '/images/pwa/pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/images/pwa/pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: '/images/pwa/maskable-icon-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
           }
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff2}'],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024
       }
     })

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "pwa:assets": "pwa-assets-generator"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -17,10 +18,10 @@
   },
   "devDependencies": {
     "@types/node": "^22.13.0",
+    "@vite-pwa/assets-generator": "^2.0.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.1",
-    "pwa-asset-generator": "^8.1.7",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3",
     "vite": "^6.2.0",
