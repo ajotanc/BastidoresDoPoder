@@ -32,13 +32,13 @@ const { openCoinLightbox } = useCoinLightbox();
       >
         <!-- Miniatura em container com rounded-md (padrão do sistema, sem rounded-full) -->
         <div
-          class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-md bg-surface-elevated border border-line p-1 group-hover/coin:scale-105 transition-transform duration-200"
+          class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md bg-surface-elevated border border-line group-hover/coin:scale-105 transition-transform duration-200"
           :style="{ borderColor: coin.color + '40' }"
         >
           <img
             :src="coin.imageSrc"
             :alt="coin.imageAlt"
-            class="w-full h-full object-contain drop-shadow pointer-events-none select-none"
+            class="w-full h-full p-2 object-contain drop-shadow pointer-events-none select-none"
           />
         </div>
 

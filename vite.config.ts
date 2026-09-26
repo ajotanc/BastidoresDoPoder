@@ -21,7 +21,6 @@ export default defineConfig({
         'images/bdp.webp',
         'images/hero-art.webp',
         'images/pwa/*.png',
-        'images/previews/*.webp',
         'images/icons/*.webp',
         'images/characters/*.webp',
         'images/coins/*.webp'
@@ -60,7 +59,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,ico,woff2}', 'images/previews/*.webp'],
+        globPatterns: ['**/*.{js,css,html,svg,ico,woff2}'],
         runtimeCaching: [{
           urlPattern: ({ url }) => url.pathname.startsWith('/images/cards/'),
           handler: 'NetworkFirst',

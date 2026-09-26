@@ -1,28 +1,42 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { NAVIGATION_SECTIONS } from '@/constants/gameData';
 import { useActiveSection } from '@/composables/useActiveSection';
 import { scrollToSection } from '@/utils/navigation';
 import AppNavbar from '@/components/layout/AppNavbar.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
-import HeroMasthead from '@/components/game/HeroMasthead.vue';
-import GameGoalSection from '@/components/game/GameGoalSection.vue';
-import RoleCardsSection from '@/components/game/RoleCardsSection.vue';
-import SetupSection from '@/components/game/SetupSection.vue';
-import GeneralActionsSection from '@/components/game/GeneralActionsSection.vue';
-import TurnOrderSection from '@/components/game/TurnOrderSection.vue';
-import InvestigationSection from '@/components/game/InvestigationSection.vue';
-import GameExamplesSection from '@/components/game/GameExamplesSection.vue';
-import QuickReferenceSection from '@/components/game/QuickReferenceSection.vue';
 import CardLightboxModal from '@/components/game/CardLightboxModal.vue';
 import CoinLightboxModal from '@/components/game/CoinLightboxModal.vue';
+
+const route = useRoute();
+const router = useRouter();
 
 const sectionIds = NAVIGATION_SECTIONS.map((s) => s.id);
 const { activeSectionId, setActiveSection } = useActiveSection(sectionIds);
 
-onMounted(() => {
-  if (window.location.hash) scrollToSection(window.location.hash);
+const isOnlineActive = computed(() => {
+  return route.name === 'online' || route.name === 'game';
 });
+
+const handleToggleOnline = (): void => {
+  if (isOnlineActive.value) {
+    router.push('/');
+  } else {
+    router.push('/online');
+  }
+};
+
+const handleNavbarNavigate = (sectionId: string): void => {
+  setActiveSection(sectionId);
+  if (isOnlineActive.value) {
+    router.push('/').then(() => {
+      setTimeout(() => {
+        scrollToSection(sectionId);
+      }, 120);
+    });
+  }
+};
 </script>
 
 <template>
@@ -37,36 +51,16 @@ onMounted(() => {
     </a>
 
     <!-- Barra de Navegação Superior Sticky -->
-    <AppNavbar :active-section-id="activeSectionId" @navigate="setActiveSection" />
+    <AppNavbar
+      :active-section-id="activeSectionId"
+      :is-online-active="isOnlineActive"
+      @navigate="handleNavbarNavigate"
+      @toggle-online="handleToggleOnline"
+    />
 
-    <!-- Conteúdo Principal do Manual -->
-    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-12">
-      <!-- Masthead com Arte Heroica -->
-      <HeroMasthead />
-
-      <!-- 01 / O Jogo e Objetivos -->
-      <GameGoalSection />
-
-      <!-- 02 / Cartas e Guia de Ajuda -->
-      <RoleCardsSection />
-
-      <!-- 03 / Preparação e Montagem -->
-      <SetupSection />
-
-      <!-- 04 / Ações Gerais -->
-      <GeneralActionsSection />
-
-      <!-- 05 / Ordem da Jogada -->
-      <TurnOrderSection />
-
-      <!-- 06 / Mandado de Busca -->
-      <InvestigationSection />
-
-      <!-- 07 / Situações Práticas de Mesa -->
-      <GameExamplesSection />
-
-      <!-- 08 / Consulta Rápida -->
-      <QuickReferenceSection />
+    <!-- Conteúdo Principal: Renderizado pelo Vue Router -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 sm:py-12">
+      <RouterView />
     </main>
 
     <!-- Rodapé -->

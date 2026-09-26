@@ -1,6 +1,7 @@
 import { ROLE_THEME_COLORS } from '@/constants/themeColors';
 import type {
   RoleCard,
+  RoleSlug,
   MetaStat,
   NavigationItem,
   GeneralAction,
@@ -40,30 +41,47 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     roleColor: ROLE_THEME_COLORS.coronel,
     kind: 'Extorsão',
     summary: 'Ataque econômico com bloqueio próprio e defesa contra Investigador.',
-    imageSrc: '/images/cards/colonel.png',
-    previewSrc: '/images/previews/colonel.webp',
-    imageAlt: 'Carta Coronel de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
     characterSrc: '/images/characters/colonel.webp',
     iconSrc: '/images/icons/colonel.webp',
+
+    cardText: {
+      action: {
+        title: 'Extorsão',
+        description: 'Pegue até C$ 2 de um adversário.',
+        cost: 'GRÁTIS'
+      },
+      defense: {
+        title: 'Extorsão e Mandado',
+        description: 'Bloqueie essas ações quando forem contra você.',
+        cost: 'GRÁTIS'
+      }
+    },
+
     rules: [
       {
         title: 'Extorsão (ação)',
-        description: 'Exija C$ 2 de um adversário vivo. Se ele tiver apenas C$ 1, entregará C$ 1; se tiver zero, a ação não transfere dinheiro.',
+        description:
+          'Exija C$ 2 de um adversário vivo. Se ele tiver apenas C$ 1, entregará C$ 1; se tiver zero, a ação não transfere dinheiro.',
         type: 'action'
       },
       {
         title: 'Bloqueio de Extorsão (defesa)',
-        description: 'Bloqueie a Extorsão quando você for o alvo.',
+        description:
+          'Bloqueie a Extorsão quando você for o alvo.',
         type: 'defense'
       },
       {
         title: 'Bloqueio de Mandado (defesa)',
-        description: 'Bloqueie o Mandado de Busca quando você for o alvo.',
+        description:
+          'Bloqueie o Mandado de Busca quando você for o alvo.',
         type: 'defense'
       }
     ],
-    officialRuleNotice: 'O Coronel pode bloquear Extorsão e Mandado de Busca apenas quando for o alvo. Não protege outros jogadores.'
+
+    officialRuleNotice:
+      'O Coronel pode bloquear Extorsão e Mandado de Busca apenas quando for o alvo. Não protege outros jogadores.'
   },
+
   {
     id: 'card-executor',
     slug: 'executor',
@@ -72,21 +90,37 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     copies: '3 cópias',
     roleColor: ROLE_THEME_COLORS.executor,
     kind: 'Eliminação',
-    summary: 'Eliminação rápida com custo moderado, bloqueável por Advogada.',
-    imageSrc: '/images/cards/executor.png',
-    previewSrc: '/images/previews/executor.webp',
-    imageAlt: 'Carta Executor de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
+    summary:
+      'Eliminação rápida com custo moderado, bloqueável por Advogada.',
     characterSrc: '/images/characters/executor.webp',
     iconSrc: '/images/icons/executor.webp',
+
+    cardText: {
+      action: {
+        title: 'Execução',
+        description: 'Pague C$ 3. O alvo perde 1 apoio.',
+        cost: 'C$ 3'
+      },
+      defense: {
+        title: 'Sem bloqueio',
+        description: 'Pode ser bloqueada pela Advogada.',
+        cost: null
+      }
+    },
+
     rules: [
       {
         title: 'Execução (ação)',
-        description: 'Pague C$ 3 ao cofre e escolha um adversário vivo. Se a ação não for cancelada por contestação ou bloqueio, ele perde um apoio à escolha dele.',
+        description:
+          'Pague C$ 3 ao cofre e escolha um adversário vivo. Se a ação não for cancelada por contestação ou bloqueio, ele perde um apoio à escolha dele.',
         type: 'action'
       }
     ],
-    officialRuleNotice: 'O custo de C$ 3 é pago na declaração e nunca é devolvido, mesmo se a ação for bloqueada ou contestada.'
+
+    officialRuleNotice:
+      'O custo de C$ 3 é pago na declaração e nunca é devolvido, mesmo se a ação for bloqueada ou contestada.'
   },
+
   {
     id: 'card-untouchable',
     slug: 'untouchable',
@@ -95,21 +129,37 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     copies: '3 cópias',
     roleColor: ROLE_THEME_COLORS.intocavel,
     kind: 'Blindagem',
-    summary: 'Defesa paga contra Impeachment comum. Não protege do definitivo.',
-    imageSrc: '/images/cards/untouchable.png',
-    previewSrc: '/images/previews/untouchable.webp',
-    imageAlt: 'Carta Intocável de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
+    summary:
+      'Defesa paga contra Impeachment comum. Não protege do definitivo.',
     characterSrc: '/images/characters/untouchable.webp',
     iconSrc: '/images/icons/untouchable.webp',
+
+    cardText: {
+      action: {
+        title: 'Sem ação',
+        description: 'Atua somente como defesa.',
+        cost: null
+      },
+      defense: {
+        title: 'Impeachment comum',
+        description: 'Pague C$ 3 para bloquear Impeachment de C$ 7.',
+        cost: 'C$ 3'
+      }
+    },
+
     rules: [
       {
         title: 'Bloqueio de Impeachment comum (defesa)',
-        description: 'Quando você for o alvo de um Impeachment comum de C$ 7, alegue Intocável e pague C$ 3 ao cofre para declarar o bloqueio. O ataque é cancelado se o bloqueio não for desmascarado.',
+        description:
+          'Quando você for o alvo de um Impeachment comum de C$ 7, alegue Intocável e pague C$ 3 ao cofre para declarar o bloqueio. O ataque é cancelado se o bloqueio não for desmascarado.',
         type: 'defense'
       }
     ],
-    officialRuleNotice: 'Requer saldo prévio de C$ 3 para declarar a defesa. O valor vai para o cofre e nunca retorna.'
+
+    officialRuleNotice:
+      'Requer saldo prévio de C$ 3 para declarar a defesa. O valor vai para o cofre e nunca retorna.'
   },
+
   {
     id: 'card-lawyer',
     slug: 'lawyer',
@@ -118,26 +168,43 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     copies: '3 cópias',
     roleColor: ROLE_THEME_COLORS.advogado,
     kind: 'Habeas Corpus',
-    summary: 'Defesa contra eliminação e contra investigação.',
-    imageSrc: '/images/cards/lawyer.png',
-    previewSrc: '/images/previews/lawyer.webp',
-    imageAlt: 'Carta Advogada de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
+    summary:
+      'Defesa contra eliminação e contra investigação.',
     characterSrc: '/images/characters/lawyer.webp',
     iconSrc: '/images/icons/lawyer.webp',
+
+    cardText: {
+      action: {
+        title: 'Sem ação',
+        description: 'Atua somente como defesa.',
+        cost: null
+      },
+      defense: {
+        title: 'Execução e Mandado',
+        description: 'Bloqueie essas ações quando forem contra você.',
+        cost: 'GRÁTIS'
+      }
+    },
+
     rules: [
       {
         title: 'Bloqueio de Execução (defesa)',
-        description: 'Bloqueie a Execução de C$ 3 quando você for o alvo.',
+        description:
+          'Bloqueie a Execução de C$ 3 quando você for o alvo.',
         type: 'defense'
       },
       {
         title: 'Bloqueio de Mandado (defesa)',
-        description: 'Bloqueie o Mandado de Busca de C$ 5 quando você for o alvo.',
+        description:
+          'Bloqueie o Mandado de Busca de C$ 5 quando você for o alvo.',
         type: 'defense'
       }
     ],
-    officialRuleNotice: 'Não possui ação própria em seu turno; atua exclusivamente como defesa contra ataques direcionados.'
+
+    officialRuleNotice:
+      'Não possui ação própria em seu turno; atua exclusivamente como defesa contra ataques direcionados.'
   },
+
   {
     id: 'card-baron',
     slug: 'baron',
@@ -146,26 +213,43 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     copies: '3 cópias',
     roleColor: ROLE_THEME_COLORS.barao,
     kind: 'Finanças',
-    summary: 'Receita rápida e bloqueio de Vaquinha Virtual.',
-    imageSrc: '/images/cards/baron.png',
-    previewSrc: '/images/previews/baron.webp',
-    imageAlt: 'Carta Barão de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
+    summary:
+      'Receita rápida e bloqueio de Vaquinha Virtual.',
     characterSrc: '/images/characters/baron.webp',
     iconSrc: '/images/icons/baron.webp',
+
+    cardText: {
+      action: {
+        title: 'Caixa 2',
+        description: 'Receba C$ 3 do cofre.',
+        cost: 'GRÁTIS'
+      },
+      defense: {
+        title: 'Vaquinha Virtual',
+        description: 'Bloqueie a Vaquinha Virtual de qualquer adversário.',
+        cost: 'GRÁTIS'
+      }
+    },
+
     rules: [
       {
         title: 'Caixa 2 (ação)',
-        description: 'Receba C$ 3 do cofre central.',
+        description:
+          'Receba C$ 3 do cofre central.',
         type: 'action'
       },
       {
         title: 'Bloqueio de Vaquinha Virtual (defesa)',
-        description: 'Bloqueie a Vaquinha Virtual de qualquer adversário, impedindo que ele receba C$ 2.',
+        description:
+          'Bloqueie a Vaquinha Virtual de qualquer adversário, impedindo que ele receba C$ 2.',
         type: 'defense'
       }
     ],
-    officialRuleNotice: 'O bloqueio da Vaquinha pode ser declarado por qualquer adversário, não apenas pelo jogador seguinte.'
+
+    officialRuleNotice:
+      'O bloqueio da Vaquinha pode ser declarado por qualquer adversário, não apenas pelo jogador seguinte.'
   },
+
   {
     id: 'card-marketer',
     slug: 'marketer',
@@ -174,26 +258,43 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     copies: '3 cópias',
     roleColor: ROLE_THEME_COLORS.marqueteiro,
     kind: 'Manipulação',
-    summary: 'Troca de cartas no baralho e bloqueio de Extorsão.',
-    imageSrc: '/images/cards/marketer.png',
-    previewSrc: '/images/previews/marketer.webp',
-    imageAlt: 'Carta Marqueteira de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
+    summary:
+      'Troca de cartas no baralho e bloqueio de Extorsão.',
     characterSrc: '/images/characters/marketer.webp',
     iconSrc: '/images/icons/marketer.webp',
+
+    cardText: {
+      action: {
+        title: 'Troca de Cartas',
+        description: 'Compre 2 cartas e devolva 2 ao baralho.',
+        cost: 'GRÁTIS'
+      },
+      defense: {
+        title: 'Extorsão',
+        description: 'Bloqueie Extorsão quando for o alvo.',
+        cost: 'GRÁTIS'
+      }
+    },
+
     rules: [
       {
         title: 'Troca de Cartas (ação)',
-        description: 'Compre 2 cartas do baralho central. Junte-as aos seus apoios ativos, escolha duas para devolver ao baralho e reembaralhe-o.',
+        description:
+          'Compre 2 cartas do baralho central. Junte-as aos seus apoios ativos, escolha duas para devolver ao baralho e reembaralhe-o.',
         type: 'action'
       },
       {
         title: 'Bloqueio de Extorsão (defesa)',
-        description: 'Bloqueie a Extorsão do Coronel quando você for o alvo.',
+        description:
+          'Bloqueie a Extorsão do Coronel quando você for o alvo.',
         type: 'defense'
       }
     ],
-    officialRuleNotice: 'Se possuir apenas um apoio ativo, compra 2 cartas, fica com 3 temporariamente e devolve 2, mantendo um apoio ativo.'
+
+    officialRuleNotice:
+      'Se possuir apenas um apoio ativo, compra 2 cartas, fica com 3 temporariamente e devolve 2, mantendo um apoio ativo.'
   },
+
   {
     id: 'card-investigator',
     slug: 'investigator',
@@ -202,21 +303,37 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     copies: '3 cópias',
     roleColor: ROLE_THEME_COLORS.investigador,
     kind: 'Mandado de Busca',
-    summary: 'Ataque focado por nome de personagem contra um rival.',
-    imageSrc: '/images/cards/investigator.png',
-    previewSrc: '/images/previews/investigator.webp',
-    imageAlt: 'Carta Investigador de Bastidores do Poder: ilustração do personagem e resumo das habilidades',
+    summary:
+      'Ataque focado por nome de personagem contra um rival.',
     characterSrc: '/images/characters/investigator.webp',
     iconSrc: '/images/icons/investigator.webp',
+
+    cardText: {
+      action: {
+        title: 'Mandado de Busca',
+        description: 'Pague C$ 5 e procure um personagem no alvo.',
+        cost: 'C$ 5'
+      },
+      defense: {
+        title: 'Sem bloqueio',
+        description: 'Pode ser bloqueado por Advogada ou Coronel.',
+        cost: null
+      }
+    },
+
     rules: [
       {
         title: 'Mandado de Busca (ação)',
-        description: 'Pague C$ 5 ao cofre, aponte um adversário vivo e nomeie um personagem. Após resolver a contestação e se não houver bloqueio válido, o alvo perde um apoio desse personagem, caso o possua em segredo. Se tiver duas cópias, perde apenas uma; se não tiver nenhuma, não perde apoio pelo Mandado.',
+        description:
+          'Pague C$ 5 ao cofre, aponte um adversário vivo e nomeie um personagem. Após resolver a contestação e se não houver bloqueio válido, o alvo perde um apoio desse personagem, caso o possua em segredo. Se tiver duas cópias, perde apenas uma; se não tiver nenhuma, não perde apoio pelo Mandado.',
         type: 'action'
       }
     ],
-    officialRuleNotice: 'Pode ser bloqueado pelo alvo se alegar Advogada ou Coronel. O custo de C$ 5 nunca é devolvido. Verifique os apoios que o alvo possui no momento do efeito, após eventuais reposições de cartas em desafios. O alvo não pode mentir sobre possuir o personagem procurado.'
+
+    officialRuleNotice:
+      'Pode ser bloqueado pelo alvo se alegar Advogada ou Coronel. O custo de C$ 5 nunca é devolvido. Verifique os apoios que o alvo possui no momento do efeito, após eventuais reposições de cartas em desafios. O alvo não pode mentir sobre possuir o personagem procurado.'
   },
+
   {
     id: 'card-coordinator',
     slug: 'coordinator',
@@ -225,26 +342,43 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     copies: '3 cópias',
     roleColor: ROLE_THEME_COLORS.articuladora,
     kind: 'Acordo de Bastidor',
-    summary: 'Receba C$ 2 e favoreça outro jogador com C$ 1, ambos do cofre.',
-    imageSrc: '/images/cards/coordinator.png',
-    previewSrc: '/images/previews/coordinator.webp',
-    imageAlt: 'Carta Articuladora de Bastidores do Poder: personagem oferecendo a mão para um acordo e resumo das habilidades',
+    summary:
+      'Receba C$ 2 e favoreça outro jogador com C$ 1, ambos do cofre.',
     characterSrc: '/images/characters/coordinator.webp',
     iconSrc: '/images/icons/coordinator.webp',
+
+    cardText: {
+      action: {
+        title: 'Acordo de Bastidor',
+        description: 'Receba C$ 2 e dê C$ 1 do cofre a outro jogador.',
+        cost: 'GRÁTIS'
+      },
+      defense: {
+        title: 'Sem bloqueio',
+        description: 'A ação pode ser contestada, mas não bloqueada.',
+        cost: null
+      }
+    },
+
     rules: [
       {
         title: 'Acordo de Bastidor (ação gratuita)',
-        description: 'Escolha outro jogador vivo ao declarar a ação. Após resolver a contestação, receba C$ 2 do cofre; o escolhido recebe C$ 1 do cofre. Ele não precisa aceitar e também pode contestar.',
+        description:
+          'Escolha outro jogador vivo ao declarar a ação. Após resolver a contestação, receba C$ 2 do cofre; o escolhido recebe C$ 1 do cofre. Ele não precisa aceitar e também pode contestar.',
         type: 'action'
       },
       {
         title: 'Sem bloqueio',
-        description: 'A Articuladora não bloqueia ações. O Acordo de Bastidor não pode ser bloqueado, mas pode ser contestado por qualquer adversário vivo.',
+        description:
+          'A Articuladora não bloqueia ações. O Acordo de Bastidor não pode ser bloqueado, mas pode ser contestado por qualquer adversário vivo.',
         type: 'passive'
       }
     ],
-    officialRuleNotice: 'Distribua os Contos somente após resolver a contestação. Se a alegação não for comprovada, aplique a perda habitual de apoio e ninguém recebe moedas. Se o beneficiário for eliminado no desafio, cancele o acordo para ambos, sem escolher outro. Promessas não são obrigatórias. A ação não permite doações, empréstimos ou trocas de cartas entre jogadores; os dois pagamentos vêm do cofre. Com C$ 10 ou mais no início do turno, o Impeachment definitivo continua obrigatório.'
+
+    officialRuleNotice:
+      'Distribua os Contos somente após resolver a contestação. Se a alegação não for comprovada, aplique a perda habitual de apoio e ninguém recebe moedas. Se o beneficiário for eliminado no desafio, cancele o acordo para ambos, sem escolher outro. Promessas não são obrigatórias. A ação não permite doações, empréstimos ou trocas de cartas entre jogadores; os dois pagamentos vêm do cofre. Com C$ 10 ou mais no início do turno, o Impeachment definitivo continua obrigatório.'
   },
+
   {
     id: 'card-guide',
     slug: 'guide',
@@ -253,26 +387,60 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     copies: 'Fora do baralho',
     roleColor: ROLE_THEME_COLORS.ajuda,
     kind: 'Referência',
-    summary: 'Carta de consulta rápida com resumo de todos os poderes e ações.',
-    imageSrc: '/images/cards/guide.png',
-    previewSrc: '/images/previews/guide.webp',
-    imageAlt: 'Carta de ajuda com ícones, ações, bloqueios dos oito personagens e ações gerais',
+    summary:
+      'Carta de consulta rápida com resumo de todos os poderes e ações.',
     iconSrc: '/images/icons/guide.webp',
+
+    cardText: {
+      action: {
+        title: 'Referência rápida',
+        description: 'Resumo das principais ações e regras da partida.',
+        cost: null
+      },
+      defense: {
+        title: 'Carta de ajuda',
+        description: 'Permanece à sua frente durante toda a partida.',
+        cost: null
+      }
+    },
+
     rules: [
       {
         title: 'Distribuição',
-        description: 'Cada jogador recebe 1 cópia da carta de ajuda no início da partida para manter à sua frente durante todo o jogo.',
+        description:
+          'Cada jogador recebe 1 cópia da carta de ajuda no início da partida para manter à sua frente durante todo o jogo.',
         type: 'passive'
       }
     ],
-    officialRuleNotice: 'Não entra no baralho de personagens nem pode ser perdida em desafios ou ataques.'
+
+    officialRuleNotice:
+      'Não entra no baralho de personagens nem pode ser perdida em desafios ou ataques.'
   }
 ] as const;
 
 /**
+ * Dicionário canônico mapeando slug -> nome oficial de cada carta/personagem.
+ * Centraliza a fonte única da verdade: altere em ROLE_CARDS e refletirá em todo o sistema.
+ */
+export const ROLE_DISPLAY_NAMES: Readonly<Record<RoleSlug, string>> = Object.freeze(
+  ROLE_CARDS.reduce((acc, card) => {
+    acc[card.slug] = card.name;
+    return acc;
+  }, {} as Record<RoleSlug, string>)
+);
+
+/**
+ * Os 8 personagens jogáveis oficiais do Bastidores do Poder (exclui o Guia de Mesa).
+ * Fonte canônica única derivada diretamente de ROLE_CARDS.
+ */
+export const PLAYABLE_ROLES: readonly RoleSlug[] = Object.freeze(
+  ROLE_CARDS.filter((card) => card.slug !== 'guide').map((card) => card.slug)
+);
+
+/**
  * Número de personagens no jogo.
  */
-export const CARDS_LENGTH = ROLE_CARDS.filter((card) => card.slug !== 'guide').length;
+export const CARDS_LENGTH = PLAYABLE_ROLES.length;
 
 /**
  * Número de cópias de cada personagem no baralho.
@@ -578,14 +746,8 @@ export const ICON_LEGEND_ITEMS: readonly IconLegendItem[] = [
   {
     role: 'Investigador',
     iconName: 'Pasta e lupa',
-    roleColor: ROLE_THEME_COLORS.investigador,
+    roleColor: ROLE_THEME_COLORS.investigator,
     iconSrc: '/images/icons/investigator.webp'
-  },
-  {
-    role: 'Guia de Mesa',
-    iconName: 'Livro de consulta',
-    roleColor: ROLE_THEME_COLORS.ajuda,
-    iconSrc: '/images/icons/guide.webp'
   }
 ] as const;
 
@@ -616,8 +778,8 @@ export const GAME_COINS: readonly GameCoin[] = [
     summary: 'Moeda básica de arrecadação oficial e saldo inicial.',
     description: 'A unidade elementar da economia do poder. Utilizada no Salário Oficial (C$ 1) e distribuída no início de cada partida (C$ 2 por jogador).',
     usage: 'Salário Oficial (+C$ 1), saldo inicial de jogadores (+C$ 2), e trocas fracionadas no cofre.',
+    imageAlt: 'Moeda Conto de Bronze C$ 1 de Bastidores do Poder',
     imageSrc: '/images/coins/bronze.webp',
-    imageAlt: 'Moeda Conto de Bronze C$ 1 de Bastidores do Poder'
   },
   {
     id: 'coin-silver',
@@ -630,8 +792,8 @@ export const GAME_COINS: readonly GameCoin[] = [
     summary: 'Moeda de influência tática, subornos e taxa judicial.',
     description: 'Moeda de peso intermediário nos corredores de Brasília. Cobre exatamente a taxa judicial do Mandado de Busca do Investigador.',
     usage: 'Taxa judicial do Mandado de Busca (C$ 5) e consolidação de trocas no cofre.',
+    imageAlt: 'Moeda Conto de Prata C$ 5 de Bastidores do Poder',
     imageSrc: '/images/coins/silver.webp',
-    imageAlt: 'Moeda Conto de Prata C$ 5 de Bastidores do Poder'
   },
   {
     id: 'coin-gold',
@@ -644,7 +806,7 @@ export const GAME_COINS: readonly GameCoin[] = [
     summary: 'Moeda de hegemonia máxima e Impeachment compulsório.',
     description: 'A moeda mais temida e cobiçada do jogo. Iniciar o turno com C$ 10 obriga a execução do Impeachment definitivo, um golpe irreversível e sem defesa.',
     usage: 'Impeachment definitivo compulsório (C$ 10), garantia de eliminação direta de rivais.',
+    imageAlt: 'Moeda Conto de Ouro C$ 10 de Bastidores do Poder',
     imageSrc: '/images/coins/gold.webp',
-    imageAlt: 'Moeda Conto de Ouro C$ 10 de Bastidores do Poder'
   }
 ] as const;

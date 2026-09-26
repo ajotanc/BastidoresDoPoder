@@ -1,14 +1,31 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { useLightbox } from '@/composables/useLightbox';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import AppButton from '@/components/ui/AppButton.vue';
-import { X, Download, RotateCw } from 'lucide-vue-next';
+import { X, Printer, RotateCw } from 'lucide-vue-next';
+import Card from '@/components/game/Card.vue';
 import { SUPPORT_CARDS_LENGTH } from '@/constants/gameData';
 
 const { isOpen, activeCard, closeCardLightbox } = useLightbox();
 
 const isFlipped = ref<boolean>(false);
+const isPrinting = ref(false);
+const printRoot = ref<HTMLElement | null>(null);
+const printCard = async (): Promise<void> => {
+  isPrinting.value = true;
+  await nextTick();
+  try {
+    await Promise.all(Array.from(printRoot.value?.querySelectorAll('img') ?? []).map(async image => {
+      image.loading = 'eager';
+      await image.decode().catch(() => undefined);
+    }));
+    await document.fonts?.ready;
+    window.print();
+  } finally {
+    isPrinting.value = false;
+  }
+};
 
 /**
  * Alterna a rotação 3D da carta entre frente e verso
@@ -28,8 +45,8 @@ watch(
 
 <template>
   <AppDialog :is-open="isOpen && !!activeCard"
-    :aria-label="activeCard ? `Carta ${activeCard.name}` : 'Visualizador de Carta'" :bg-image-src="activeCard?.previewSrc ?? activeCard?.imageSrc"
-    max-width-class="max-w-xl" @close="closeCardLightbox">
+    :aria-label="activeCard ? `Carta ${activeCard.name}` : 'Visualizador de Carta'" :bg-image-src="activeCard?.characterSrc"
+    max-width-class="max-w-2xl" @close="closeCardLightbox">
     <!-- Cabeçalho Fixo do Modal -->
     <template #header>
       <div v-if="activeCard" class="flex items-center justify-between gap-4">
@@ -92,37 +109,26 @@ watch(
       </div>
     </template>
 
-    <!-- Conteúdo com Scroll Exclusivo: Área 3D da Carta com Flip -->
-    <div v-if="activeCard" class="flex flex-col items-center justify-center py-2">
-      <button type="button" class="flex w-full flex-col items-center gap-6 relative cursor-pointer select-none group/flip py-2 [perspective:1200px]" :aria-pressed="isFlipped" aria-label="Virar carta"
-        @click="toggleFlip" :title="isFlipped ? 'Clique para ver a frente' : 'Clique para ver o verso'">
-        <div
-          class="relative w-full max-w-[320px] sm:max-w-[256px] aspect-[2/3] transition-transform duration-700 [transform-style:preserve-3d] shadow-2xl rounded-xl"
-          :class="{ '[transform:rotateY(180deg)]': isFlipped }">
-          <!-- Face Frontal (Frente da Carta) -->
-          <div
-            class="absolute inset-0 [backface-visibility:hidden] rounded-xl overflow-hidden border border-line-gold bg-[#0d1620] shadow-card flex items-center justify-center">
-            <img :src="activeCard.previewSrc ?? activeCard.imageSrc" :alt="activeCard.imageAlt"
-              class="w-full h-full object-cover pointer-events-none" />
-          </div>
-
-          <!-- Face Traseira (Verso da Carta) -->
-          <div
-            class="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-xl overflow-hidden border border-gold-dark bg-[#0a111a] shadow-card flex items-center justify-center">
-            <img src="/images/previews/back-card.webp" alt="Verso oficial das cartas de Bastidores do Poder"
-              class="w-full h-full object-cover pointer-events-none" />
-          </div>
-        </div>
-
-        <!-- Dica interativa para virar a carta -->
-        <div class="text-center">
-          <span
-            class="inline-flex items-center gap-1.5 text-[0.75rem] text-gold-muted/80 bg-surface/90 px-3 py-1 rounded-md border border-line shadow-sm group-hover/flip:border-gold/60 transition-colors">
-            <RotateCw class="w-3 h-3 text-gold" aria-hidden="true" />
-            Clique na carta para virar em 3D
-          </span>
-        </div>
+    <div v-if="activeCard" class="card-perspective flex flex-col items-center justify-center py-4 gap-4">
+      <button
+        type="button"
+        @click="toggleFlip"
+        class="card-3d-wrapper relative grid w-full max-w-[400px] cursor-pointer focus-visible:outline-none rounded-[18px] bg-transparent border-0 p-0 select-none group/flip"
+        :class="{ 'is-flipped': isFlipped }"
+        :aria-pressed="isFlipped"
+        :aria-label="isFlipped ? 'Verso da carta exibido. Clique para ver a frente.' : 'Frente da carta exibida. Clique para ver o verso.'"
+        :title="isFlipped ? 'Clique para ver a frente' : 'Clique para ver o verso'"
+      >
+        <Card :card="activeCard" class="card-face [grid-area:1/1]" :aria-hidden="isFlipped" />
+        <Card face-down class="card-face card-face-back [grid-area:1/1]" :aria-hidden="!isFlipped" />
       </button>
+
+      <div class="text-center">
+        <button type="button" @click="toggleFlip" class="inline-flex items-center gap-1.5 text-xs text-gold-muted/80 bg-surface/90 px-3 py-1 rounded-md border border-line shadow-sm">
+          <RotateCw class="w-3.5 h-3.5 text-gold" aria-hidden="true" />
+          {{ isFlipped ? 'Frente' : 'Verso' }}
+        </button>
+      </div>
     </div>
 
     <!-- Rodapé Fixo Separado do Scroll com as Mesmas Cores e Estilo -->
@@ -130,14 +136,27 @@ watch(
       <div v-if="activeCard"
         class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-muted">
         <span>
-          {{ isFlipped ? 'Verso oficial para impressão e confecção' : 'Carta oficial em alta resolução' }}
+          Layout gerado a partir das regras atuais.
         </span>
-        <AppButton variant="gold" size="sm" :href="isFlipped ? '/images/cards/back-card.png' : activeCard.imageSrc"
-          :download="isFlipped ? 'bastidores-do-poder-verso.png' : `bastidores-do-poder-${activeCard.slug}.png`">
-          <Download class="w-3.5 h-3.5" aria-hidden="true" />
-          <span>{{ isFlipped ? 'Baixar verso da carta' : 'Baixar esta carta' }}</span>
+        <AppButton variant="gold" size="sm" :disabled="isPrinting" @click="printCard">
+          <Printer class="w-3.5 h-3.5" aria-hidden="true" />
+          <span>{{ isFlipped ? 'Imprimir verso' : 'Imprimir / Salvar PDF' }}</span>
         </AppButton>
       </div>
     </template>
   </AppDialog>
+  <Teleport to="body">
+    <div v-if="isPrinting && activeCard" ref="printRoot" class="card-print-sheet">
+      <Card :card="activeCard" :face-down="isFlipped" />
+    </div>
+  </Teleport>
 </template>
+
+
+<style>
+.card-print-sheet { position: fixed; left: -10000px; top: 0; width: 80mm; }
+@media print {
+  body:has(.card-print-sheet) > :not(.card-print-sheet) { display: none !important; }
+  .card-print-sheet { position: static; display: block !important; width: 80mm; margin: 0 auto; break-inside: avoid; }
+}
+</style>

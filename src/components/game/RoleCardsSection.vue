@@ -26,20 +26,37 @@ const closeCardRules = (): void => {
   selectedRulesCard.value = null;
 };
 
+const playableCardsCount = ROLE_CARDS.filter((c) => c.slug !== 'guide').length;
+
 const filterCategories = [
-  { id: 'all', label: `Todos (${ROLE_CARDS.length})` },
+  { id: 'all', label: `Todos (${playableCardsCount})` },
   { id: 'attack', label: 'Ataque & Eliminação' },
   { id: 'defense', label: 'Blindagem & Defesa' },
   { id: 'economy', label: 'Economia & Negociação' },
+  { id: 'help', label: 'Ajuda' },
 ] as const;
 
 const filteredCards = computed<readonly RoleCard[]>(() => {
   const query = normalizeSearch(searchQuery.value);
 
   return ROLE_CARDS.filter((card) => {
+    // Filtro por categoria
+    if (selectedCategory.value === 'all') {
+      if (card.slug === 'guide') return false;
+    } else if (selectedCategory.value === 'help') {
+      if (card.slug !== 'guide') return false;
+    } else if (selectedCategory.value === 'attack') {
+      if (!['colonel', 'executor', 'investigator'].includes(card.slug)) return false;
+    } else if (selectedCategory.value === 'defense') {
+      if (!['untouchable', 'lawyer'].includes(card.slug)) return false;
+    } else if (selectedCategory.value === 'economy') {
+      if (!['baron', 'marketer', 'coordinator'].includes(card.slug)) return false;
+    }
+
     // Filtro por texto
-    const matchesQuery =
-      !query ||
+    if (!query) return true;
+
+    return (
       normalizeSearch(card.name).includes(query) ||
       normalizeSearch(card.summary).includes(query) ||
       normalizeSearch(card.kind).includes(query) ||
@@ -47,23 +64,8 @@ const filteredCards = computed<readonly RoleCard[]>(() => {
         (r) =>
           normalizeSearch(r.title).includes(query) ||
           normalizeSearch(r.description).includes(query)
-      );
-
-    if (!matchesQuery) return false;
-
-    // Filtro por categoria
-    if (selectedCategory.value === 'all') return true;
-    if (selectedCategory.value === 'attack') {
-      return ['colonel', 'executor', 'investigator'].includes(card.slug);
-    }
-    if (selectedCategory.value === 'defense') {
-      return ['untouchable', 'lawyer'].includes(card.slug);
-    }
-    if (selectedCategory.value === 'economy') {
-      return ['baron', 'marketer', 'coordinator'].includes(card.slug);
-    }
-
-    return true;
+      )
+    );
   });
 });
 </script>

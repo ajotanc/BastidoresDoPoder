@@ -23,7 +23,7 @@ const { openCardLightbox } = useLightbox();
  * Obtém a imagem da pasta characters para o personagem atual diretamente da definição da carta
  */
 const characterBgImage = computed<string | undefined>(() => {
-  return props.card?.characterSrc ?? props.card?.previewSrc ?? props.card?.imageSrc;
+  return props.card?.characterSrc;
 });
 
 /**

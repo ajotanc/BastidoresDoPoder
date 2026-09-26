@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Card from '@/components/game/Card.vue';
 import type { RoleCard } from '@/types/game';
 import { useLightbox } from '@/composables/useLightbox';
 import { ZoomIn, BookOpen } from 'lucide-vue-next';
@@ -46,20 +47,15 @@ const handleShowRules = (): void => {
         <button
           type="button"
           @click="openCardLightbox(props.card)"
-          class="relative block w-full rounded-lg overflow-hidden border border-[#766343] bg-[#0d1720] shadow-md group/preview cursor-zoom-in focus-visible:outline-none transition-transform duration-300 group-hover:-translate-y-1"
+          class="relative block w-full rounded-sm overflow-hidden focus-visible:outline-none transition-transform duration-300 group-hover:-translate-y-1 shadow-md group/preview cursor-zoom-in"
           :aria-label="`Ampliar carta ${props.card.name}`"
         >
-          <img
-            :src="props.card.previewSrc ?? props.card.imageSrc"
-            :alt="props.card.imageAlt"
-            loading="lazy"
-            class="w-full h-auto aspect-[2/3] object-cover transition-transform duration-300 group-hover/preview:scale-[1.02]"
-          />
+          <Card :card="props.card" />
           <div
             class="absolute inset-0 bg-paper/30 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center pointer-events-none"
           >
             <span
-              class="inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-surface-elevated/95 text-gold-light border border-gold-dark shadow-md text-center"
+              class="inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-surface-elevated/95 text-gold-light border border-gold-dark shadow-md text-center z-[30]"
             >
               <ZoomIn class="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
               <span>Ampliar Carta</span>
@@ -80,26 +76,9 @@ const handleShowRules = (): void => {
               {{ props.card.name }}
             </h3>
           </div>
-
-          <div>
-            <span
-              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[0.68rem] uppercase font-bold tracking-[0.14em] border shadow-sm backdrop-blur-sm select-none whitespace-nowrap"
-              :style="{
-                backgroundColor: props.card.roleColor + '18',
-                borderColor: props.card.roleColor + '60',
-                color: props.card.roleColor
-              }"
-            >
-              <span
-                class="w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse"
-                :style="{ backgroundColor: props.card.roleColor }"
-              ></span>
-              <span>{{ props.card.kind }}</span>
-            </span>
-          </div>
         </div>
 
-        <p class="text-xs sm:text-sm text-ink-muted leading-relaxed mb-4 min-h-[44px]">
+        <p class="text-xs sm:text-sm text-ink-muted leading-relaxed min-h-[80px]">
           {{ props.card.summary }}
         </p>
       </div>

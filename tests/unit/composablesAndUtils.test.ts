@@ -68,4 +68,30 @@ describe('Composables e Utilitários', () => {
     setActiveSection('cards');
     expect(activeSectionId.value).toBe('cards');
   });
+
+  it('ROLE_DISPLAY_NAMES e PLAYABLE_ROLES devem ser canônicos e consistentes com ROLE_CARDS', async () => {
+    const { ROLE_DISPLAY_NAMES, PLAYABLE_ROLES } = await import('@/constants/gameData');
+    expect(PLAYABLE_ROLES.length).toBe(8);
+    expect(PLAYABLE_ROLES).not.toContain('guide');
+    expect(ROLE_DISPLAY_NAMES.colonel).toBe('Coronel');
+    expect(ROLE_DISPLAY_NAMES.baron).toBe('Barão');
+    expect(ROLE_DISPLAY_NAMES.guide).toBe('Guia de Mesa');
+  });
+
+  it('Vue Router deve resolver rotas de manual (/), online (/online) e sala (/game/:id)', async () => {
+    const router = (await import('@/router')).default;
+    await router.push('/');
+    expect(router.currentRoute.value.name).toBe('home');
+
+    await router.push('/online');
+    expect(router.currentRoute.value.name).toBe('online');
+
+    await router.push('/game/7K3F');
+    expect(router.currentRoute.value.name).toBe('game');
+    expect(router.currentRoute.value.params.id).toBe('7K3F');
+
+    await router.push('/jogar/7K3F');
+    expect(router.currentRoute.value.name).toBe('game');
+    expect(router.currentRoute.value.params.id).toBe('7K3F');
+  });
 });

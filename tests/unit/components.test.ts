@@ -62,3 +62,40 @@ describe('Testes de Componentes com @vue/test-utils e jsdom', () => {
     expect(wrapper.classes()).toContain('cursor-default');
   });
 });
+
+describe('RoleCardsSection - Filtro de Personagens e Ajuda', () => {
+  it('deve renderizar inicialmente apenas os 8 personagens jogáveis, ocultando o Guia de Mesa', async () => {
+    const { default: RoleCardsSection } = await import('@/components/game/RoleCardsSection.vue');
+    const wrapper = mount(RoleCardsSection);
+
+    // Encontra todos os RoleCardItem
+    const cardItems = wrapper.findAllComponents({ name: 'RoleCardItem' });
+    expect(cardItems).toHaveLength(8);
+
+    // Garante que o Guia não está entre os cartões renderizados
+    const cardTexts = cardItems.map((item) => item.text());
+    expect(cardTexts.some((text) => text.includes('Guia de Mesa'))).toBe(false);
+    expect(cardTexts.some((text) => text.includes('Coronel'))).toBe(true);
+    expect(cardTexts.some((text) => text.includes('Intocável'))).toBe(true);
+  });
+
+  it('deve exibir apenas o Guia de Mesa ao clicar no filtro "Ajuda"', async () => {
+    const { default: RoleCardsSection } = await import('@/components/game/RoleCardsSection.vue');
+    const wrapper = mount(RoleCardsSection);
+
+    // Encontra o botão do filtro "Ajuda"
+    const buttons = wrapper.findAll('button');
+    const helpButton = buttons.find((btn) => btn.text().trim() === 'Ajuda');
+    expect(helpButton).toBeDefined();
+
+    if (helpButton) {
+      await helpButton.trigger('click');
+
+      const cardItems = wrapper.findAllComponents({ name: 'RoleCardItem' });
+      expect(cardItems).toHaveLength(1);
+      expect(wrapper.text()).toContain('Guia de Mesa');
+      expect(wrapper.text()).not.toContain('Coronel');
+    }
+  });
+});
+

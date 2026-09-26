@@ -20,6 +20,17 @@ export interface RoleCardRuleItem {
   readonly type: 'action' | 'defense' | 'passive';
 }
 
+export interface RoleCardTextBlock {
+  readonly title: string;
+  readonly description: string;
+  readonly cost: string | null;
+}
+
+export interface RoleCardText {
+  readonly action: RoleCardTextBlock;
+  readonly defense: RoleCardTextBlock;
+}
+
 export interface RoleCard {
   readonly id: string;
   readonly slug: RoleSlug;
@@ -29,11 +40,9 @@ export interface RoleCard {
   readonly roleColor: string;
   readonly kind: string;
   readonly summary: string;
-  readonly imageSrc: string;
-  readonly previewSrc?: string;
-  readonly imageAlt: string;
   readonly characterSrc?: string;
   readonly iconSrc?: string;
+  readonly cardText: RoleCardText;
   readonly rules: readonly RoleCardRuleItem[];
   readonly officialRuleNotice: string;
 }
@@ -105,6 +114,5 @@ export interface GameCoin {
   readonly description: string;
   readonly usage: string;
   readonly imageSrc: string;
-  readonly previewSrc?: string;
   readonly imageAlt: string;
 }

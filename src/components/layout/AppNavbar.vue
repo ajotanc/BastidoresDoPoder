@@ -6,11 +6,16 @@ import { Download } from 'lucide-vue-next';
 
 interface Props {
   activeSectionId: string;
+  isOnlineActive?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  isOnlineActive: false,
+});
+
 const emit = defineEmits<{
   (e: 'navigate', sectionId: string): void;
+  (e: 'toggle-online'): void;
 }>();
 
 const { isInstallable, installApp } = usePwaInstall();
@@ -20,7 +25,11 @@ const { isInstallable, installApp } = usePwaInstall();
  */
 const handleNavigate = (sectionId: string, event: MouseEvent): void => {
   emit('navigate', sectionId);
-  scrollToSection(sectionId, event);
+  if (!props.isOnlineActive) {
+    scrollToSection(sectionId, event);
+  } else {
+    event.preventDefault();
+  }
 };
 </script>
 
@@ -58,10 +67,27 @@ const handleNavigate = (sectionId: string, event: MouseEvent): void => {
         </a>
       </nav>
 
-      <!-- Ações rápidas: PWA e Impressão -->
-      <div class="flex items-center gap-2">
+      <!-- Ações rápidas: Jogar Online e PWA -->
+      <div class="flex items-center gap-2.5">
+        <button
+          type="button"
+          @click="emit('toggle-online')"
+          class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-serif font-bold uppercase tracking-wider transition-all border shadow-sm"
+          :class="[
+            props.isOnlineActive
+              ? 'bg-gold text-paper-deep border-gold-light'
+              : 'bg-gold/15 text-gold-light border-gold/40 hover:bg-gold/25'
+          ]"
+        >
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-green opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-status-green"></span>
+          </span>
+          <span>{{ props.isOnlineActive ? 'Ver Manual' : 'Jogar Online' }}</span>
+        </button>
+
         <button v-if="isInstallable" type="button" @click="installApp"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold bg-gold text-surface-elevated hover:bg-gold-light transition-all shadow-sm"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold bg-surface-elevated text-ink hover:bg-surface-hover border border-line transition-all shadow-sm"
           title="Instalar manual no dispositivo para jogar offline">
           <Download class="w-3.5 h-3.5" aria-hidden="true" />
           <span>Instalar App</span>

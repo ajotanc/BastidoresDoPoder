@@ -31,10 +31,7 @@ Os testes cobrem foco dos modais, giro por teclado, transição entre modais, bu
 - `src/components/ui`: componentes reutilizáveis e diálogo Radix acessível.
 - `src/components/game`: seções do manual.
 - `src/composables`: estado de visualizadores, navegação ativa e instalação.
-- `public/images/previews`: versões WebP leves para visualização.
 - `public/images/cards`: PNGs originais para download.
-
-Ao atualizar uma arte, atualize também a miniatura WebP correspondente (até 640 × 960 px). O campo `previewSrc` identifica a miniatura e `imageSrc` continua apontando para o original.
 
 ## PWA e publicação
 

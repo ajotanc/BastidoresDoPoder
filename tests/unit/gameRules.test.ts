@@ -7,6 +7,7 @@ import {
   SUPPORT_CARDS_LENGTH,
   SUPPORT_CARDS_PER_ROLE,
   CARDS_LENGTH,
+  ICON_LEGEND_ITEMS,
 } from '@/constants/gameData';
 
 describe('Constantes e Regras do Jogo', () => {
@@ -31,7 +32,7 @@ describe('Constantes e Regras do Jogo', () => {
       expect(card.name).toBeTruthy();
       expect(card.category).toBeTruthy();
       expect(card.copies).toBe('3 cópias');
-      expect(card.imageSrc).toBeTruthy();
+      expect(card.characterSrc ?? card.iconSrc).toBeTruthy();
       expect(card.rules.length).toBeGreaterThan(0);
     }
   });
@@ -60,5 +61,11 @@ describe('Constantes e Regras do Jogo', () => {
       expect(row.initialCoins).toBe(2);
       expect(row.cardsPerRole).toBe(SUPPORT_CARDS_PER_ROLE);
     }
+  });
+
+  it('ICON_LEGEND_ITEMS deve conter exclusivamente os 8 personagens sem o Guia de Mesa', () => {
+    expect(ICON_LEGEND_ITEMS).toHaveLength(8);
+    const roles = ICON_LEGEND_ITEMS.map((item) => item.role);
+    expect(roles).not.toContain('Guia de Mesa');
   });
 });
