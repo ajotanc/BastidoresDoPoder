@@ -70,6 +70,7 @@ export interface HostStartGamePayload {
  * União estrita de todos os comandos que um jogador pode emitir.
  */
 export type ClientCommand =
+  | { readonly type: 'LEAVE_ROOM'; readonly payload: Record<string, never> }
   | { readonly type: 'JOIN_ROOM'; readonly payload: JoinPayload }
   | { readonly type: 'SET_READY'; readonly payload: { readonly ready: boolean } }
   | { readonly type: 'START_GAME'; readonly payload: HostStartGamePayload }

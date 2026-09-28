@@ -509,7 +509,7 @@ export const TURN_STEPS: readonly TurnStep[] = [
     title: 'Resolva o desafio à ação',
     description: 'Se a ação exige personagem, qualquer adversário vivo pode contestar antes de qualquer efeito. Ações gerais não podem ser contestadas; as alegações usadas para bloqueá-las podem.',
     details: [
-      'Alegação comprovada: o declarante mostra um apoio ativo do personagem; o contestador perde um apoio. Se a partida continuar, a carta comprovada volta ao baralho, é embaralhada e substituída por uma carta secreta. A ação segue para a etapa de bloqueio.',
+      'Alegação comprovada: o declarante mostra um apoio ativo do personagem e o substitui imediatamente por outro apoio secreto do baralho. A carta mostrada volta ao baralho, que é reembaralhado. O contestador perde um apoio; se a partida continuar, a ação segue para a etapa de bloqueio. A compra pode trazer outra cópia do mesmo personagem.',
       'Alegação não comprovada: o declarante perde um apoio à escolha dele; a ação é cancelada e o turno termina. Ele também pode optar por não comprovar, aceitando a penalidade.',
       'Sem contestação: avance normalmente. A carta permanece secreta.'
     ]
@@ -524,7 +524,7 @@ export const TURN_STEPS: readonly TurnStep[] = [
     title: 'Resolva o desafio ao bloqueio',
     description: 'Qualquer outro jogador vivo, inclusive o autor da ação, pode contestar o bloqueio declarado.',
     details: [
-      'Bloqueio comprovado: o contestador perde um apoio. Se a partida continuar, o defensor devolve a carta comprovada, embaralha e compra uma substituta. O bloqueio vale e a ação é cancelada.',
+      'Bloqueio comprovado: o defensor substitui imediatamente a carta mostrada por outro apoio secreto do baralho e devolve a comprovada, reembaralhando o baralho. O contestador perde um apoio. O bloqueio vale e a ação é cancelada. A compra pode trazer outra cópia do mesmo personagem.',
       'Bloqueio não comprovado: o defensor perde um apoio, o bloqueio é cancelado e a ação original continua se o alvo ainda estiver vivo e a partida não tiver terminado.',
       'Sem contestação: o bloqueio vale e a ação é cancelada, mesmo que tenha sido um blefe.'
     ]

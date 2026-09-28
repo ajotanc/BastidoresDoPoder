@@ -4,7 +4,7 @@ test('search ignores accents and filters expose their state', async ({ page }) =
   await page.goto('/');
   await page.getByRole('searchbox').fill('barao');
   await expect(page.locator('#cards article')).toHaveCount(1);
-  await expect(page.locator('#cards article h3')).toHaveText('Barão');
+  await expect(page.locator('#cards article').getByRole('heading', { name: 'Barão', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Economia & Negociação' }).click();
   await expect(page.getByRole('button', { name: 'Economia & Negociação' })).toHaveAttribute('aria-pressed', 'true');
 });
@@ -19,7 +19,7 @@ test('modal traps focus, flips by keyboard and restores focus', async ({ page })
     await page.keyboard.press('Tab');
     expect(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]'))).toBe(true);
   }
-  const flip = page.getByRole('button', { name: 'Virar carta' });
+  const flip = page.getByRole('button', { name: /(?:Frente|Verso) da carta exibid[ao]/ });
   await flip.focus();
   await page.keyboard.press('Enter');
   await expect(flip).toHaveAttribute('aria-pressed', 'true');
@@ -33,7 +33,7 @@ for (const width of [320, 360, 375, 1280]) {
     await page.setViewportSize({ width, height: 812 });
     await page.goto('/');
     await page.getByRole('button', { name: 'Ampliar carta Articuladora', exact: true }).click();
-    const flip = page.getByRole('button', { name: 'Virar carta' });
+    const flip = page.getByRole('button', { name: /(?:Frente|Verso) da carta exibid[ao]/ });
     await expect(flip).toBeVisible();
     const bounds = await flip.boundingBox();
     expect(bounds!.x).toBeGreaterThanOrEqual(0);
@@ -42,16 +42,23 @@ for (const width of [320, 360, 375, 1280]) {
   });
 }
 
-test('skip link moves focus and deep links survive reload', async ({ page }) => {
+for (const route of ['/', '/online']) {
+  test(`skip link moves keyboard focus to main content on ${route}`, async ({ page }) => {
+    await page.goto(route);
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('link', { name: 'Pular para o manual principal' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('main')).toBeFocused();
+    await page.keyboard.press('Tab');
+    expect(await page.evaluate(() => !!document.activeElement?.closest('main'))).toBe(true);
+  });
+}
+
+test('section navigation moves focus and preserves hash-free URLs', async ({ page }) => {
   await page.goto('/');
-  await page.keyboard.press('Tab');
-  await page.keyboard.press('Enter');
-  await expect(page.locator('main')).toBeFocused();
   await page.getByRole('navigation').getByRole('link', { name: 'Cartas', exact: true }).click();
-  await expect(page).toHaveURL(/#cards$/);
   await expect(page.locator('#cards')).toBeFocused();
-  await page.reload();
-  await expect(page.locator('#cards')).toBeFocused();
+  expect(new URL(page.url()).hash).toBe('');
 });
 
 test('dismissed installation hides consumed prompt until a new event', async ({ page }) => {

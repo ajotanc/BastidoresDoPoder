@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import Peer, { type DataConnection } from 'peerjs';
 import type { RoleSlug } from '@/types/game';
 import type { GameState, PrivatePlayerView } from '@/game/models/gameState';
@@ -48,14 +49,30 @@ export class PeerHost {
       peer.on('open', id => {
         this.callbacks.onReady(this.roomCode);
         this.emitLocalState();
+        let lastHeartbeatCheck = dayjs().valueOf();
         this.heartbeatTimer = setInterval(() => {
+          const now = dayjs().valueOf();
+          const elapsed = now - lastHeartbeatCheck;
+          lastHeartbeatCheck = now;
+          if (elapsed > HEARTBEAT_TIMEOUT_MS) {
+            // O próprio host ficou suspenso. Dê um novo intervalo para a rede
+            // responder, em vez de interpretar todos os canais como mortos.
+            for (const conn of this.connections) this.lastSeen.set(conn, now);
+            for (const [id, deadline] of this.reconnectUntil) {
+              this.reconnectUntil.set(id, deadline + elapsed - HEARTBEAT_INTERVAL_MS);
+            }
+            // Retoma a fase vencida mesmo se o callback do setTimeout ainda não rodou.
+            if (this.authoritativeState.publicState.deadlineAt !== null && now >= this.authoritativeState.publicState.deadlineAt) {
+              this.handleTimeoutExpiry();
+            }
+          }
           for (const conn of this.connections) {
-            if (Date.now() - (this.lastSeen.get(conn) ?? 0) > HEARTBEAT_TIMEOUT_MS) {
+            if (now - (this.lastSeen.get(conn) ?? 0) > HEARTBEAT_TIMEOUT_MS) {
               this.disconnect(conn);
               conn.close();
             }
           }
-          this.removeExpiredLobbyPlayers();
+          this.removeExpiredPlayers();
         }, HEARTBEAT_INTERVAL_MS);
         resolve(id);
       });
@@ -67,13 +84,13 @@ export class PeerHost {
   private handleIncomingConnection(conn: DataConnection): void {
     conn.on('open', () => {
       this.connections.add(conn);
-      this.lastSeen.set(conn, Date.now());
+      this.lastSeen.set(conn, dayjs().valueOf());
     });
     conn.on('data', data => {
       if (this.destroyed || !this.connections.has(conn)) return;
-      this.lastSeen.set(conn, Date.now());
+      this.lastSeen.set(conn, dayjs().valueOf());
       if (isRecord(data) && data.type === 'HEARTBEAT') {
-        conn.send({ type: 'HEARTBEAT_ACK', timestamp: Date.now() });
+        conn.send({ type: 'HEARTBEAT_ACK', timestamp: dayjs().valueOf() });
         return;
       }
       if (!isClientEnvelope(data)) {
@@ -93,7 +110,8 @@ export class PeerHost {
     for (const [id, current] of this.playerConnections) {
       if (current !== conn) continue;
       this.playerConnections.delete(id);
-      this.reconnectUntil.set(id, Date.now() + RECONNECT_GRACE_MS);
+      if (!this.authoritativeState.reconnectTokens[id]) continue;
+      this.reconnectUntil.set(id, dayjs().valueOf() + RECONNECT_GRACE_MS);
       this.setConnected(id, false);
       this.broadcastPublicState();
     }
@@ -107,21 +125,12 @@ export class PeerHost {
       players: { ...pub.players, [id]: { ...player, isConnected: connected } } };
   }
 
-  private removeExpiredLobbyPlayers(): void {
-    if (this.authoritativeState.publicState.phase !== 'LOBBY') return;
+  private removeExpiredPlayers(): void {
     for (const [id, deadline] of this.reconnectUntil) {
-      if (Date.now() <= deadline) continue;
-      const pub = this.authoritativeState.publicState;
-      const players = { ...pub.players };
-      delete players[id];
-      delete this.authoritativeState.privateHands[id];
-      delete this.authoritativeState.reconnectTokens[id];
-      delete this.authoritativeState.privateNotices[id];
+      if (dayjs().valueOf() <= deadline) continue;
       this.reconnectUntil.delete(id);
       this.processed.delete(id);
-      this.authoritativeState.publicState = { ...pub, players,
-        playerOrder: pub.playerOrder.filter(playerId => playerId !== id), revision: pub.revision + 1 };
-      this.broadcastPublicState();
+      this.applyResult(executeCommand(this.authoritativeState, { type: 'LEAVE_ROOM', payload: {} }, id, `expired-${id}`));
     }
   }
 
@@ -133,10 +142,21 @@ export class PeerHost {
     const boundId = [...this.playerConnections].find(([, connection]) => connection === conn)?.[0];
     if (boundId && boundId !== id) return reject('UNAUTHORIZED', 'Conexão vinculada a outro jogador.');
 
+    // Abandono autenticado independe da revisão: a mesa pode mudar enquanto a pessoa sai.
+    if (command.type === 'LEAVE_ROOM') {
+      if (boundId !== id) return reject('UNAUTHORIZED', 'Conexão não autenticada.');
+      this.playerConnections.delete(id);
+      this.reconnectUntil.delete(id);
+      this.processed.delete(id);
+      this.applyResult(executeCommand(this.authoritativeState, command, id, messageId));
+      conn.send({ type: 'COMMAND_ACK', messageId, revision: this.authoritativeState.publicState.revision });
+      return;
+    }
+
     if (command.type === 'RECONNECT') {
       const deadline = this.reconnectUntil.get(id);
       if (command.payload.playerId !== id || this.authoritativeState.reconnectTokens[id] !== command.payload.reconnectToken ||
-          (!this.playerConnections.has(id) && (!deadline || Date.now() > deadline))) {
+          (!this.playerConnections.has(id) && (!deadline || dayjs().valueOf() > deadline))) {
         return reject('UNAUTHORIZED', 'Credenciais ou prazo de reconexão inválidos.');
       }
       const old = this.playerConnections.get(id);
@@ -159,7 +179,7 @@ export class PeerHost {
         return;
       }
       // Atualiza um deadline vencido antes de considerar uma intenção recebida com atraso.
-      if (this.authoritativeState.publicState.deadlineAt !== null && Date.now() >= this.authoritativeState.publicState.deadlineAt) this.handleTimeoutExpiry();
+      if (this.authoritativeState.publicState.deadlineAt !== null && dayjs().valueOf() >= this.authoritativeState.publicState.deadlineAt) this.handleTimeoutExpiry();
       if (envelope.revision !== this.authoritativeState.publicState.revision) {
         conn.send({ type: 'ROOM_SNAPSHOT', state: this.authoritativeState.publicState });
         return reject('STALE_STATE', 'A mesa mudou. Confira o estado atual e tente novamente.');
@@ -179,7 +199,7 @@ export class PeerHost {
   public executeLocalHostCommand(command: ClientCommand, messageId = crypto.randomUUID()): void {
     if (this.destroyed) return;
     const deadline = this.authoritativeState.publicState.deadlineAt;
-    if (deadline !== null && Date.now() >= deadline) { this.handleTimeoutExpiry(); return; }
+    if (deadline !== null && dayjs().valueOf() >= deadline) { this.handleTimeoutExpiry(); return; }
     const result = executeCommand(this.authoritativeState, command, this.hostPlayerId, messageId);
     if (result.rejection) { this.callbacks.onError(result.rejection.description); return; }
     this.applyResult(result);
@@ -221,7 +241,7 @@ export class PeerHost {
     this.timeoutTimer = null;
     const { deadlineAt, phase } = this.authoritativeState.publicState;
     if (this.destroyed || !deadlineAt || phase === 'FINISHED') return;
-    this.timeoutTimer = setTimeout(() => this.handleTimeoutExpiry(), Math.max(1, deadlineAt - Date.now()));
+    this.timeoutTimer = setTimeout(() => this.handleTimeoutExpiry(), Math.max(1, deadlineAt - dayjs().valueOf()));
   }
 
   private handleTimeoutExpiry(): void {
@@ -237,5 +257,23 @@ export class PeerHost {
     this.playerConnections.clear();
     this.peer?.destroy();
     this.peer = null;
+  }
+
+  public leaveRoom(): void {
+    const result = executeCommand(this.authoritativeState, { type: 'LEAVE_ROOM', payload: {} }, this.hostPlayerId, 'host-leave');
+    const pub = result.nextAuthoritativeState.publicState;
+    // Sem migração de host, os demais clientes precisam receber um encerramento explícito.
+    if (pub.phase !== 'FINISHED') {
+      result.nextAuthoritativeState.publicState = { ...pub, phase: 'FINISHED', winnerPlayerId: null,
+        deadlineAt: null, pendingAction: null, responsePlayerIds: [], cardChoicePlayerId: null,
+        cardChoiceReason: null, revision: pub.revision + 1 };
+      result.nextAuthoritativeState.lossContinuation = undefined;
+    }
+    this.applyResult(result);
+    this.destroyed = true;
+    if (this.timeoutTimer) clearTimeout(this.timeoutTimer);
+    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+    // Deixa o snapshot final sair pelo canal antes de encerrar o PeerServer local.
+    setTimeout(() => this.destroy(), 1000);
   }
 }

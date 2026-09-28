@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
+import GameNewsFeed from '@/components/online/GameNewsFeed.vue';
+import { nextTick } from 'vue';
 import GameBoard from '@/components/online/GameBoard.vue';
 import LobbyRoom from '@/components/online/LobbyRoom.vue';
 import { createInitialAuthoritativeState } from '@/game/engine/gameEngine';
@@ -15,6 +17,32 @@ function state(): GameState {
 }
 
 describe('Controles online seguem a elegibilidade da engine', () => {
+  it('mantém notícia nova no topo e reinicia a rolagem do histórico', async () => {
+    const event = state().history[0]!;
+    const wrapper = shallowMount(GameNewsFeed, { props: { history: [event, { ...event, id: 'older' }] } });
+    const list = wrapper.get('.news-history').element as HTMLElement;
+    list.scrollTop = 200;
+    await wrapper.setProps({ history: [{ ...event, id: 'new', message: 'Notícia mais recente' }, event, { ...event, id: 'older' }] });
+    await nextTick();
+    expect(list.scrollTop).toBe(0);
+    expect(wrapper.get('p').text()).toBe('Notícia mais recente');
+    wrapper.unmount();
+  });
+
+  it('exibe 584 segundos como 09:44 e continua em minutos e segundos', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(100000);
+    const wrapper = shallowMount(GameBoard, { props: {
+      gameState: { ...state(), phase: 'WAITING_ACTION', deadlineAt: 684000 },
+      myPlayerId: 'a', privateView: null, isHost: true
+    } });
+    try {
+      expect(wrapper.get('[data-testid="game-timer"]').text()).toBe('09:44');
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(wrapper.get('[data-testid="game-timer"]').text()).toBe('09:43');
+    } finally { wrapper.unmount(); vi.useRealTimers(); }
+  });
+
   it('Intocável exige C$3 e não exige a carta na mão para permitir blefe', async () => {
     const s = state();
     const wrapper = shallowMount(GameBoard, { props: { gameState: s, myPlayerId: 'b', privateView: { playerId: 'b', supports: [] }, isHost: false } });
@@ -31,7 +59,7 @@ describe('Controles online seguem a elegibilidade da engine', () => {
       pendingAction: { actionType: 'execution', sourcePlayerId: 'a', targetPlayerId: 'b', costPaid: 3, claimedRole: 'executor' } };
     const wrapper = shallowMount(GameBoard, { props: { gameState: s, myPlayerId: 'a', privateView: null, isHost: true } });
     expect(wrapper.text()).not.toContain('Passar / Permitir');
-    expect(wrapper.text()).toContain('Aguardando a resposta de Bruno');
+    expect(wrapper.text()).toContain('Aguardando deliberação de Bruno');
     await wrapper.setProps({ myPlayerId: 'b' });
     expect(wrapper.text()).toContain('Passar / Permitir');
     expect(wrapper.text()).toContain('Contestar Alegação');

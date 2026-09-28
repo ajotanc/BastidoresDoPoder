@@ -78,6 +78,9 @@ export function scrollToSection(sectionId: string, event?: Event | MouseEvent): 
 
   const targetElement = document.getElementById(cleanId);
   if (targetElement) {
+    // Leva também a navegação por teclado ao conteúdo, sem interferir na rolagem.
+    if (!targetElement.hasAttribute('tabindex')) targetElement.setAttribute('tabindex', '-1');
+    targetElement.focus({ preventScroll: true });
     const headerElement = document.querySelector('header');
     const headerHeight = headerElement ? headerElement.offsetHeight : 64;
     const rect = targetElement.getBoundingClientRect();

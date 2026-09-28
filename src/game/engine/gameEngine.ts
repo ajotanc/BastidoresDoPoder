@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import type { RoleSlug } from '@/types/game';
 import type {
   GameState,
@@ -38,7 +39,6 @@ export interface AuthoritativeGameState {
   playersPassedResponse: Set<string>;
   lossContinuation?: {
     next: 'block' | 'resolve' | 'end';
-    provedCard?: { playerId: string; cardId: string };
   };
 }
 
@@ -76,15 +76,15 @@ export const createInitialAuthoritativeState = (
   };
 
   const initialEvent: GameEvent = {
-    id: `ev-${Date.now()}-init`,
-    timestamp: Date.now(),
+    id: `ev-${dayjs().valueOf()}-init`,
+    timestamp: dayjs().valueOf(),
     type: 'ROOM_CREATED',
     message: `Gabinete oficial da sala ${roomCode.toUpperCase()} estabelecido por ${hostName}.`,
     importance: 'normal',
   };
 
   const publicState: GameState = {
-    gameId: `game-${roomCode}-${Date.now()}`,
+    gameId: `game-${roomCode}-${dayjs().valueOf()}`,
     roomCode: roomCode.toUpperCase(),
     revision: 1,
     phase: 'LOBBY',
@@ -233,8 +233,8 @@ export const executeCommand = (
 
   const addEvent = (message: string, importance: GameEvent['importance'] = 'normal', type = 'ACTION'): void => {
     const event: GameEvent = {
-      id: `ev-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      timestamp: Date.now(),
+      id: `ev-${dayjs().valueOf()}-${Math.random().toString(36).substring(2, 6)}`,
+      timestamp: dayjs().valueOf(),
       type,
       message,
       importance,
@@ -268,6 +268,56 @@ export const executeCommand = (
   }
 
   switch (command.type) {
+    case 'LEAVE_ROOM': {
+      const player = state.publicState.players[senderPlayerId];
+      if (!player) return createRejection('UNAUTHORIZED', 'Jogador não registrado.');
+      delete state.reconnectTokens[senderPlayerId];
+      delete state.privateNotices[senderPlayerId];
+      if (state.publicState.phase === 'LOBBY') {
+        delete state.publicState.players[senderPlayerId];
+        delete state.privateHands[senderPlayerId];
+        state.publicState = { ...state.publicState,
+          playerOrder: state.publicState.playerOrder.filter(id => id !== senderPlayerId),
+          revision: state.publicState.revision + 1 };
+        return engineResult(state);
+      }
+      if (state.publicState.phase === 'FINISHED' || !player.isAlive) {
+        state.publicState.players[senderPlayerId] = { ...player, isConnected: false };
+        state.publicState = { ...state.publicState, revision: state.publicState.revision + 1 };
+        return engineResult(state);
+      }
+      let hand = state.privateHands[senderPlayerId] || [];
+      // As duas cartas compradas para troca ainda pertencem ao baralho.
+      if (state.publicState.phase === 'WAITING_EXCHANGE_CHOICE' && state.publicState.cardChoicePlayerId === senderPlayerId) {
+        const drawn = hand.filter(card => !card.isLost).slice(-2);
+        state.deck = shuffleDeck([...state.deck, ...drawn.map(({ id, roleSlug }) => ({ id, roleSlug }))]);
+        hand = hand.filter(card => !drawn.some(item => item.id === card.id));
+      }
+      const revealed = hand.filter(card => !card.isLost).map(card => ({
+        id: card.id, roleSlug: card.roleSlug, lostByPlayerId: senderPlayerId, reason: 'Abandono da partida',
+      }));
+      state.privateHands[senderPlayerId] = hand.map(card => ({ ...card, isLost: true }));
+      state.publicState.players[senderPlayerId] = { ...player, isAlive: false, isConnected: false,
+        activeSupportCount: 0, lostCards: [...player.lostCards, ...revealed] };
+      state.publicState = { ...state.publicState, discard: [...revealed, ...state.publicState.discard],
+        deckCount: state.deck.length, responsePlayerIds: state.publicState.responsePlayerIds.filter(id => id !== senderPlayerId),
+        revision: state.publicState.revision + 1 };
+      addEvent(`${player.name} abandonou a partida. Seus apoios foram revelados e cassados.`, 'breaking', 'PLAYER_LEFT');
+      const alive = Object.values(state.publicState.players).filter(item => item.isAlive);
+      const pending = state.publicState.pendingAction;
+      // Uma ação que depende de quem saiu é encerrada; custos já pagos não são devolvidos.
+      if (alive.length <= 1 || state.publicState.activePlayerId === senderPlayerId ||
+          state.publicState.cardChoicePlayerId === senderPlayerId ||
+          [pending?.targetPlayerId, pending?.secondaryPlayerId, pending?.blockedByPlayerId].includes(senderPlayerId)) {
+        return finishTurn(state);
+      }
+      if (!state.publicState.responsePlayerIds.length) {
+        if (state.publicState.phase === 'WAITING_CHALLENGE_ACTION') return advanceAfterActionChallengeWindow(state);
+        if (state.publicState.phase === 'WAITING_BLOCK') return resolveApprovedAction(state);
+        if (state.publicState.phase === 'WAITING_CHALLENGE_BLOCK') return finishTurn(state);
+      }
+      return engineResult(state);
+    }
     case 'JOIN_ROOM': {
       if (state.publicState.phase !== 'LOBBY') {
         return createRejection('INVALID_PHASE', 'A partida já iniciou. Não é possível entrar.');
@@ -372,7 +422,7 @@ export const executeCommand = (
         turn: 1,
         activePlayerId: firstPlayerId,
         deckCount: deck.length,
-        deadlineAt: Date.now() + state.settings.actionTimeoutMs,
+        deadlineAt: dayjs().valueOf() + state.settings.actionTimeoutMs,
         revision: state.publicState.revision + 1,
       };
 
@@ -519,13 +569,21 @@ export const executeCommand = (
       const matchingCard = suspectHand.find((c) => !c.isLost && c.roleSlug === claimedRole);
 
       if (matchingCard) {
+        // Compra entre os outros apoios antes de devolver a carta pública,
+        // garantindo que a mesma carta física não volte imediatamente à mão.
+        const available = shuffleDeck(state.deck);
+        const replacement = available.pop();
+        if (!replacement) return createRejection('INVALID_COMMAND', 'Não há apoio disponível para substituir a carta comprovada.');
+        state.deck = shuffleDeck([...available, { id: matchingCard.id, roleSlug: matchingCard.roleSlug }]);
+        state.privateHands[suspectPlayerId] = suspectHand.map(card =>
+          card.id === matchingCard.id ? { ...replacement, isLost: false } : card);
         // VERDADEIRO! O desafiado realmente tinha o cargo alegado
         addEvent(`Comprovado! ${suspectName} provou possuir ${getRoleDisplayName(claimedRole)}.`, 'alert', 'CHALLENGE_PROVED');
+        addEvent(`${suspectName} devolveu o apoio comprovado ao baralho e recebeu outro apoio secreto.`, 'normal', 'PROVED_CARD_REPLACED');
 
-        // A reposição só ocorre depois da perda, se a partida continuar.
+        // A compra já foi concluída, mesmo se o desafiante abandonar ou for eliminado.
         state.lossContinuation = {
           next: isBlockChallenge ? 'end' : 'block',
-          provedCard: { playerId: suspectPlayerId, cardId: matchingCard.id },
         };
 
         // O desafiante perde 1 apoio
@@ -611,7 +669,7 @@ export const executeCommand = (
         ...state.publicState,
         responsePlayerIds: state.publicState.responsePlayerIds.slice(1),
         revision: state.publicState.revision + 1,
-        deadlineAt: Date.now() + responseDuration(state),
+        deadlineAt: dayjs().valueOf() + responseDuration(state),
       };
       if (state.publicState.responsePlayerIds.length) return engineResult(state);
       if (state.publicState.phase === 'WAITING_CHALLENGE_ACTION') return advanceAfterActionChallengeWindow(state);
@@ -696,16 +754,6 @@ export const executeCommand = (
 
       const continuation = state.lossContinuation;
       state.lossContinuation = undefined;
-      if (continuation?.provedCard) {
-        const { playerId, cardId } = continuation.provedCard;
-        const hand = state.privateHands[playerId] || [];
-        const proved = hand.find(card => card.id === cardId && !card.isLost);
-        if (proved) {
-          state.deck = shuffleDeck([...state.deck, { id: proved.id, roleSlug: proved.roleSlug }]);
-          const replacement = state.deck.pop()!;
-          state.privateHands[playerId] = hand.map(card => card.id === cardId ? { ...replacement, isLost: false } : card);
-        }
-      }
       if (continuation?.next === 'block') return advanceAfterActionChallengeWindow(state);
       if (continuation?.next === 'resolve') return resolveApprovedAction(state);
       return finishTurn(state);
@@ -798,8 +846,8 @@ const resolveApprovedAction = (state: AuthoritativeGameState): EngineExecutionRe
       ...state.publicState,
       history: [
         {
-          id: `ev-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-          timestamp: Date.now(),
+          id: `ev-${dayjs().valueOf()}-${Math.random().toString(36).substring(2, 6)}`,
+          timestamp: dayjs().valueOf(),
           type: 'ACTION_RESOLVED',
           message: msg,
           importance,
@@ -898,7 +946,7 @@ const resolveApprovedAction = (state: AuthoritativeGameState): EngineExecutionRe
         phase: 'WAITING_EXCHANGE_CHOICE',
         cardChoicePlayerId: pId,
         cardChoiceReason: 'Troca da Marqueteira: escolha 2 cartas para devolver ao baralho central.',
-        deadlineAt: Date.now() + state.settings.choiceTimeoutMs,
+        deadlineAt: dayjs().valueOf() + state.settings.choiceTimeoutMs,
         revision: state.publicState.revision + 1,
       };
 
@@ -998,7 +1046,7 @@ const prepareCardLoss = (
     responsePlayerIds: [],
     cardChoicePlayerId: targetPlayerId,
     cardChoiceReason: reason,
-    deadlineAt: Date.now() + state.settings.choiceTimeoutMs,
+    deadlineAt: dayjs().valueOf() + state.settings.choiceTimeoutMs,
     revision: state.publicState.revision + 1,
   };
 
@@ -1011,7 +1059,7 @@ const prepareCardLoss = (
         payload: { cardId: activeCards[0].id },
       },
       targetPlayerId,
-      `auto-loss-${Date.now()}`
+      `auto-loss-${dayjs().valueOf()}`
     );
   }
 
@@ -1066,12 +1114,12 @@ export const finishTurn = (state: AuthoritativeGameState): EngineExecutionResult
     pendingAction: null,
     cardChoicePlayerId: null,
     cardChoiceReason: null,
-    deadlineAt: Date.now() + state.settings.actionTimeoutMs,
+    deadlineAt: dayjs().valueOf() + state.settings.actionTimeoutMs,
     revision: state.publicState.revision + 1,
     history: [
       {
-        id: `ev-${Date.now()}-turn-${state.publicState.turn + 1}`,
-        timestamp: Date.now(),
+        id: `ev-${dayjs().valueOf()}-turn-${state.publicState.turn + 1}`,
+        timestamp: dayjs().valueOf(),
         type: 'TURN_CHANGED',
         message: `Turno ${state.publicState.turn + 1}: a vez é de ${nextPlayer?.name || 'Jogador'}.`,
         importance: 'normal',
@@ -1127,12 +1175,12 @@ const openResponseWindow = (
     if (phase === 'WAITING_CHALLENGE_ACTION') return advanceAfterActionChallengeWindow(state);
     return finishTurn(state);
   }
-  state.publicState = { ...state.publicState, deadlineAt: Date.now() + responseDuration(state) };
+  state.publicState = { ...state.publicState, deadlineAt: dayjs().valueOf() + responseDuration(state) };
   return engineResult(state);
 };
 
 /** Entrada exclusiva do host; não é um comando aceito pela rede. */
-export const executeTimeout = (state: AuthoritativeGameState, now = Date.now()): EngineExecutionResult => {
+export const executeTimeout = (state: AuthoritativeGameState, now = dayjs().valueOf()): EngineExecutionResult => {
   const pub = state.publicState;
   if (!pub.deadlineAt || now < pub.deadlineAt || pub.phase === 'FINISHED') return engineResult(state);
   const run = (command: ClientCommand, id: string) => executeCommand(state, command, id, `timeout-${now}`);

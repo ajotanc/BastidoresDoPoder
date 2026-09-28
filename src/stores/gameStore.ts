@@ -188,6 +188,7 @@ export const useGameStore = defineStore('game', () => {
           });
         },
         onDisconnected: () => {
+          if (gameState.value?.phase === 'FINISHED') return;
           errorMessage.value = 'Conexão interrompida. Tentando reconectar à sala…';
           scheduleReconnect(roomCode, playerName, avatarSlug);
         },
@@ -289,11 +290,11 @@ export const useGameStore = defineStore('game', () => {
     cancelReconnect();
     reconnectAttempts = 0;
     if (hostInstance.value) {
-      hostInstance.value.destroy();
+      hostInstance.value.leaveRoom();
       hostInstance.value = null;
     }
     if (clientInstance.value) {
-      clientInstance.value.destroy();
+      clientInstance.value.leaveRoom();
       clientInstance.value = null;
     }
     clearPlayerSession(currentRoomCode.value);

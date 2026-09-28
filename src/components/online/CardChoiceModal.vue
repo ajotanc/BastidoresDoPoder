@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import AppDialog from '@/components/ui/AppDialog.vue';
 import Card from '@/components/game/Card.vue';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type { SupportCard } from '@/game/models/gameState';
 import { getRoleDisplayName } from '@/game/engine/gameEngine';
 import { AlertTriangle } from 'lucide-vue-next';
@@ -28,74 +29,79 @@ const handleConfirm = (): void => {
     emit('choose', selectedCardId.value);
   }
 };
+watch(() => props.isOpen, () => { selectedCardId.value = ''; });
 </script>
 
 <template>
-  <div
-    v-if="isOpen && activeSupports.length > 0"
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-paper-deep/85 backdrop-blur-md animate-fadeIn"
-    role="dialog"
-    aria-modal="true"
+  <AppDialog
+    :is-open="isOpen && activeSupports.length > 0"
+    aria-label="Escolher apoio para perder"
+    max-width-class="max-w-lg"
   >
-    <div class="w-full max-w-lg bg-surface border border-status-red/50 rounded-2xl shadow-modal overflow-hidden flex flex-col">
-      <!-- Cabeçalho de Alerta -->
-      <div class="px-6 py-4 bg-status-red-bg border-b border-status-red/30 flex items-center gap-3">
-        <AlertTriangle class="w-6 h-6 text-status-red shrink-0" aria-hidden="true" />
+    <!-- Cabeçalho -->
+    <template #header>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-status-red/15 border border-status-red/40 flex items-center justify-center shrink-0 text-status-red">
+          <AlertTriangle class="w-5 h-5" aria-hidden="true" />
+        </div>
         <div>
-          <h2 class="font-serif font-bold text-base text-status-red tracking-wide">
-            Cassa de Apoio Político
+          <h2 class="font-serif font-bold text-base sm:text-lg text-gold-light tracking-wide">
+            Escolha o Apoio Perdido
           </h2>
-          <p class="text-xs text-ink-muted">
+          <p class="text-xs text-status-red">
             {{ reason || 'Selecione qual Apoio você deve sacrificar' }}
           </p>
         </div>
       </div>
+    </template>
 
-      <!-- Seleção de Carta -->
-      <div class="p-6 space-y-4">
-        <p class="text-xs text-ink font-medium">
-          Clique no Apoio que será revelado e descartado do seu gabinete:
-        </p>
+    <!-- Seleção de Carta -->
+    <div class="space-y-4">
+      <p class="text-xs text-ink font-medium">
+        Clique no Apoio que será revelado e descartado do seu gabinete:
+      </p>
 
-        <div class="grid grid-cols-2 gap-4">
-          <button
-            v-for="card in activeSupports"
-            :key="card.id"
-            type="button"
-            @click="selectedCardId = card.id"
-            class="group relative rounded-xl overflow-hidden border-2 transition-all p-2 flex flex-col items-center gap-2 bg-paper-deep"
-            :class="[
-              selectedCardId === card.id
-                ? 'border-status-red shadow-lg ring-2 ring-status-red/40 bg-status-red-bg/20'
-                : 'border-line hover:border-gold/50'
-            ]"
-          >
-            <div class="w-full aspect-[2/3] rounded-lg overflow-hidden bg-surface-elevated flex items-center justify-center relative">
-              <Card :role="card.roleSlug" />
-            </div>
-            <span class="text-xs font-serif font-bold text-ink text-center">
-              {{ getRoleDisplayName(card.roleSlug) }}
-            </span>
-          </button>
-        </div>
+      <div class="grid grid-cols-2 gap-4">
+        <button
+          v-for="card in activeSupports"
+          :key="card.id"
+          type="button"
+          @click="selectedCardId = card.id"
+          :aria-pressed="selectedCardId === card.id"
+          class="group relative rounded-lg overflow-hidden border-2 transition-all p-3 flex flex-col items-center gap-3 bg-paper-deep cursor-pointer"
+          :class="[
+            selectedCardId === card.id
+              ? 'border-status-red shadow-lg ring-2 ring-status-red/40 bg-status-red-bg/20'
+              : 'border-line hover:border-gold/50'
+          ]"
+        >
+          <div class="w-full aspect-[2/3] rounded overflow-hidden bg-surface-elevated flex items-center justify-center relative">
+            <Card :role="card.roleSlug" />
+          </div>
+          <span class="text-xs font-serif font-bold text-ink text-center">
+            {{ getRoleDisplayName(card.roleSlug) }}
+          </span>
+        </button>
       </div>
+    </div>
 
-      <!-- Rodapé com Confirmação -->
-      <div class="px-6 py-4 bg-paper-deep border-t border-line/40 flex justify-end">
+    <!-- Rodapé -->
+    <template #footer>
+      <div class="flex justify-end w-full">
         <button
           type="button"
           :disabled="!selectedCardId"
           @click="handleConfirm"
-          class="px-5 py-2.5 rounded-xl font-serif font-bold text-xs uppercase tracking-wider transition-all"
+          class="min-h-11 px-6 rounded-lg font-sans font-bold text-sm tracking-normal transition-all border"
           :class="[
             selectedCardId
-              ? 'bg-status-red hover:bg-status-red/90 text-paper-deep shadow-md'
-              : 'bg-surface-elevated text-ink-subtle cursor-not-allowed border border-line'
+              ? 'bg-status-red hover:bg-status-red/90 text-paper-deep border-status-red shadow-md cursor-pointer'
+              : 'bg-surface-elevated text-ink-subtle border-line cursor-not-allowed'
           ]"
         >
           Confirmar Perda de Apoio
         </button>
       </div>
-    </div>
-  </div>
+    </template>
+  </AppDialog>
 </template>

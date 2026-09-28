@@ -31,7 +31,7 @@ const displayCard = computed<RoleCard | undefined>(() => {
 
 <template>
   <div
-    class="game-card flex w-full aspect-[2/3] overflow-hidden select-none text-[#f4ead8] shadow-2xl border-2 border-[var(--role-color)] rounded-[0.75cqw] p-[0.5cqw]"
+    class="game-card flex w-full aspect-[2/3] overflow-hidden select-none text-[#f4ead8] shadow-2xl border-2 border-[var(--role-color)] md:p-[0.5cqw] p-[2cqw]"
     :style="{
       '--role-color': displayCard?.roleColor || '#dab65f'
     }" role="group" :aria-label="faceDown
@@ -48,12 +48,12 @@ const displayCard = computed<RoleCard | undefined>(() => {
         aria-hidden="true" />
     </div>
 
-    <div v-else-if="displayCard" class="flex-1 rounded-[1.75cqw] border border-[#334255] pointer-events-none"
+    <div v-else-if="displayCard" class="flex-1 border border-[#334255] pointer-events-none"
       aria-hidden="true">
       <div class="p-[3cqw] flex flex-1 flex-col gap-[3cqw] h-full">
         <header class="flex items-center justify-between gap-[3cqw] shrink-0">
           <div v-if="displayCard.iconSrc"
-            class="h-[16cqw] w-[16cqw] flex items-center justify-center border border-[#334255] p-[1cqw] rounded-[1.75cqw]">
+            class="h-[16cqw] w-[16cqw] flex items-center justify-center border border-[#334255] p-[1cqw]">
             <img :src="displayCard.iconSrc" :alt="`Ícone ${displayCard.name}`" class="w-full h-full object-contain"
               loading="lazy" decoding="async" />
           </div>
@@ -69,7 +69,7 @@ const displayCard = computed<RoleCard | undefined>(() => {
           </div>
         </header>
 
-        <section class="aspect-[4/3] shrink-0 overflow-hidden border border-[var(--role-color)] rounded-[1.75cqw]">
+        <section class="aspect-[4/3] shrink-0 overflow-hidden border border-[var(--role-color)]">
           <img :src="displayCard.characterSrc ?? '/images/bdp.webp'" :alt="`Personagem ${displayCard.name}`"
             class="w-full h-full object-cover object-top"
             :class="{ 'object-contain p-[15%]': !displayCard.characterSrc }" draggable="false" loading="lazy"
@@ -81,7 +81,7 @@ const displayCard = computed<RoleCard | undefined>(() => {
 
         <div class="flex-1 flex flex-col gap-[1.5cqw] min-h-0">
           <section v-for="(item, index) in [displayCard.cardText.action, displayCard.cardText.defense]" :key="index"
-            class="relative flex flex-col gap-[1.5cqw] px-[3.5cqw] py-[2.0cqw]  justify-center text-left flex-1 min-h-0 border border-[#314456] bg-[#152536] overflow-hidden rounded-[1.75cqw]">
+            class="relative flex flex-col gap-[1.5cqw] px-[3.5cqw] py-[2.0cqw]  justify-center text-left flex-1 min-h-0 border border-[#314456] bg-[#152536] overflow-hidden">
             <div class="absolute left-0 top-0 h-full w-[1cqw]" :style="{ backgroundColor: displayCard.roleColor }" />
 
             <div class="w-full flex items-center justify-between">

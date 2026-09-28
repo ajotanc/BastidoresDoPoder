@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import AppDialog from '@/components/ui/AppDialog.vue';
+import { ref, computed, watch } from 'vue';
 import type { RoleSlug } from '@/types/game';
 import type { ActionType, PublicPlayerState } from '@/game/models/gameState';
 import type { ActionIntent } from '@/game/models/commands';
 import { PLAYABLE_ROLES } from '@/game/engine/deck';
 import { getActionCost, getRoleDisplayName } from '@/game/engine/gameEngine';
+import { X } from 'lucide-vue-next';
 
 interface Props {
   isOpen: boolean;
@@ -21,13 +23,14 @@ const emit = defineEmits<{
   (e: 'declare', intent: ActionIntent): void;
 }>();
 
+type ActionCategory = 'all' | 'basic' | 'roles' | 'coups';
+
+const activeCategory = ref<ActionCategory>('all');
 const selectedAction = ref<ActionType | null>(null);
 const selectedTargetId = ref<string>('');
 const selectedNamedRole = ref<RoleSlug>('colonel');
 
-const isMustImpeach = computed(() => {
-  return props.myCoins >= 10;
-});
+const isMustImpeach = computed(() => props.myCoins >= 10);
 
 const aliveOpponents = computed(() => {
   return props.playerOrder
@@ -48,14 +51,31 @@ const requiresTarget = computed(() => {
   ].includes(selectedAction.value);
 });
 
-const requiresNamedRole = computed(() => {
-  return selectedAction.value === 'searchWarrant';
-});
+const requiresNamedRole = computed(() => selectedAction.value === 'searchWarrant');
 
 const canAfford = (action: ActionType): boolean => {
   const cost = getActionCost(action);
   return props.myCoins >= cost;
 };
+
+// Reset/inicialização ao abrir o modal
+watch(
+  () => props.isOpen,
+  (open) => {
+    if (open) {
+      if (isMustImpeach.value) {
+        selectedAction.value = 'definitiveImpeachment';
+        activeCategory.value = 'coups';
+      } else {
+        selectedAction.value = null;
+        activeCategory.value = 'all';
+      }
+      if (aliveOpponents.value[0]) {
+        selectedTargetId.value = aliveOpponents.value[0].id;
+      }
+    }
+  }
+);
 
 const selectAction = (action: ActionType): void => {
   if (isMustImpeach.value && action !== 'definitiveImpeachment') return;
@@ -80,331 +100,275 @@ const handleConfirm = (): void => {
   emit('declare', intent);
   emit('close');
 };
+
+interface ActionOption {
+  type: ActionType;
+  category: 'basic' | 'roles' | 'coups';
+  name: string;
+  roleClaim?: string;
+  costLabel: string;
+  costType: 'positive' | 'negative' | 'neutral';
+  description: string;
+  defenseInfo: string;
+}
+
+const actionOptions: ActionOption[] = [
+  {
+    type: 'salary',
+    category: 'basic',
+    name: 'Salário Oficial',
+    costLabel: '+C$ 1',
+    costType: 'positive',
+    description: 'Pegue C$ 1 do cofre.',
+    defenseInfo: 'Ação direta irrestrita. Não pode ser contestada nem bloqueada.',
+  },
+  {
+    type: 'crowdfunding',
+    category: 'basic',
+    name: 'Vaquinha Virtual',
+    costLabel: '+C$ 2',
+    costType: 'positive',
+    description: 'Arrecade C$ 2 do cofre.',
+    defenseInfo: 'Bloqueável por qualquer jogador alegando possuir o Barão.',
+  },
+  {
+    type: 'slushFund',
+    category: 'roles',
+    name: 'Caixa 2',
+    roleClaim: 'Barão',
+    costLabel: '+C$ 3',
+    costType: 'positive',
+    description: 'Pegue C$ 3 do cofre central.',
+    defenseInfo: 'Desafiável como blefe (Fake News!). Sem bloqueio.',
+  },
+  {
+    type: 'extortion',
+    category: 'roles',
+    name: 'Extorsão',
+    roleClaim: 'Coronel',
+    costLabel: 'Até C$ 2',
+    costType: 'positive',
+    description: 'Exija até C$ 2 de um gabinete rival.',
+    defenseInfo: 'Bloqueável pela vítima alegando Coronel ou Marqueteira.',
+  },
+  {
+    type: 'execution',
+    category: 'roles',
+    name: 'Execução Sumária',
+    roleClaim: 'Executor',
+    costLabel: '-C$ 3',
+    costType: 'negative',
+    description: 'Pague C$ 3 para forçar um rival a perder 1 Apoio.',
+    defenseInfo: 'Bloqueável pela vítima alegando possuir a Advogada.',
+  },
+  {
+    type: 'exchange',
+    category: 'roles',
+    name: 'Troca de Cartas',
+    roleClaim: 'Marqueteira',
+    costLabel: 'Sem custo',
+    costType: 'neutral',
+    description: 'Compre 2 apoios, escolha quais manter e devolva 2 ao baralho.',
+    defenseInfo: 'Pode ser contestada. Não pode ser bloqueada.',
+  },
+  {
+    type: 'searchWarrant',
+    category: 'roles',
+    name: 'Mandado de Busca',
+    roleClaim: 'Investigador',
+    costLabel: '-C$ 5',
+    costType: 'negative',
+    description: 'Pague C$ 5, aponte um rival e nomeie um cargo para apreensão.',
+    defenseInfo: 'Pode ser contestado e bloqueado por Advogada ou Coronel. Se aprovado, revela e elimina uma cópia do cargo nomeado.',
+  },
+  {
+    type: 'backroomDeal',
+    category: 'roles',
+    name: 'Acordo de Bastidor',
+    roleClaim: 'Articuladora',
+    costLabel: '+C$ 2 / +C$ 1',
+    costType: 'positive',
+    description: 'Ganhe C$ 2 e conceda C$ 1 para um aliado (ambos do cofre).',
+    defenseInfo: 'Articulação diplomática sem bloqueio de defesa.',
+  },
+  {
+    type: 'commonImpeachment',
+    category: 'coups',
+    name: 'Impeachment Comum',
+    costLabel: '-C$ 7',
+    costType: 'negative',
+    description: 'Pague C$ 7 para cassar 1 Apoio político de um adversário.',
+    defenseInfo: 'Bloqueável pelo Intocável mediante pagamento de propina C$ 3.',
+  },
+  {
+    type: 'definitiveImpeachment',
+    category: 'coups',
+    name: 'Impeachment Definitivo',
+    costLabel: '-C$ 10',
+    costType: 'negative',
+    description: 'Pague C$ 10. Elimina 1 Apoio de um rival sem apelação!',
+    defenseInfo: 'Golpe constitucional absoluto: sem bloqueio e sem contestação.',
+  },
+];
+
+const filteredActions = computed(() => {
+  if (isMustImpeach.value) {
+    return actionOptions.filter((a) => a.type === 'definitiveImpeachment');
+  }
+  if (activeCategory.value === 'all') return actionOptions;
+  return actionOptions.filter((a) => a.category === activeCategory.value);
+});
+
 </script>
 
 <template>
-  <div
-    v-if="isOpen"
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-paper-deep/80 backdrop-blur-md animate-fadeIn"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="action-modal-title"
+  <AppDialog
+    :is-open="isOpen"
+    aria-label="Escolher ação do turno"
+    max-width-class="max-w-2xl"
+    @close="emit('close')"
   >
-    <div class="w-full max-w-2xl bg-surface border border-line-gold/50 rounded-2xl shadow-modal overflow-hidden flex flex-col max-h-[90vh]">
-      <!-- Cabeçalho do Modal -->
-      <div class="px-6 py-4 bg-paper-deep border-b border-line-gold/30 flex items-center justify-between">
-        <div>
-          <h2 id="action-modal-title" class="font-serif font-bold text-lg text-gold-light tracking-wide">
-            Gabinete de Ação — Seu Turno
+    <template #header>
+      <div class="flex items-center justify-between gap-4">
+        <div class="min-w-0">
+          <h2 class="font-serif text-lg sm:text-xl font-bold text-gold-light tracking-wide">
+            Sua Próxima Jogada
           </h2>
-          <p class="text-xs text-ink-muted">
-            Seu saldo em cofre: <span class="font-bold text-gold">C$ {{ myCoins }}</span>
+          <p class="text-xs text-ink-muted mt-0.5">
+            Disponível: <strong class="text-gold font-bold">C$ {{ myCoins }}</strong>
           </p>
         </div>
         <button
           type="button"
           @click="emit('close')"
-          class="text-ink-muted hover:text-ink text-sm p-1.5 rounded-lg hover:bg-surface-elevated transition-colors"
-          aria-label="Fechar"
+          aria-label="Fechar ações"
+          class="p-2 rounded-lg text-ink-muted hover:text-gold-light hover:bg-surface-hover border border-transparent hover:border-line transition-all focus-visible:outline-none flex-shrink-0 cursor-pointer"
         >
-          ✕
+          <X class="w-5 h-5" aria-hidden="true" />
+        </button>
+      </div>
+    </template>
+
+    <div class="space-y-4">
+      <div class="flex shrink-0 gap-1.5 overflow-x-auto border-b border-line pb-3" role="group" aria-label="Filtrar ações">
+        <button
+          v-for="category in ([['all', 'Todas'], ['basic', 'Básicas'], ['roles', 'Personagens'], ['coups', 'Golpes']] as const)"
+          :key="category[0]"
+          type="button"
+          @click="activeCategory = category[0]"
+          :aria-pressed="activeCategory === category[0]"
+          class="min-h-10 shrink-0 rounded-lg px-3.5 text-xs font-semibold border transition-all cursor-pointer"
+          :class="activeCategory === category[0] ? 'border-line-gold bg-gold/15 text-gold-light font-bold shadow-sm' : 'border-line/60 bg-surface/40 text-ink-muted hover:border-line-gold/40 hover:text-ink'"
+        >
+          {{ category[1] }}
         </button>
       </div>
 
-      <!-- Alerta de Impeachment Obrigatório se C$ >= 10 -->
-      <div v-if="isMustImpeach" class="px-6 py-3 bg-status-red-bg border-b border-status-red/40 flex items-center gap-3">
-        <span class="text-lg">⚖️</span>
-        <p class="text-xs text-status-red font-medium">
-          <strong>Aviso Constitucional Obrigatório:</strong> Você acumulou C$ 10 ou mais. O regimento exige a declaração imediata de <strong>Impeachment Definitivo</strong>.
+      <div class="space-y-3">
+        <p v-if="isMustImpeach" class="rounded border border-status-red/40 bg-status-red-bg p-3 text-sm text-status-red">
+          Com C$ 10 ou mais, você precisa declarar Impeachment Definitivo.
         </p>
-      </div>
-
-      <!-- Conteúdo de Ações -->
-      <div class="p-6 overflow-y-auto space-y-6 flex-1">
-        <!-- 1. Receitas Básicas -->
-        <div v-if="!isMustImpeach">
-          <h3 class="text-xs font-serif uppercase tracking-wider text-ink-subtle font-bold mb-2.5">
-            Receitas do Gabinete
-          </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <button
-              type="button"
-              @click="selectAction('salary')"
-              class="p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between"
-              :class="[
-                selectedAction === 'salary'
-                  ? 'bg-gold/15 border-gold shadow-sm'
-                  : 'bg-surface-elevated/70 border-line hover:border-gold/40'
-              ]"
-            >
-              <div class="flex items-center justify-between w-full mb-1">
-                <span class="font-semibold text-sm text-ink">Salário Oficial</span>
-                <span class="text-xs font-bold text-gold">+C$ 1</span>
-              </div>
-              <p class="text-xs text-ink-muted leading-relaxed">
-                Receba C$ 1 do cofre. Ação direta, sem bloqueios ou contestações.
-              </p>
-            </button>
-
-            <button
-              type="button"
-              @click="selectAction('crowdfunding')"
-              class="p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between"
-              :class="[
-                selectedAction === 'crowdfunding'
-                  ? 'bg-gold/15 border-gold shadow-sm'
-                  : 'bg-surface-elevated/70 border-line hover:border-gold/40'
-              ]"
-            >
-              <div class="flex items-center justify-between w-full mb-1">
-                <span class="font-semibold text-sm text-ink">Vaquinha Virtual</span>
-                <span class="text-xs font-bold text-gold">+C$ 2</span>
-              </div>
-              <p class="text-xs text-ink-muted leading-relaxed">
-                Arrecade C$ 2. Qualquer jogador pode alegar Barão para bloquear.
-              </p>
-            </button>
-          </div>
-        </div>
-
-        <!-- 2. Manobras de Personagens -->
-        <div v-if="!isMustImpeach">
-          <h3 class="text-xs font-serif uppercase tracking-wider text-ink-subtle font-bold mb-2.5">
-            Manobras com Alegação de Cargo (Desafiáveis por "Fake News!")
-          </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <!-- Caixa 2 -->
-            <button
-              type="button"
-              @click="selectAction('slushFund')"
-              class="p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between"
-              :class="[
-                selectedAction === 'slushFund'
-                  ? 'bg-gold/15 border-gold'
-                  : 'bg-surface-elevated/70 border-line hover:border-gold/40'
-              ]"
-            >
-              <div class="flex items-center justify-between w-full mb-1">
-                <span class="font-semibold text-sm text-ink">Caixa 2 (Barão)</span>
-                <span class="text-xs font-bold text-gold">+C$ 3</span>
-              </div>
-              <p class="text-xs text-ink-muted leading-relaxed">
-                Receba C$ 3 do cofre central alegando possuir o Barão.
-              </p>
-            </button>
-
-            <!-- Extorsão -->
-            <button
-              type="button"
-              @click="selectAction('extortion')"
-              class="p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between"
-              :class="[
-                selectedAction === 'extortion'
-                  ? 'bg-gold/15 border-gold'
-                  : 'bg-surface-elevated/70 border-line hover:border-gold/40'
-              ]"
-            >
-              <div class="flex items-center justify-between w-full mb-1">
-                <span class="font-semibold text-sm text-ink">Extorsão (Coronel)</span>
-                <span class="text-xs font-bold text-gold">Até C$ 2</span>
-              </div>
-              <p class="text-xs text-ink-muted leading-relaxed">
-                Exija até C$ 2 de um adversário. Bloqueável por Coronel ou Marqueteira.
-              </p>
-            </button>
-
-            <!-- Execução -->
-            <button
-              type="button"
-              :disabled="!canAfford('execution')"
-              @click="selectAction('execution')"
-              class="p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between"
-              :class="[
-                selectedAction === 'execution'
-                  ? 'bg-gold/15 border-gold'
-                  : canAfford('execution')
-                  ? 'bg-surface-elevated/70 border-line hover:border-gold/40'
-                  : 'opacity-40 cursor-not-allowed bg-surface/40 border-line/30'
-              ]"
-            >
-              <div class="flex items-center justify-between w-full mb-1">
-                <span class="font-semibold text-sm text-ink">Execução (Executor)</span>
-                <span class="text-xs font-bold text-status-red">-C$ 3</span>
-              </div>
-              <p class="text-xs text-ink-muted leading-relaxed">
-                Pague C$ 3 para forçar um rival a perder 1 Apoio. Bloqueável por Advogada.
-              </p>
-            </button>
-
-            <!-- Mandado de Busca -->
-            <button
-              type="button"
-              :disabled="!canAfford('searchWarrant')"
-              @click="selectAction('searchWarrant')"
-              class="p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between"
-              :class="[
-                selectedAction === 'searchWarrant'
-                  ? 'bg-gold/15 border-gold'
-                  : canAfford('searchWarrant')
-                  ? 'bg-surface-elevated/70 border-line hover:border-gold/40'
-                  : 'opacity-40 cursor-not-allowed bg-surface/40 border-line/30'
-              ]"
-            >
-              <div class="flex items-center justify-between w-full mb-1">
-                <span class="font-semibold text-sm text-ink">Mandado de Busca</span>
-                <span class="text-xs font-bold text-status-red">-C$ 5</span>
-              </div>
-              <p class="text-xs text-ink-muted leading-relaxed">
-                Aponte um rival e nomeie um personagem. Se ele tiver, o apoio é apreendido.
-              </p>
-            </button>
-
-            <!-- Acordo de Bastidor -->
-            <button
-              type="button"
-              @click="selectAction('backroomDeal')"
-              class="p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between"
-              :class="[
-                selectedAction === 'backroomDeal'
-                  ? 'bg-gold/15 border-gold'
-                  : 'bg-surface-elevated/70 border-line hover:border-gold/40'
-              ]"
-            >
-              <div class="flex items-center justify-between w-full mb-1">
-                <span class="font-semibold text-sm text-ink">Acordo de Bastidor</span>
-                <span class="text-xs font-bold text-gold">+C$ 2 / +C$ 1</span>
-              </div>
-              <p class="text-xs text-ink-muted leading-relaxed">
-                Receba C$ 2 e conceda C$ 1 para um aliado (ambos do cofre). Sem bloqueio.
-              </p>
-            </button>
-          </div>
-        </div>
-
-        <!-- 3. Golpes Parlamentares -->
-        <div>
-          <h3 class="text-xs font-serif uppercase tracking-wider text-ink-subtle font-bold mb-2.5">
-            Golpes Parlamentares & Impeachment
-          </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <!-- Impeachment Comum -->
-            <button
-              type="button"
-              :disabled="isMustImpeach || !canAfford('commonImpeachment')"
-              @click="selectAction('commonImpeachment')"
-              class="p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between"
-              :class="[
-                selectedAction === 'commonImpeachment'
-                  ? 'bg-gold/15 border-gold'
-                  : !isMustImpeach && canAfford('commonImpeachment')
-                  ? 'bg-surface-elevated/70 border-line hover:border-gold/40'
-                  : 'opacity-40 cursor-not-allowed bg-surface/40 border-line/30'
-              ]"
-            >
-              <div class="flex items-center justify-between w-full mb-1">
-                <span class="font-semibold text-sm text-ink">Impeachment Comum</span>
-                <span class="text-xs font-bold text-status-red">-C$ 7</span>
-              </div>
-              <p class="text-xs text-ink-muted leading-relaxed">
-                Pague C$ 7 para cassar 1 Apoio de um rival. Bloqueável por Intocável (pagando C$ 3).
-              </p>
-            </button>
-
-            <!-- Impeachment Definitivo -->
-            <button
-              type="button"
-              :disabled="!canAfford('definitiveImpeachment')"
-              @click="selectAction('definitiveImpeachment')"
-              class="p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between"
-              :class="[
-                selectedAction === 'definitiveImpeachment'
-                  ? 'bg-status-red-bg border-status-red shadow-md'
-                  : canAfford('definitiveImpeachment')
-                  ? 'bg-surface-elevated/70 border-status-red/50 hover:border-status-red'
-                  : 'opacity-40 cursor-not-allowed bg-surface/40 border-line/30'
-              ]"
-            >
-              <div class="flex items-center justify-between w-full mb-1">
-                <span class="font-semibold text-sm text-status-red">Impeachment Definitivo</span>
-                <span class="text-xs font-bold text-status-red">-C$ 10</span>
-              </div>
-              <p class="text-xs text-ink-muted leading-relaxed">
-                Pague C$ 10. Elimina 1 Apoio do rival sem chance de bloqueio ou contestação!
-              </p>
-            </button>
-          </div>
-        </div>
-
-        <!-- Parâmetros Adicionais (Alvo e/ou Personagem Nomeado) -->
-        <div v-if="requiresTarget" class="p-4 bg-paper-deep rounded-xl border border-line space-y-3">
-          <label class="block text-xs font-serif font-bold text-gold-light uppercase tracking-wider">
-            Selecione o Gabinete Alvo:
-          </label>
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            <button
-              v-for="opp in aliveOpponents"
-              :key="opp.id"
-              type="button"
-              @click="selectedTargetId = opp.id"
-              class="p-2.5 rounded-lg border text-left flex items-center gap-2 transition-all"
-              :class="[
-                selectedTargetId === opp.id
-                  ? 'bg-gold/20 border-gold text-ink font-semibold'
-                  : 'bg-surface-elevated border-line text-ink-muted hover:border-gold/30'
-              ]"
-            >
-              <span class="text-xs truncate">{{ opp.name }}</span>
-            </button>
-          </div>
-
-          <!-- Nomeação de Personagem no Mandado de Busca -->
-          <div v-if="requiresNamedRole" class="pt-2 border-t border-line/50 space-y-2">
-            <label class="block text-xs font-serif font-bold text-gold-light uppercase tracking-wider">
-              Nomeie o Cargo sob Investigação:
-            </label>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-              <button
-                v-for="role in PLAYABLE_ROLES"
-                :key="role"
-                type="button"
-                @click="selectedNamedRole = role"
-                class="px-2.5 py-1.5 rounded-md border text-xs text-center transition-all truncate"
-                :class="[
-                  selectedNamedRole === role
-                    ? 'bg-gold/20 border-gold text-ink font-bold'
-                    : 'bg-surface-elevated border-line text-ink-muted hover:border-gold/30'
-                ]"
+        <article
+          v-for="action in filteredActions"
+          :key="action.type"
+          class="overflow-hidden rounded border transition-colors"
+          :class="selectedAction === action.type ? 'border-gold bg-gold/5' : 'border-line bg-paper-deep/50'"
+        >
+          <button
+            type="button"
+            :disabled="!canAfford(action.type) || (isMustImpeach && action.type !== 'definitiveImpeachment')"
+            :aria-pressed="selectedAction === action.type"
+            @click="selectAction(action.type)"
+            class="action-option w-full p-3.5 text-left disabled:opacity-40 cursor-pointer"
+          >
+            <span class="flex items-start justify-between gap-3">
+              <span class="min-w-0 font-serif text-base font-semibold text-ink">
+                {{ action.name }}
+                <span v-if="action.roleClaim" class="mt-0.5 block font-sans text-xs font-normal text-gold-muted">
+                  {{ action.roleClaim }}
+                </span>
+              </span>
+              <span
+                class="shrink-0 rounded-md px-2 py-1 text-xs font-bold tabular-nums"
+                :class="action.costType === 'positive' ? 'bg-status-green-bg text-status-green' : 'bg-surface-elevated text-gold-light'"
               >
-                {{ getRoleDisplayName(role) }}
-              </button>
-            </div>
+                {{ action.costLabel }}
+              </span>
+            </span>
+            <span class="block font-sans text-sm font-normal text-ink-muted">
+              {{ action.description }}
+            </span>
+            <span
+              v-if="selectedAction === action.type"
+              class="block font-normal border-t border-line pt-2 mt-3 text-sm text-gold-muted"
+            >
+              {{ action.defenseInfo }}
+            </span>
+          </button>
+          <div v-if="selectedAction === action.type && requiresTarget" class="space-y-4 border-t border-gold/30 p-3.5">
+            <fieldset>
+              <legend class="mb-2 font-serif text-sm font-bold text-gold-light">
+                {{ action.type === 'backroomDeal' ? 'Escolha seu aliado' : 'Escolha o alvo' }}
+              </legend>
+              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <button
+                  v-for="opp in aliveOpponents"
+                  :key="opp.id"
+                  type="button"
+                  @click="selectedTargetId = opp.id"
+                  :aria-pressed="selectedTargetId === opp.id"
+                  class="flex min-h-11 min-w-0 items-center gap-2 rounded border p-2 text-left cursor-pointer transition-colors"
+                  :class="selectedTargetId === opp.id ? 'border-gold bg-gold/15' : 'border-line bg-surface'"
+                >
+                  <img :src="'/images/characters/'+opp.avatarSlug+'.webp'" alt="" class="h-8 w-8 shrink-0 rounded object-cover" />
+                  <span class="min-w-0">
+                    <span class="block break-words text-sm font-semibold">{{ opp.name }}</span>
+                    <span class="block text-xs text-gold">C$ {{ opp.coins }}</span>
+                  </span>
+                </button>
+              </div>
+            </fieldset>
+            <fieldset v-if="requiresNamedRole">
+              <legend class="mb-2 font-serif text-sm font-bold text-gold-light">
+                Qual personagem será investigado?
+              </legend>
+              <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <button
+                  v-for="role in PLAYABLE_ROLES"
+                  :key="role"
+                  type="button"
+                  @click="selectedNamedRole = role"
+                  :aria-pressed="selectedNamedRole === role"
+                  class="min-h-11 rounded border px-2 text-xs cursor-pointer transition-colors"
+                  :class="selectedNamedRole === role ? 'border-gold bg-gold/15 text-gold-light' : 'border-line bg-surface text-ink-muted'"
+                >
+                  {{ getRoleDisplayName(role) }}
+                </button>
+              </div>
+            </fieldset>
           </div>
-        </div>
+        </article>
       </div>
+    </div>
 
-      <!-- Rodapé com Botão de Confirmação -->
-      <div class="px-6 py-4 bg-paper-deep border-t border-line-gold/30 flex items-center justify-end gap-3">
+    <template #footer>
+      <div class="flex items-center justify-end gap-3 w-full">
         <button
           type="button"
           @click="emit('close')"
-          class="px-4 py-2 rounded-xl text-xs font-semibold text-ink-muted hover:text-ink transition-colors"
+          class="min-h-11 rounded-lg border border-line hover:border-line-gold/50 bg-surface/50 hover:bg-surface-elevated px-5 text-sm font-semibold text-ink-muted hover:text-ink transition-colors cursor-pointer"
         >
           Cancelar
         </button>
         <button
           type="button"
-          :disabled="!selectedAction || (requiresTarget && !selectedTargetId)"
           @click="handleConfirm"
-          class="px-5 py-2.5 rounded-xl font-serif font-bold text-xs uppercase tracking-wider transition-all"
-          :class="[
-            selectedAction && (!requiresTarget || selectedTargetId)
-              ? 'bg-gold hover:bg-gold-light text-paper-deep shadow-md active:scale-95'
-              : 'bg-surface-elevated text-ink-subtle cursor-not-allowed border border-line'
-          ]"
+          :disabled="!selectedAction || (requiresTarget && !selectedTargetId)"
+          class="online-primary border border-gold hover:border-gold-light px-6 cursor-pointer"
         >
           Declarar no Plenário
         </button>
       </div>
-    </div>
-  </div>
+    </template>
+  </AppDialog>
 </template>

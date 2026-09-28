@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import Peer, { type DataConnection } from 'peerjs';
 import type { GameState, PrivatePlayerView } from '@/game/models/gameState';
 import type { ClientCommand } from '@/game/models/commands';
@@ -21,6 +22,7 @@ export class PeerClient {
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private lastMessageAt = 0;
   private destroyed = false;
+  private leaveTimer: ReturnType<typeof setTimeout> | null = null;
   public readonly roomCode: string;
   public readonly playerId: string;
 
@@ -42,14 +44,22 @@ export class PeerClient {
       peer.on('open', () => {
         this.peer = peer;
         const hostPeerId = roomCodeToPeerId(this.roomCode);
-        const conn = peer.connect(hostPeerId, { reliable: true });
+        // BinaryPack transforma undefined em null, inclusive em campos opcionais
+        // de ações. JSON preserva o contrato do protocolo omitindo esses campos.
+        const conn = peer.connect(hostPeerId, { reliable: true, serialization: 'json' });
 
         conn.on('open', () => {
           clearTimeout(connectionTimeout);
           this.connection = conn;
-          this.lastMessageAt = Date.now();
+          this.lastMessageAt = dayjs().valueOf();
+          let lastHeartbeatCheck = this.lastMessageAt;
           this.heartbeatTimer = setInterval(() => {
-            if (Date.now() - this.lastMessageAt > 15000) { conn.close(); return; }
+            const now = dayjs().valueOf();
+            // Timers suspensos não comprovam falha de rede. Ao retomar,
+            // primeiro envia uma sondagem e aguarda a resposta do host.
+            if (now - lastHeartbeatCheck > 15000) this.lastMessageAt = now;
+            lastHeartbeatCheck = now;
+            if (now - this.lastMessageAt > 15000) { conn.close(); return; }
             if (conn.open) conn.send({ type: 'HEARTBEAT' });
           }, 5000);
           this.callbacks.onConnected();
@@ -57,8 +67,12 @@ export class PeerClient {
         });
 
         conn.on('data', (data) => {
+          if (this.destroyed) {
+            if (isHostServerMessage(data) && data.type === 'COMMAND_ACK') this.destroy();
+            return;
+          }
           if (isHostServerMessage(data)) {
-            this.lastMessageAt = Date.now();
+            this.lastMessageAt = dayjs().valueOf();
             if (data.type === 'ROOM_SNAPSHOT') {
               if (this.revision !== undefined && data.state.revision < this.revision) return;
               this.revision = data.state.revision;
@@ -103,19 +117,27 @@ export class PeerClient {
 
     const envelope: WireMessageFromClient = {
       protocol: 1,
-      messageId: `cli-msg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      messageId: `cli-msg-${dayjs().valueOf()}-${Math.random().toString(36).substring(2, 6)}`,
       roomCode: this.roomCode,
       playerId: this.playerId,
-      sentAt: Date.now(),
-      revision: this.revision,
+      sentAt: dayjs().valueOf(),
+      ...(this.revision === undefined ? {} : { revision: this.revision }),
       data: command,
     };
 
     this.connection.send(envelope);
   }
 
+  public leaveRoom(): void {
+    this.destroyed = true; // Uma saída voluntária não deve disparar reconexão.
+    this.sendCommand({ type: 'LEAVE_ROOM', payload: {} });
+    // Mantém o canal aberto enquanto o PeerJS transmite a mensagem.
+    this.leaveTimer = setTimeout(() => this.destroy(), 1000);
+  }
+
   public destroy(): void {
     this.destroyed = true;
+    if (this.leaveTimer) clearTimeout(this.leaveTimer);
     if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
     if (this.connection) {
       this.connection.close();

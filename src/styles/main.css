@@ -125,3 +125,80 @@ button:focus-visible,
   }
 }
 
+
+@layer components {
+  .entry-tab { @apply flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-lg px-2 text-sm font-semibold; }
+  .online-input { @apply block min-h-12 w-full min-w-0 rounded-xl border border-line bg-paper-deep px-3 py-3 text-base text-ink outline-none transition-colors focus:border-gold focus:ring-2 focus:ring-gold/20; }
+  .online-primary { @apply flex min-h-11 items-center justify-center gap-2 rounded-xl border border-gold bg-gold px-4 py-3 font-sans text-sm font-bold text-paper-deep transition-colors hover:bg-gold-light disabled:cursor-not-allowed disabled:border-line disabled:bg-surface-elevated disabled:text-ink-subtle; }
+  .online-icon-button { @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line text-ink-muted hover:bg-surface-elevated hover:text-gold; }
+  .online-dialog { display: flex; flex-direction: column; max-height: calc(100dvh - 1.5rem); }
+  .dialog-actions { padding-bottom: max(.75rem, env(safe-area-inset-bottom)); }
+  .online-ui { overflow-wrap: break-word; }
+  .online-ui button { min-height: 44px; }
+  .online-dialog button { min-height: 44px; }
+  .online-ui button[title] { min-width: 44px; }
+  .online-ui button svg { flex-shrink: 0; }
+  .online-ui input { font-size: 16px; }
+}
+
+/* Shared controls: 44px touch target, the same type scale and restrained corners. */
+button[class], .app-button {
+  border-radius: 4px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+}
+button:not(:has(.game-card)):not(.profile-option):not(.action-option), .app-button {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-width: 1px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(:has(.block)) {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.online-icon-button,
+button[title="Copiar link da mesa"], button[title="Ampliar carta e ver regras completas"] {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+}
+.online-ui button svg, .app-nav button svg, .online-dialog button svg { flex-shrink: 0; }
+.online-ui label, .online-ui legend, .online-dialog legend { font-size: 14px; }
+.profile-option { aspect-ratio: 1; padding: 0; border-radius: 4px; }
+.profile-option img { display: block; aspect-ratio: 1; border-radius: 2px; }
+.game-status { border-radius: 4px; }
+.game-status button { display: inline-flex; }
+.revealed-card { padding: 0; border: 0; border-radius: 0; }
+.rivals-carousel { scroll-padding-inline: 0; }
+
+
+:where(button, .app-button) { border-color: var(--line); }
+.online-input { border-radius: 4px; }
+.lobby-player { height: auto; }
+.app-nav button[aria-controls="mobile-navigation"] { width: 44px; height: 44px; padding: 0; flex: 0 0 44px; }
+
+/* Borders follow the control's fill; quiet actions stay borderless. */
+button.bg-gold, .online-primary, .app-button.bg-gold { border-color: var(--gold); }
+button.bg-status-red { border-color: var(--red); }
+button.bg-surface-elevated, button.bg-surface, .app-button.bg-surface-elevated { border-color: var(--surface); }
+button.text-ink-muted, button.text-ink-subtle, .online-icon-button, .secondary-tabs button { border-color: transparent; }
+.rivals-carousel { grid-auto-columns: calc((100% - .75rem) / 2); }
+.rival-support { min-width: 0; perspective: 800px; }
+.rival-support-inner { position: relative; width: 100%; aspect-ratio: 2 / 3; transform-style: preserve-3d; transition: transform .6s ease; }
+.rival-support.is-revealed .rival-support-inner { transform: rotateY(180deg); }
+.rival-support-back, button.rival-support-front { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+button.rival-support-front { width: 100%; height: 100%; padding: 0; border: 0; border-radius: 0; transform: rotateY(180deg); background: transparent; }
+.rival-support .game-card { box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { .rival-support-inner { transition: none; } }
+
+.game-section-title { font-family: 'Cinzel', Georgia, serif; font-size: 16px; font-weight: 700; line-height: 1.5; color: #f3d59a; letter-spacing: 0; }
+html.modal-scroll-locked { overflow: hidden !important; overscroll-behavior: none; }
+.modal-scroll-surface { overscroll-behavior: contain; }
+.modal-scroll-surface [class*="overflow-y-auto"] { overscroll-behavior: contain; }

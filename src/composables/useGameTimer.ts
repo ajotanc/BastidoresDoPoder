@@ -1,6 +1,7 @@
-import { ref, watch, onUnmounted, computed, type Ref } from 'vue';
+import dayjs from 'dayjs';
+import { ref, watch, onUnmounted, computed, unref, type Ref } from 'vue';
 
-export const useGameTimer = (deadlineAt: Ref<number | null | undefined>, totalDurationMs = 15000) => {
+export const useGameTimer = (deadlineAt: Ref<number | null | undefined>, totalDurationMs: number | Ref<number> = 15000) => {
   const millisRemaining = ref<number>(0);
   let animationFrameId: number | null = null;
   let intervalId: ReturnType<typeof setInterval> | null = null;
@@ -10,7 +11,7 @@ export const useGameTimer = (deadlineAt: Ref<number | null | undefined>, totalDu
       millisRemaining.value = 0;
       return;
     }
-    const diff = deadlineAt.value - Date.now();
+    const diff = deadlineAt.value - dayjs().valueOf();
     millisRemaining.value = Math.max(0, diff);
   };
 
@@ -53,8 +54,9 @@ export const useGameTimer = (deadlineAt: Ref<number | null | undefined>, totalDu
   });
 
   const progressPercentage = computed(() => {
-    if (!deadlineAt.value || totalDurationMs <= 0) return 0;
-    const pct = (millisRemaining.value / totalDurationMs) * 100;
+    const duration = unref(totalDurationMs);
+    if (!deadlineAt.value || duration <= 0) return 0;
+    const pct = (millisRemaining.value / duration) * 100;
     return Math.min(100, Math.max(0, pct));
   });
 

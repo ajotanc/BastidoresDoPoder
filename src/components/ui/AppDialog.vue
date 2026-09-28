@@ -28,7 +28,7 @@ const emit = defineEmits<{
     <div
       v-if="props.isOpen"
       :class="[
-        'relative w-full max-h-[92vh] flex flex-col rounded-xl overflow-hidden bg-[#0a121b] border border-gold ring-2 ring-gold/40 shadow-modal',
+        'relative w-full max-h-[92vh] flex flex-col rounded-lg overflow-hidden bg-[#0a121b] border border-gold shadow-modal',
         props.maxWidthClass
       ]"
       @click.stop

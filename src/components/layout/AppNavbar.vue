@@ -1,98 +1,75 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue';
 import { NAVIGATION_SECTIONS } from '@/constants/gameData';
 import { usePwaInstall } from '@/composables/usePwaInstall';
 import { scrollToSection } from '@/utils/navigation';
-import { Download } from 'lucide-vue-next';
-
-interface Props {
-  activeSectionId: string;
-  isOnlineActive?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  isOnlineActive: false,
-});
-
-const emit = defineEmits<{
-  (e: 'navigate', sectionId: string): void;
-  (e: 'toggle-online'): void;
-}>();
-
+import { Download, BookOpen, Menu, X, ArrowUpRight, ChevronRight } from 'lucide-vue-next';
+const props = withDefaults(defineProps<{ activeSectionId: string; isOnlineActive?: boolean }>(), { isOnlineActive: false });
+const emit = defineEmits<{ (e: 'navigate', sectionId: string): void; (e: 'toggle-online'): void }>();
 const { isInstallable, installApp } = usePwaInstall();
-
-/**
- * Realiza a rolagem suave até a seção sem expor o hash na barra de endereços
- */
+const menuOpen = ref(false);
+const menuButton = ref<HTMLElement | null>(null);
+watch(() => props.isOnlineActive, () => { menuOpen.value = false; });
 const handleNavigate = (sectionId: string, event: MouseEvent): void => {
+  if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  menuOpen.value = false;
   emit('navigate', sectionId);
-  if (!props.isOnlineActive) {
-    scrollToSection(sectionId, event);
-  } else {
-    event.preventDefault();
-  }
+  if (!props.isOnlineActive) scrollToSection(sectionId, event);
+  else event.preventDefault();
 };
+const toggleOnline = () => { menuOpen.value = false; emit('toggle-online'); };
+const closeMenu = () => { if (menuOpen.value) { menuOpen.value = false; menuButton.value?.focus(); } };
 </script>
 
 <template>
-  <header
-    class="sticky top-0 z-30 bg-[#0a111af2] backdrop-blur-md border-b border-line-gold px-4 sm:px-8 py-3.5 transition-all"
-    role="banner">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-      <!-- Marca do Jogo com Logo Oficial -->
-      <a href="#home" @click="handleNavigate('home', $event)"
-        class="flex items-center gap-3 group text-decoration-none focus-visible:outline-none"
-        aria-label="Bastidores do Poder, início do manual">
-        <img src="/images/bdp.webp" alt="Logo Bastidores do Poder"
-          class="w-10 h-10 object-contain rounded-md shadow-sm transition-transform duration-200 group-hover:scale-105" />
-        <div class="leading-tight">
-          <span class="block font-serif font-bold text-lg text-gold-light tracking-tight">
-            Bastidores
-          </span>
-          <span class="block text-xs uppercase tracking-wider text-gold-muted font-semibold">
-            do Poder
-          </span>
-        </div>
+  <header class="app-nav sticky top-0 z-30 border-b border-line-gold bg-paper/95 backdrop-blur-xl" @keydown.esc="closeMenu">
+    <div class="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6">
+      <a href="#home" @click="handleNavigate('home', $event)" class="flex min-w-0 shrink-0 items-center gap-2" aria-label="Bastidores do Poder, início do manual">
+        <img src="/images/bdp.webp" alt="" class="h-8 w-7 object-contain" />
+        <span class="leading-tight"><span class="block font-serif text-xs font-bold text-gold-light sm:text-base">Bastidores</span><span class="block text-[10px] uppercase tracking-[.16em] text-gold-muted">do Poder</span></span>
       </a>
-
-      <!-- Navegação das seções do manual -->
-      <nav aria-label="Índice do manual" class="flex items-center gap-1 overflow-x-auto py-1 scrollbar-thin max-w-full">
-        <a v-for="item in NAVIGATION_SECTIONS" :key="item.id" :href="`#${item.id}`"
-          @click="handleNavigate(item.id, $event)" :class="[
-            'flex items-center gap-1.5 px-3 py-1.5 rounded text-xs sm:text-sm font-medium transition-all whitespace-nowrap',
-            props.activeSectionId === item.id
-              ? 'text-gold-light bg-[#1e252b] border border-gold-dark/60 font-semibold'
-              : 'text-ink-muted hover:text-gold-light hover:bg-[#151e27] border border-transparent',
-          ]" :aria-current="props.activeSectionId === item.id ? 'location' : undefined">
-          <span>{{ item.label }}</span>
-        </a>
+      <nav v-if="!isOnlineActive" aria-label="Índice do manual" class="hidden min-w-0 items-center gap-1 overflow-x-auto lg:flex">
+        <a v-for="item in NAVIGATION_SECTIONS" :key="item.id" :href="'#'+item.id" @click="handleNavigate(item.id, $event)" :aria-current="activeSectionId === item.id ? 'location' : undefined" class="rounded-lg px-3 py-3 text-xs whitespace-nowrap hover:bg-surface-elevated" :class="activeSectionId === item.id ? 'text-gold bg-gold/10' : 'text-ink-muted'">{{ item.label }}</a>
       </nav>
-
-      <!-- Ações rápidas: Jogar Online e PWA -->
-      <div class="flex items-center gap-2.5">
-        <button
-          type="button"
-          @click="emit('toggle-online')"
-          class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-serif font-bold uppercase tracking-wider transition-all border shadow-sm"
-          :class="[
-            props.isOnlineActive
-              ? 'bg-gold text-paper-deep border-gold-light'
-              : 'bg-gold/15 text-gold-light border-gold/40 hover:bg-gold/25'
-          ]"
-        >
-          <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-green opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-status-green"></span>
-          </span>
-          <span>{{ props.isOnlineActive ? 'Ver Manual' : 'Jogar Online' }}</span>
+      <div class="flex shrink-0 items-center gap-1.5">
+        <button type="button" @click="toggleOnline" class="nav-action flex min-h-11 items-center gap-2 rounded-lg border px-3 text-xs font-semibold" :class="isOnlineActive ? 'border-line-gold text-gold-light hover:bg-surface' : 'border-gold bg-gold text-paper-deep hover:bg-gold-light'">
+          <BookOpen v-if="isOnlineActive" class="h-4 w-4" aria-hidden="true" /><ArrowUpRight v-else class="h-4 w-4" aria-hidden="true" />
+          <span>{{ isOnlineActive ? 'Ver regras' : 'Jogar online' }}</span>
         </button>
-
-        <button v-if="isInstallable" type="button" @click="installApp"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold bg-surface-elevated text-ink hover:bg-surface-hover border border-line transition-all shadow-sm"
-          title="Instalar manual no dispositivo para jogar offline">
-          <Download class="w-3.5 h-3.5" aria-hidden="true" />
-          <span>Instalar App</span>
-        </button>
+        <button v-if="isInstallable" type="button" @click="installApp" class="hidden min-h-11 items-center gap-2 rounded-lg border border-line px-3 text-xs font-semibold sm:flex"><Download class="h-4 w-4" aria-hidden="true" />Instalar App</button>
+        <button ref="menuButton" type="button" class="flex h-11 w-11 items-center justify-center rounded-lg border border-line-gold text-gold-light hover:border-gold hover:bg-gold/10 hover:text-gold transition-colors duration-150 lg:hidden" :aria-expanded="menuOpen" aria-controls="mobile-navigation" :aria-label="menuOpen ? 'Fechar menu' : 'Abrir menu'" @click="menuOpen = !menuOpen"><X v-if="menuOpen" class="h-5 w-5" aria-hidden="true" /><Menu v-else class="h-5 w-5" aria-hidden="true" /></button>
       </div>
     </div>
+    <div v-if="menuOpen" class="fixed inset-0 top-16 bg-black/30 lg:hidden" aria-hidden="true" @click="closeMenu"></div>
+    <nav v-if="menuOpen" id="mobile-navigation" aria-label="Menu mobile" class="absolute z-10 inset-x-0 top-full bg-paper shadow-modal max-h-[75dvh] overflow-y-auto border-t border-line-gold/40 px-3.5 py-4 lg:hidden">
+      <div class="flex items-center justify-between border-b border-line-gold/30 px-1 pb-3 mb-3">
+        <h2 class="game-section-title text-base">Manual de Regras</h2>
+        <span class="text-[10px] font-sans font-semibold uppercase tracking-wider text-gold-muted">Capítulos</span>
+      </div>
+      <div class="grid grid-cols-2 gap-1.5 sm:gap-2">
+        <a
+          v-for="(item, index) in NAVIGATION_SECTIONS"
+          :key="item.id"
+          :href="'#' + item.id"
+          @click="handleNavigate(item.id, $event)"
+          :aria-current="activeSectionId === item.id ? 'location' : undefined"
+          class="group flex min-h-12 items-center justify-between rounded-lg border px-3 py-2 text-xs sm:text-sm transition-all duration-150"
+          :class="activeSectionId === item.id
+            ? 'border-line-gold bg-gold/15 text-gold-light font-semibold shadow-sm'
+            : 'border-line/60 bg-surface/50 text-ink-muted hover:border-line-gold/50 hover:bg-surface-elevated hover:text-ink'"
+        >
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-[10px] font-bold text-gold-muted tabular-nums group-hover:text-gold shrink-0">
+              {{ String(index + 1).padStart(2, '0') }}
+            </span>
+            <span class="truncate">{{ item.label }}</span>
+          </div>
+          <ChevronRight class="h-3.5 w-3.5 shrink-0 opacity-40 group-hover:opacity-100 group-hover:text-gold transition-opacity" aria-hidden="true" />
+        </a>
+      </div>
+      <div v-if="isInstallable" class="mt-3.5 pt-3 border-t border-line/60">
+        <button type="button" @click="installApp" class="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-line-gold/40 bg-surface px-4 text-sm font-semibold text-gold-light hover:bg-surface-elevated hover:border-gold hover:text-gold transition-colors"><Download class="h-4 w-4" aria-hidden="true" /><span>Instalar Aplicativo Oficial</span></button>
+      </div>
+    </nav>
   </header>
 </template>

@@ -47,6 +47,110 @@ function setup(hands: RoleSlug[][] = [['executor', 'coordinator'], ['baron', 'ma
 }
 
 describe('Regressões das regras online', () => {
+  it.each([
+    ['slushFund', 'baron'], ['extortion', 'colonel'], ['execution', 'executor'],
+    ['exchange', 'marketer'], ['searchWarrant', 'investigator'], ['backroomDeal', 'coordinator'],
+  ] as const)('comprovar %s substitui o apoio imediatamente e conserva todas as cartas', (actionType, role) => {
+    let s = action(setup([[role, 'untouchable'], ['lawyer', 'baron'], ['colonel', 'marketer']]), actionType);
+    const original = s;
+    const proved = s.privateHands.a![0]!;
+    const other = s.privateHands.a![1]!;
+    const deckIds = s.deck.map(card => card.id);
+    s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: false } }, 'b');
+    expect(s.publicState.phase).toBe('WAITING_CARD_CHOICE');
+    expect(s.privateHands.a![0]!.id).not.toBe(proved.id);
+    expect(deckIds).toContain(s.privateHands.a![0]!.id);
+    expect(s.privateHands.a![1]).toEqual(other);
+    expect(s.deck).toContainEqual({ id: proved.id, roleSlug: proved.roleSlug });
+    expect(s.deck).toHaveLength(deckIds.length);
+    expect(s.publicState.players.a!.activeSupportCount).toBe(2);
+    expect(s.publicState.discard).toHaveLength(0);
+    expect(JSON.stringify(s.publicState)).not.toContain(s.privateHands.a![0]!.id);
+    expect(original.privateHands.a![0]).toEqual(proved);
+    const cards = [...s.deck, ...Object.values(s.privateHands).flat()];
+    expect(cards).toHaveLength(24);
+    expect(new Set(cards.map(card => card.id)).size).toBe(24);
+    expect(s.publicState.history.filter(event => event.type === 'PROVED_CARD_REPLACED')).toHaveLength(1);
+    s = choose(s);
+    expect(s.publicState.history.filter(event => event.type === 'PROVED_CARD_REPLACED')).toHaveLength(1);
+  });
+
+  it.each([
+    ['crowdfunding', 'baron'], ['extortion', 'colonel'], ['extortion', 'marketer'],
+    ['execution', 'lawyer'], ['searchWarrant', 'lawyer'], ['searchWarrant', 'colonel'],
+    ['commonImpeachment', 'untouchable'],
+  ] as const)('comprovar bloqueio de %s com %s também substitui o apoio', (actionType, role) => {
+    let s = action(setup([['executor', 'coordinator'], [role, 'investigator'], ['baron', 'marketer']]), actionType);
+    if (s.publicState.phase === 'WAITING_CHALLENGE_ACTION') s = passWindow(s);
+    const proved = s.privateHands.b![0]!;
+    s = run(s, { type: 'DECLARE_BLOCK', payload: { claimedBlockRole: role } }, 'b');
+    s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: true } }, 'c');
+    const replacement = s.privateHands.b![0]!;
+    expect(replacement.id).not.toBe(proved.id);
+    expect(s.deck).toContainEqual({ id: proved.id, roleSlug: proved.roleSlug });
+    expect(s.publicState.players.b!.activeSupportCount).toBe(2);
+    expect(s.publicState.pendingAction).toBeNull();
+    s = choose(s);
+    expect(s.privateHands.b![0]).toEqual(replacement);
+    expect(s.publicState.phase).toBe('WAITING_ACTION');
+  });
+
+  it('abandono do contestador não impede a substituição já realizada', () => {
+    let s = action(setup([['baron', 'executor'], ['lawyer', 'marketer'], ['colonel', 'investigator']]), 'slushFund');
+    const provedId = s.privateHands.a![0]!.id;
+    s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: false } }, 'b');
+    s = run(s, { type: 'LEAVE_ROOM', payload: {} }, 'b');
+    expect(s.privateHands.a!.some(card => card.id === provedId)).toBe(false);
+    expect(s.deck.some(card => card.id === provedId)).toBe(true);
+  });
+  it.each(['execution', 'commonImpeachment', 'definitiveImpeachment'] as const)('saída do alvo durante %s limpa a ação e passa o turno', actionType => {
+    let s = setup();
+    s.publicState.players.a = { ...s.publicState.players.a!, coins: 10 };
+    if (actionType !== 'definitiveImpeachment') s.publicState.players.a = { ...s.publicState.players.a!, coins: 7 };
+    s = action(s, actionType);
+    s = run(s, { type: 'LEAVE_ROOM', payload: {} }, 'b');
+    expect(s.publicState.phase).toBe('WAITING_ACTION');
+    expect(s.publicState.activePlayerId).toBe('c');
+    expect(s.publicState.pendingAction).toBeNull();
+    expect(s.publicState.cardChoicePlayerId).toBeNull();
+    expect(s.publicState.discard).toHaveLength(2);
+  });
+
+  it('saída durante troca devolve as cartas compradas e revela somente os apoios originais', () => {
+    let s = setup();
+    const initialDeck = s.deck.length;
+    const original = s.privateHands.a!.map(card => card.id);
+    s = run(s, { type: 'DECLARE_ACTION', payload: { actionType: 'exchange' } });
+    s = passWindow(s);
+    expect(s.privateHands.a).toHaveLength(4);
+    s = run(s, { type: 'LEAVE_ROOM', payload: {} });
+    expect(s.deck).toHaveLength(initialDeck);
+    expect(s.publicState.discard.map(card => card.id).sort()).toEqual(original.sort());
+    expect(s.publicState.activePlayerId).toBe('b');
+    const all = [...s.deck, ...Object.values(s.privateHands).flat()];
+    expect(new Set(all.map(card => card.id)).size).toBe(24);
+    expect(all).toHaveLength(24);
+  });
+
+  it('saída de quem responderia remove a espera sem pular o próximo participante', () => {
+    let s = run(setup(), { type: 'DECLARE_ACTION', payload: { actionType: 'crowdfunding' } });
+    s = run(s, { type: 'LEAVE_ROOM', payload: {} }, 'b');
+    expect(s.publicState.responsePlayerIds).toEqual(['c']);
+    s = pass(s);
+    expect(s.publicState.players.a!.coins).toBe(9);
+    expect(s.publicState.activePlayerId).toBe('c');
+  });
+
+  it('abandono não duplica cartas que já estavam perdidas', () => {
+    let s = setup();
+    s.publicState.players.a = { ...s.publicState.players.a!, coins: 10 };
+    s = action(s, 'definitiveImpeachment');
+    s = choose(s);
+    s = run(s, { type: 'LEAVE_ROOM', payload: {} }, 'b');
+    s = run(s, { type: 'LEAVE_ROOM', payload: {} }, 'b');
+    expect(s.publicState.discard).toHaveLength(2);
+    expect(s.publicState.players.b!.lostCards).toHaveLength(2);
+  });
   it('passa somente a oportunidade do jogador atual e rejeita fora de ordem', () => {
     let s = action(setup(), 'execution');
     const original = JSON.stringify(s.publicState);
@@ -112,14 +216,15 @@ describe('Regressões das regras online', () => {
     expect(s.publicState.phase).toBe('WAITING_ACTION');
   });
 
-  it('encerra imediatamente ao restar um vivo, antes da reposição ou efeito', () => {
+  it('repõe a carta comprovada e encerra ao restar um vivo sem aplicar o ataque', () => {
     let s = action(setup([['executor', 'baron'], ['marketer']]), 'execution');
     const hand = s.privateHands.a;
     s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: false } }, 'b');
     expect(s.publicState.phase).toBe('FINISHED');
     expect(s.publicState.deadlineAt).toBeNull();
     expect(s.publicState.pendingAction).toBeNull();
-    expect(s.privateHands.a).toEqual(hand);
+    expect(s.privateHands.a![0]!.id).not.toBe(hand![0]!.id);
+    expect(s.deck.some(card => card.id === hand![0]!.id)).toBe(true);
   });
 
   it('alvo eliminado no desafio não é atacado de novo', () => {

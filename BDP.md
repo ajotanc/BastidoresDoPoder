@@ -86,8 +86,8 @@ Com C$10 ou mais no início do turno, somente Impeachment definitivo é permitid
 A engine consulta somente apoios ativos para comprovar a alegação.
 
 - Alegação falsa de ação: autor perde um apoio e a ação é cancelada.
-- Alegação verdadeira de ação: desafiante perde um apoio; se a partida continuar, a carta comprovada volta ao baralho, embaralha-se e compra-se uma reposição. Depois abre-se o bloqueio cabível, inclusive se o desafiante era o alvo e sobreviveu.
-- Bloqueio verdadeiro: desafiante perde um apoio; a ação fica bloqueada.
+- Alegação verdadeira de ação: o apoio comprovado é substituído imediatamente por uma compra secreta entre os demais apoios do baralho. A carta mostrada é devolvida e o baralho reembaralhado. O desafiante perde um apoio; se a partida continuar, abre-se o bloqueio cabível, inclusive se o desafiante era o alvo e sobreviveu.
+- Bloqueio verdadeiro: aplica a mesma substituição imediata do apoio comprovado; desafiante perde um apoio e a ação fica bloqueada. A reposição nunca devolve a mesma carta física nessa compra, mas pode trazer outra cópia do personagem. Apenas o titular recebe a nova carta em PRIVATE_VIEW; o histórico público registra a comprovação e a troca, sem revelar a compra.
 - Bloqueio falso: bloqueador perde um apoio e o efeito original continua, sem nova janela de defesa. Um alvo com dois apoios pode perder ambos na mesma jogada.
 
 WAITING_CARD_CHOICE distingue a perda por desafio da perda pelo efeito por uma continuação privada explícita. Com apenas um apoio, a perda é automática. Apoios perdidos permanecem revelados e não voltam ao baralho, não comprovam alegações e não podem ser devolvidos na troca.
@@ -108,9 +108,11 @@ O host agenda e decide o vencimento usando deadlineAt absoluto. Clientes apenas 
 | --- | --- | --- |
 | Decidir ação | 45 s | Salário; com C$10+, definitivo contra o próximo adversário vivo |
 | Oportunidade de bloqueio | 12 s por jogador | Passa somente esse jogador |
-| Oportunidade de desafio | 10 s por jogador | Passa somente esse jogador |
-| Escolher perda | 20 s | Primeiro apoio ativo na ordem da mão |
-| Escolher devolução | 20 s | Devolve as duas cartas recém-compradas |
+| Oportunidade de desafio | 12 s por jogador | Passa somente esse jogador |
+| Escolher perda | 12 s | Primeiro apoio ativo na ordem da mão |
+| Escolher devolução | 12 s | Devolve as duas cartas recém-compradas |
+
+Os tempos são configurados em segundos por `ACTION_TIMEOUT_SECONDS` e `RESPONSE_TIMEOUT_SECONDS`, em `src/game/models/gameState.ts`. A engine converte esses valores para milissegundos; a barra de tempo acompanha a duração da fase.
 
 Cada nova fase ou respondente recebe novo prazo, e o host reagenda também após ações automáticas. Timeout não é comando de rede; apenas o host chama executeTimeout. Jogadores ausentes continuam sujeitos a essas escolhas padrão.
 
@@ -118,9 +120,13 @@ Cada nova fase ou respondente recebe novo prazo, e o host reagenda também após
 
 Cliente envia heartbeat a cada cinco segundos; silêncio acima de 15 segundos faz a conexão ser encerrada. O host reserva a identidade por 60 segundos após detectar a desconexão. RECONNECT deve comprovar playerId e reconnectToken. A conexão antiga perde autorização antes de ser fechada, impedindo que seu evento de fechamento desconecte a nova.
 
+Se o próprio navegador atrasar o monitor de heartbeat por mais de 15 segundos, host e cliente concedem uma nova janela para receber mensagens antes de fechar canais abertos. Ao retomar, o host também processa o prazo de jogada vencido e preserva o tempo restante de reconexão. Isso evita tratar a suspensão dos timers locais como prova de que todos os jogadores caíram. Uma conexão realmente silenciosa continua sendo encerrada quando o monitor volta a executar regularmente.
+
 A store usa a sessão salva para reconectar e tenta novamente após quedas. Reabrir o link na mesma sessão também restaura o jogador dentro do prazo. O host devolve snapshot atual, deadline vigente e somente a visão privada do titular. O relógio da partida não pausa durante a reconexão.
 
-Expirado o prazo, a reconexão é rejeitada. Durante a partida, o ausente permanece na mesa e recebe as ações automáticas. No lobby, o registro é removido após o prazo para não impedir o início pelos jogadores presentes. Não há substituição por outro jogador durante a partida. O prazo de graça e heartbeat são constantes da camada PeerJS, separados dos prazos de jogada.
+Expirado o prazo, a reconexão é rejeitada e o jogador é eliminado. Seus apoios ativos são revelados no estado público (`lostCards` e `discard`), sem retornar ao baralho. Cartas já perdidas não são duplicadas; durante uma troca, as duas cartas recém-compradas voltam ao baralho antes da eliminação dos apoios originais. No lobby, o registro é removido. O comando autenticado `LEAVE_ROOM`, enviado pelo botão Sair, aplica esse abandono imediatamente, mesmo com revisão desatualizada. Uma ação que depende de quem saiu é encerrada sem devolver custos pagos; ausentes são retirados das filas de resposta. Restando apenas um jogador vivo, a partida termina com sua vitória.
+
+Não há migração de host. Sua saída voluntária publica o estado final antes de fechar a conexão: o único sobrevivente vence; havendo vários sobreviventes, a sala é encerrada sem vencedor. O prazo de graça e heartbeat são constantes da camada PeerJS, separados dos prazos de jogada.
 
 Se o navegador do host fechar/recarregar ou seu estado em memória for perdido, a partida não pode ser recuperada pelos clientes. Eles informam a desconexão e a tentativa de retorno falha se o host não voltar. Não há eleição de novo host, backup de mãos ou persistência autoritativa.
 

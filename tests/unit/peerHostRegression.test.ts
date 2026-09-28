@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ClientCommand } from '@/game/models/commands';
 import type { GameState } from '@/game/models/gameState';
+import { DEFAULT_GAME_SETTINGS } from '@/game/models/gameState';
 import { PeerHost } from '@/online/peer/peerHost';
 import { isClientEnvelope } from '@/online/peer/protocol';
 
@@ -182,14 +183,53 @@ describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
     expect(state.players.b!.isConnected).toBe(true);
   });
 
-  it('reagenda timeout para turnos seguintes e prossegue com ausentes', () => {
+  it('elimina ausentes ao vencer a reconexão independentemente da duração da ação', () => {
     start();
-    vi.advanceTimersByTime(45000);
-    expect(state.turn).toBe(2);
-    expect(state.players.a!.coins).toBe(3);
-    vi.advanceTimersByTime(45000);
-    expect(state.turn).toBe(3);
-    expect(state.players.b!.coins).toBe(3);
+    vi.advanceTimersByTime(90000);
+    expect(state.phase).toBe('FINISHED');
+    expect(state.winnerPlayerId).toBe('a');
+    expect(state.players.b!.activeSupportCount).toBe(0);
+    expect(state.players.c!.activeSupportCount).toBe(0);
+    expect(state.discard).toHaveLength(4);
+  });
+
+  it('saída voluntária revela os apoios para todos e encerra quando resta um jogador', () => {
+    const { b, c } = start();
+    const view = (messages(b, 'PRIVATE_VIEW').at(-1) as { view: { supports: { id: string; roleSlug: string }[] } }).view;
+    send(b, 'b', { type: 'LEAVE_ROOM', payload: {} }, 1); // saída aceita mesmo com revisão antiga
+    expect(state.players.b).toMatchObject({ isAlive: false, isConnected: false, activeSupportCount: 0 });
+    for (const card of view.supports) expect(state.discard).toContainEqual({ id: card.id, roleSlug: card.roleSlug, lostByPlayerId: 'b', reason: 'Abandono da partida' });
+    expect(messages(c, 'ROOM_SNAPSHOT').at(-1)).toMatchObject({ state: { discard: state.discard } });
+    b.close();
+    send(c, 'c', { type: 'LEAVE_ROOM', payload: {} });
+    expect(state.phase).toBe('FINISHED');
+    expect(state.winnerPlayerId).toBe('a');
+    expect(state.deadlineAt).toBeNull();
+    const replacement = connect('replacement');
+    send(replacement, 'b', { type: 'RECONNECT', payload: { playerId: 'b', reconnectToken: 'token-b' } });
+    expect(messages(replacement, 'PRIVATE_VIEW')).toHaveLength(0);
+  });
+
+  it('perda de uma carta é publicada para outro cliente sem revelar a carta restante', () => {
+    const { b, c } = start();
+    host.executeLocalHostCommand({ type: 'DECLARE_ACTION', payload: { actionType: 'slushFund' } });
+    send(b, 'b', { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: false } });
+    const id = state.cardChoicePlayerId;
+    if (id === 'b') {
+      const view = (messages(b, 'PRIVATE_VIEW').at(-1) as { view: { supports: { id: string; roleSlug: string }[] } }).view;
+      const card = view.supports[0]!;
+      send(b, 'b', { type: 'CHOOSE_CARD', payload: { cardId: card.id } });
+      expect(state.discard).toEqual(expect.arrayContaining([expect.objectContaining({ id: card.id, roleSlug: card.roleSlug, lostByPlayerId: 'b' })]));
+      expect(messages(c, 'ROOM_SNAPSHOT').at(-1)).toMatchObject({ state: { discard: state.discard } });
+      expect(state.players.b!.activeSupportCount).toBe(1);
+    } else {
+      // O host blefou: escolhe sua perda; a divulgação continua sendo pública.
+      expect(id).toBe('a');
+      const internal = host as unknown as { authoritativeState: { privateHands: Record<string, { id: string }[]> } };
+      host.executeLocalHostCommand({ type: 'CHOOSE_CARD', payload: { cardId: internal.authoritativeState.privateHands.a![0]!.id } });
+      expect(state.discard).toHaveLength(1);
+      for (const conn of [b, c]) expect(messages(conn, 'ROOM_SNAPSHOT').at(-1)).toMatchObject({ state: { discard: state.discard } });
+    }
   });
 
   it('timeout não pode ser acionado por uma mensagem de cliente', () => {
@@ -199,6 +239,38 @@ describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
     expect(messages(b, 'COMMAND_REJECTED').at(-1)).toMatchObject({ reject: { reason: 'INVALID_COMMAND' } });
   });
 
+  it('envia a reposição comprovada somente ao dono antes da escolha de perda do contestador', () => {
+    const { b, c } = start();
+    const internal = host as unknown as { authoritativeState: import('@/game/engine/gameEngine').AuthoritativeGameState };
+    const authoritative = internal.authoritativeState;
+    // Monta uma mão conhecida preservando as 24 cartas reais da partida.
+    const old = authoritative.privateHands.b![0]!;
+    const baron = [...authoritative.deck, ...Object.values(authoritative.privateHands).flat()].find(card => card.roleSlug === 'baron')!;
+    for (const id of Object.keys(authoritative.privateHands)) {
+      authoritative.privateHands[id] = authoritative.privateHands[id]!.map(card => card.id === baron.id ? { ...old } : card);
+    }
+    authoritative.deck = authoritative.deck.map(card => card.id === baron.id ? { id: old.id, roleSlug: old.roleSlug } : card);
+    authoritative.privateHands.b![0] = { id: baron.id, roleSlug: 'baron', isLost: false };
+    host.executeLocalHostCommand({ type: 'DECLARE_ACTION', payload: { actionType: 'salary' } });
+    send(b, 'b', { type: 'DECLARE_ACTION', payload: { actionType: 'slushFund' } });
+    send(c, 'c', { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: false } });
+    expect(state.phase).toBe('WAITING_CARD_CHOICE');
+    const view = (messages(b, 'PRIVATE_VIEW').at(-1) as { view: { playerId: string; supports: { id: string }[] } }).view;
+    expect(view.supports[0]!.id).not.toBe(baron.id);
+    expect(view.playerId).toBe('b');
+    expect(JSON.stringify(messages(c, 'ROOM_SNAPSHOT').at(-1))).not.toContain(view.supports[0]!.id);
+    expect(JSON.stringify(messages(c, 'PRIVATE_VIEW').at(-1))).not.toContain(view.supports[0]!.id);
+  });
+
+  it('saída do host comunica encerramento sem vencedor se ainda existem dois adversários', () => {
+    const { b, c } = start();
+    host.leaveRoom();
+    expect(state.phase).toBe('FINISHED');
+    expect(state.winnerPlayerId).toBeNull();
+    expect(state.players.a!.activeSupportCount).toBe(0);
+    for (const conn of [b, c]) expect(messages(conn, 'ROOM_SNAPSHOT').at(-1)).toMatchObject({ state: { phase: 'FINISHED', winnerPlayerId: null, discard: state.discard } });
+  });
+
   it('heartbeat detecta uma conexão silenciosa', () => {
     const b = join('b');
     b.emit('data', { type: 'HEARTBEAT' });
@@ -206,6 +278,40 @@ describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
     vi.advanceTimersByTime(20000);
     expect(b.open).toBe(false);
     expect(state.players.b!.isConnected).toBe(false);
+  });
+
+  it('rodada manual seguida de timeout passa o turno sem expulsar jogadores que respondem heartbeat', () => {
+    const { b, c } = start();
+    host.executeLocalHostCommand({ type: 'DECLARE_ACTION', payload: { actionType: 'salary' } });
+    send(b, 'b', { type: 'DECLARE_ACTION', payload: { actionType: 'salary' } });
+    send(c, 'c', { type: 'DECLARE_ACTION', payload: { actionType: 'salary' } });
+    const pulse = setInterval(() => {
+      for (const conn of [b, c]) conn.emit('data', { type: 'HEARTBEAT' });
+    }, 5000);
+    try {
+      vi.advanceTimersByTime(DEFAULT_GAME_SETTINGS.actionTimeoutMs);
+      expect(state.activePlayerId).toBe('b');
+      expect(state.turn).toBe(5);
+      vi.advanceTimersByTime(DEFAULT_GAME_SETTINGS.actionTimeoutMs);
+      expect(state.activePlayerId).toBe('c');
+      expect(state.phase).toBe('WAITING_ACTION');
+      expect(b.open && c.open).toBe(true);
+    } finally { clearInterval(pulse); }
+  });
+
+  it('retomar um host com timers suspensos não expulsa conexões antes de ouvir novos heartbeats', () => {
+    const { b, c } = start();
+    host.executeLocalHostCommand({ type: 'DECLARE_ACTION', payload: { actionType: 'salary' } });
+    send(b, 'b', { type: 'DECLARE_ACTION', payload: { actionType: 'salary' } });
+    send(c, 'c', { type: 'DECLARE_ACTION', payload: { actionType: 'salary' } });
+    vi.setSystemTime(Date.now() + DEFAULT_GAME_SETTINGS.actionTimeoutMs + 120000);
+    vi.advanceTimersByTime(5000);
+    expect(b.open && c.open).toBe(true);
+    for (const conn of [b, c]) conn.emit('data', { type: 'HEARTBEAT' });
+    expect(state.players.b!.isConnected).toBe(true);
+    expect(state.players.c!.isConnected).toBe(true);
+    expect(state.activePlayerId).toBe('b');
+    expect(state.turn).toBe(5);
   });
 
   it('remove ausente do lobby após prazo de graça para não impedir início', () => {

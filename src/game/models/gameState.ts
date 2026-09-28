@@ -115,11 +115,15 @@ export interface GameSettings {
 export const MIN_PLAYERS_TO_START = 2;
 export const MAX_PLAYERS_PER_ROOM = 8;
 
+// Tempos editáveis em segundos. Resposta inclui bloqueio, desafio e escolha de cartas.
+export const ACTION_TIMEOUT_SECONDS = 600;
+export const RESPONSE_TIMEOUT_SECONDS = 30;
+
 export const DEFAULT_GAME_SETTINGS: GameSettings = {
-  actionTimeoutMs: 45000,
-  reactionTimeoutMs: 12000,
-  challengeTimeoutMs: 10000,
-  choiceTimeoutMs: 20000,
+  actionTimeoutMs: ACTION_TIMEOUT_SECONDS * 1000,
+  reactionTimeoutMs: RESPONSE_TIMEOUT_SECONDS * 1000,
+  challengeTimeoutMs: RESPONSE_TIMEOUT_SECONDS * 1000,
+  choiceTimeoutMs: RESPONSE_TIMEOUT_SECONDS * 1000,
   initialCoins: 2,
 };
 

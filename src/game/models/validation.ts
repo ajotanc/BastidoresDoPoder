@@ -13,6 +13,7 @@ export const isClientCommand = (value: unknown): value is ClientCommand => {
   if (!isRecord(value) || !isRecord(value.payload)) return false;
   const p = value.payload;
   switch (value.type) {
+    case 'LEAVE_ROOM': return Object.keys(p).length === 0;
     case 'JOIN_ROOM': return typeof p.name === 'string' && p.name.trim().length > 0 &&
       p.name.length <= 60 && isRole(p.avatarSlug) && isIdentifier(p.reconnectToken);
     case 'RECONNECT': return isIdentifier(p.playerId) && isIdentifier(p.reconnectToken);

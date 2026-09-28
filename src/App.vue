@@ -43,8 +43,8 @@ const handleNavbarNavigate = (sectionId: string): void => {
   <div class="min-h-screen flex flex-col bg-paper text-ink font-sans selection:bg-gold selection:text-paper">
     <!-- Link de acessibilidade para navegação por teclado -->
     <a
-      href="#home"
-      @click="scrollToSection('home', $event)"
+      href="#main-content"
+      @click="scrollToSection('main-content', $event)"
       class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-gold focus:text-surface-elevated focus:font-bold focus:rounded focus:shadow-lg"
     >
       Pular para o manual principal
@@ -59,12 +59,19 @@ const handleNavbarNavigate = (sectionId: string): void => {
     />
 
     <!-- Conteúdo Principal: Renderizado pelo Vue Router -->
-    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 sm:py-12">
+    <main
+      id="main-content"
+      tabindex="-1"
+      class="flex-1 max-w-6xl w-full mx-auto transition-all"
+      :class="[
+        isOnlineActive ? 'px-3 sm:px-6 py-3 sm:py-6' : 'px-4 sm:px-8 py-8 sm:py-12'
+      ]"
+    >
       <RouterView />
     </main>
 
-    <!-- Rodapé -->
-    <AppFooter />
+    <!-- Rodapé (oculto no modo de jogo para foco total no tabuleiro) -->
+    <AppFooter v-if="!isOnlineActive" />
 
     <!-- Modal Lightbox para Ampliação e Download de Cartas -->
     <CardLightboxModal />
