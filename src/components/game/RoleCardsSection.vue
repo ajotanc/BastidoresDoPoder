@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSelect from "@/components/ui/AppSelect.vue";
 import { ref, computed } from 'vue';
 import { ROLE_CARDS } from '@/constants/gameData';
 import type { RoleCard } from '@/types/game';
@@ -80,23 +81,7 @@ const filteredCards = computed<readonly RoleCard[]>(() => {
 
     <!-- Controles de filtro e busca -->
     <div class="mb-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-      <div class="flex items-center gap-1.5 overflow-x-auto pb-1">
-        <button
-          v-for="cat in filterCategories"
-          :key="cat.id"
-          type="button"
-          @click="selectedCategory = cat.id"
-          :aria-pressed="selectedCategory === cat.id"
-          :class="[
-            'px-3 py-1.5 rounded-md text-xs font-semibold transition-all whitespace-nowrap',
-            selectedCategory === cat.id
-              ? 'bg-gold text-surface-elevated shadow-sm'
-              : 'bg-surface hover:bg-surface-hover text-ink-muted border border-line'
-          ]"
-        >
-          {{ cat.label }}
-        </button>
-      </div>
+      <div class="w-full sm:max-w-xs"><AppSelect v-model="selectedCategory" label="Categoria das cartas" :options="filterCategories" /></div>
 
       <div class="relative w-full sm:w-72">
         <Search

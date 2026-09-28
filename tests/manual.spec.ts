@@ -5,8 +5,9 @@ test('search ignores accents and filters expose their state', async ({ page }) =
   await page.getByRole('searchbox').fill('barao');
   await expect(page.locator('#cards article')).toHaveCount(1);
   await expect(page.locator('#cards article').getByRole('heading', { name: 'Barão', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Economia & Negociação' }).click();
-  await expect(page.getByRole('button', { name: 'Economia & Negociação' })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('combobox', { name: 'Categoria das cartas' }).click();
+  await page.getByRole('option', { name: 'Economia & Negociação' }).click();
+  await expect(page.getByRole('combobox', { name: 'Categoria das cartas' })).toHaveText('Economia & Negociação');
 });
 
 test('modal traps focus, flips by keyboard and restores focus', async ({ page }) => {

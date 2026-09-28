@@ -1,3 +1,4 @@
+import { ACTION_TIMEOUT_SECONDS, RESPONSE_TIMEOUT_SECONDS, INITIAL_COINS } from '@/constants/gameConfig';
 import type { RoleSlug } from '@/types/game';
 
 /**
@@ -51,8 +52,10 @@ export interface RevealedCard {
  */
 export interface PublicPlayerState {
   readonly id: string;
+  readonly isBot?: boolean;
   readonly name: string;
   readonly avatarSlug: RoleSlug;
+  readonly avatarImage?: string;
   readonly coins: number;
   readonly activeSupportCount: number;
   readonly lostCards: readonly RevealedCard[];
@@ -112,19 +115,17 @@ export interface GameSettings {
   readonly initialCoins: number;
 }
 
-export const MIN_PLAYERS_TO_START = 2;
-export const MAX_PLAYERS_PER_ROOM = 8;
+export { MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM } from '@/constants/gameConfig';
 
 // Tempos editáveis em segundos. Resposta inclui bloqueio, desafio e escolha de cartas.
-export const ACTION_TIMEOUT_SECONDS = 600;
-export const RESPONSE_TIMEOUT_SECONDS = 30;
+export { ACTION_TIMEOUT_SECONDS, RESPONSE_TIMEOUT_SECONDS } from '@/constants/gameConfig';
 
 export const DEFAULT_GAME_SETTINGS: GameSettings = {
   actionTimeoutMs: ACTION_TIMEOUT_SECONDS * 1000,
   reactionTimeoutMs: RESPONSE_TIMEOUT_SECONDS * 1000,
   challengeTimeoutMs: RESPONSE_TIMEOUT_SECONDS * 1000,
   choiceTimeoutMs: RESPONSE_TIMEOUT_SECONDS * 1000,
-  initialCoins: 2,
+  initialCoins: INITIAL_COINS,
 };
 
 /**

@@ -88,7 +88,7 @@ const handleShowRules = (): void => {
         <button
           type="button"
           @click="handleShowRules"
-          class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-surface hover:bg-[#15202b] border border-line hover:border-gold/70 text-ink hover:text-gold-light transition-all duration-200 shadow-sm hover:shadow-[0_2px_12px_rgba(230,191,115,0.12)] active:scale-[0.98] select-none focus-visible:outline-none group/rules"
+          class="rules-action w-full min-h-11 flex items-center justify-between gap-2 rounded border border-gold/50 bg-gold/10 px-3 text-gold-light hover:bg-gold/20 transition-colors group/rules"
           :aria-label="`Ver regras e habilidades de ${props.card.name}`"
         >
           <div class="flex items-center gap-2 min-w-0">
@@ -96,13 +96,13 @@ const handleShowRules = (): void => {
               class="w-4 h-4 text-gold-muted group-hover/rules:text-gold transition-colors flex-shrink-0"
               aria-hidden="true"
             />
-            <span class="text-xs font-bold tracking-tight truncate text-[#ede8de] group-hover/rules:text-gold-light transition-colors">
+            <span class="text-sm font-semibold text-gold-light group-hover/rules:text-gold-light transition-colors">
               Regras e Habilidades
             </span>
           </div>
 
           <span
-            class="px-2 py-0.5 rounded-md text-[0.68rem] font-bold tracking-wider bg-[#0a1118] text-gold-muted border border-line-subtle group-hover/rules:border-gold/60 group-hover/rules:text-gold-light group-hover/rules:bg-[#101a24] transition-all flex-shrink-0"
+            class="rules-count inline-flex w-6 aspect-square items-center justify-center rounded text-xs leading-none font-bold tabular-nums bg-[#0a1118] text-gold-muted border border-line-subtle group-hover/rules:border-gold/60 group-hover/rules:text-gold-light group-hover/rules:bg-[#101a24] transition-all flex-shrink-0"
             title="Quantidade de regras e poderes deste personagem"
           >
             {{ props.card.rules.length }}

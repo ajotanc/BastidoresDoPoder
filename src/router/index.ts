@@ -1,3 +1,4 @@
+import { GAME_NAME } from '@/constants/gameConfig';
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import ManualView from '@/views/ManualView.vue';
 import OnlineView from '@/views/OnlineView.vue';
@@ -8,7 +9,7 @@ const routes: RouteRecordRaw[] = [
     name: 'home',
     component: ManualView,
     meta: {
-      title: 'Bastidores do Poder — Manual de Regras',
+      title: GAME_NAME + ' — Manual de Regras',
     },
   },
   {
@@ -16,7 +17,7 @@ const routes: RouteRecordRaw[] = [
     name: 'rules',
     component: ManualView,
     meta: {
-      title: 'Bastidores do Poder — Manual de Regras',
+      title: GAME_NAME + ' — Manual de Regras',
     },
   },
   {
@@ -24,7 +25,7 @@ const routes: RouteRecordRaw[] = [
     name: 'online',
     component: OnlineView,
     meta: {
-      title: 'Bastidores do Poder — Gabinete Online',
+      title: GAME_NAME + ' — Gabinete Online',
     },
   },
   {
@@ -33,7 +34,7 @@ const routes: RouteRecordRaw[] = [
     component: OnlineView,
     props: true,
     meta: {
-      title: 'Bastidores do Poder — Mesa de Jogo',
+      title: GAME_NAME + ' — Mesa de Jogo',
     },
   },
   // Redirecionamento amigável em inglês (/play/:id -> /game/:id)
@@ -70,7 +71,7 @@ router.afterEach((to) => {
   if (typeof document !== 'undefined') {
     if (to.name === 'game' && to.params.id) {
       const roomId = String(to.params.id).toUpperCase();
-      document.title = `Bastidores do Poder — Mesa ${roomId}`;
+      document.title = `${GAME_NAME} — Mesa ${roomId}`;
     } else if (typeof to.meta.title === 'string') {
       document.title = to.meta.title;
     }

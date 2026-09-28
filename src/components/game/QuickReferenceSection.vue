@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM } from "@/constants/gameConfig";
 import {
   QUICK_REFERENCE_DATA,
   ICON_LEGEND_ITEMS,
@@ -109,7 +110,7 @@ import RoleIcon from '@/components/game/RoleIcon.vue';
     </AppCallout>
 
     <p class="text-sm text-ink-muted leading-relaxed italic border-l-2 border-line pl-3 py-1 mt-4">
-      Esta versão consolida as regras oficiais do protótipo com os {{ CARDS_LENGTH }} personagens em testes de equilíbrio para 3 a 8 jogadores.
+      Esta versão consolida as regras oficiais do protótipo com os {{ CARDS_LENGTH }} personagens em testes de equilíbrio para {{ MIN_PLAYERS_TO_START }} a {{ MAX_PLAYERS_PER_ROOM }} jogadores.
     </p>
   </section>
 </template>

@@ -1,0 +1,23 @@
+{
+  "name": "Bastidores do Poder",
+  "minPlayers": 2,
+  "maxPlayers": 8,
+  "gameplay": {
+    "actionTimeoutSeconds": 600,
+    "responseTimeoutSeconds": 30,
+    "initialCoins": 2
+  },
+  "bots": {
+    "defaultCount": 2,
+    "decisionDelaySeconds": 1.2,
+    "challengeProbability": 0.12
+  },
+  "connection": {
+    "reconnectGraceSeconds": 60,
+    "reconnectRetrySeconds": 2,
+    "maxReconnectAttempts": 20,
+    "heartbeatIntervalSeconds": 5,
+    "heartbeatTimeoutSeconds": 15,
+    "connectionTimeoutSeconds": 10
+  }
+}

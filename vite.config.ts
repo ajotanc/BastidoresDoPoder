@@ -1,15 +1,19 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 import packageJson from './package.json';
 
+const gameConfig = JSON.parse(readFileSync(new URL('./game.config.json', import.meta.url), 'utf8')) as { name: string; minPlayers: number; maxPlayers: number };
+const { name: GAME_NAME, minPlayers: MIN_PLAYERS_TO_START, maxPlayers: MAX_PLAYERS_PER_ROOM } = gameConfig;
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(packageJson.version),
   },
   plugins: [
     vue(),
+    { name: 'game-metadata', transformIndexHtml: (html: string) => html.replaceAll('__GAME_NAME__', GAME_NAME).replaceAll('__MIN_PLAYERS__', String(MIN_PLAYERS_TO_START)).replaceAll('__MAX_PLAYERS__', String(MAX_PLAYERS_PER_ROOM)) },
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
@@ -26,9 +30,9 @@ export default defineConfig({
         'images/coins/*.webp'
       ],
       manifest: {
-        name: 'Bastidores do Poder — Manual & Regras',
-        short_name: 'Bastidores Poder',
-        description: 'Manual e guia de referência completo para o jogo Bastidores do Poder',
+        name: GAME_NAME + ' — Manual & Regras',
+        short_name: GAME_NAME,
+        description: 'Manual e guia de referência completo para o jogo ' + GAME_NAME,
         theme_color: '#111d2e',
         background_color: '#0b1219',
         display: 'standalone',

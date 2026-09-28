@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { GAME_NAME, GAME_NAME_FIRST_LINE, GAME_NAME_SECOND_LINE } from "@/constants/gameConfig";
 import { ref, watch } from 'vue';
 import { NAVIGATION_SECTIONS } from '@/constants/gameData';
 import { usePwaInstall } from '@/composables/usePwaInstall';
@@ -24,9 +25,9 @@ const closeMenu = () => { if (menuOpen.value) { menuOpen.value = false; menuButt
 <template>
   <header class="app-nav sticky top-0 z-30 border-b border-line-gold bg-paper/95 backdrop-blur-xl" @keydown.esc="closeMenu">
     <div class="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6">
-      <a href="#home" @click="handleNavigate('home', $event)" class="flex min-w-0 shrink-0 items-center gap-2" aria-label="Bastidores do Poder, início do manual">
+      <a href="#home" @click="handleNavigate('home', $event)" class="flex min-w-0 shrink-0 items-center gap-2" :aria-label="'' + GAME_NAME + ', início do manual'">
         <img src="/images/bdp.webp" alt="" class="h-8 w-7 object-contain" />
-        <span class="leading-tight"><span class="block font-serif text-xs font-bold text-gold-light sm:text-base">Bastidores</span><span class="block text-[10px] uppercase tracking-[.16em] text-gold-muted">do Poder</span></span>
+        <span class="leading-tight"><span class="block font-serif text-xs font-bold text-gold-light sm:text-base">{{ GAME_NAME_FIRST_LINE }}</span><span class="block text-[10px] uppercase tracking-[.16em] text-gold-muted">{{ GAME_NAME_SECOND_LINE }}</span></span>
       </a>
       <nav v-if="!isOnlineActive" aria-label="Índice do manual" class="hidden min-w-0 items-center gap-1 overflow-x-auto lg:flex">
         <a v-for="item in NAVIGATION_SECTIONS" :key="item.id" :href="'#'+item.id" @click="handleNavigate(item.id, $event)" :aria-current="activeSectionId === item.id ? 'location' : undefined" class="rounded-lg px-3 py-3 text-xs whitespace-nowrap hover:bg-surface-elevated" :class="activeSectionId === item.id ? 'text-gold bg-gold/10' : 'text-ink-muted'">{{ item.label }}</a>

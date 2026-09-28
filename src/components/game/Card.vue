@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { GAME_NAME } from "@/constants/gameConfig";
 import { computed } from 'vue';
 import type { RoleCard, RoleSlug } from '@/types/game';
 import { ROLE_CARDS } from '@/constants/gameData';
@@ -34,14 +35,9 @@ const displayCard = computed<RoleCard | undefined>(() => {
     class="game-card flex w-full aspect-[2/3] overflow-hidden select-none text-[#f4ead8] shadow-2xl border-2 border-[var(--role-color)] md:p-[0.5cqw] p-[2cqw]"
     :style="{
       '--role-color': displayCard?.roleColor || '#dab65f'
-    }" role="group" :aria-label="faceDown
-    ? 'Verso da carta — Bastidores do Poder'
-    : displayCard
-      ? `Carta ${displayCard.name}`
-      : 'Carta Bastidores do Poder'
-    ">
+    }" role="group" :aria-label="faceDown ? 'Verso da carta — ' + GAME_NAME : displayCard ? 'Carta ' + displayCard.name : 'Carta ' + GAME_NAME">
     <div v-if="faceDown" class="flex flex-1 overflow-hidden">
-      <img src="/images/cards/back-card.png" alt="Verso da carta Bastidores do Poder" class="w-full h-full object-cover"
+      <img src="/images/cards/back-card.png" :alt="'Verso da carta ' + GAME_NAME + ''" class="w-full h-full object-cover"
         draggable="false" loading="lazy" decoding="async" />
 
       <div class="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/20 via-transparent to-black/5"

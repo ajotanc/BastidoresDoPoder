@@ -1,3 +1,4 @@
+import { MAX_RECONNECT_ATTEMPTS, RECONNECT_RETRY_MS } from '@/constants/gameConfig';
 import { defineStore } from 'pinia';
 import { ref, computed, shallowRef } from 'vue';
 import type { RoleSlug } from '@/types/game';
@@ -10,6 +11,7 @@ import { PeerHost } from '@/online/peer/peerHost';
 import { PeerClient } from '@/online/peer/peerClient';
 import { generateRoomCode, normalizeRoomCode } from '@/online/room/roomCode';
 import { savePlayerSession, clearPlayerSession, loadPlayerSession } from '@/online/room/reconnect';
+import { validateBotCount } from '@/game/bots/createBots';
 
 export type GameConnectionMode = 'idle' | 'creating' | 'joining' | 'lobby' | 'playing';
 
@@ -39,10 +41,10 @@ export const useGameStore = defineStore('game', () => {
   };
   const scheduleReconnect = (code: string, name: string, avatar: RoleSlug) => {
     cancelReconnect();
-    if (!loadPlayerSession(code) || reconnectAttempts++ >= 20) return;
+    if (!loadPlayerSession(code) || reconnectAttempts++ >= MAX_RECONNECT_ATTEMPTS) return;
     reconnectTimer = setTimeout(() => {
       void joinRoom(code, name, avatar).catch(() => scheduleReconnect(code, name, avatar));
-    }, 2000);
+    }, RECONNECT_RETRY_MS);
   };
 
   // Getters computados
@@ -63,8 +65,9 @@ export const useGameStore = defineStore('game', () => {
   /**
    * Cria uma nova sala como Host P2P
    */
-  const createRoom = async (playerName: string, avatarSlug: RoleSlug = 'colonel', attempt = 0): Promise<string> => {
+  const createRoom = async (playerName: string, avatarSlug: RoleSlug = 'colonel', avatarImage?: string, botCount = 0, attempt = 0): Promise<string> => {
     try {
+      validateBotCount(botCount);
       clearError();
       mode.value = 'creating';
 
@@ -104,7 +107,7 @@ export const useGameStore = defineStore('game', () => {
             isHost: true,
           });
         },
-      });
+      }, avatarImage, botCount);
 
       hostInstance.value = host;
       await host.init();
@@ -113,7 +116,7 @@ export const useGameStore = defineStore('game', () => {
       hostInstance.value?.destroy();
       hostInstance.value = null;
       if (err && typeof err === 'object' && 'type' in err && err.type === 'unavailable-id' && attempt < 4) {
-        return createRoom(playerName, avatarSlug, attempt + 1);
+        return createRoom(playerName, avatarSlug, avatarImage, botCount, attempt + 1);
       }
       mode.value = 'idle';
       if (err instanceof Error) {
@@ -128,7 +131,7 @@ export const useGameStore = defineStore('game', () => {
   /**
    * Conecta a uma sala existente como Cliente P2P
    */
-  const joinRoom = async (roomCodeInput: string, playerName: string, avatarSlug: RoleSlug = 'baron'): Promise<void> => {
+  const joinRoom = async (roomCodeInput: string, playerName: string, avatarSlug: RoleSlug = 'baron', avatarImage?: string): Promise<void> => {
     try {
       clearError();
       mode.value = 'joining';
@@ -183,6 +186,7 @@ export const useGameStore = defineStore('game', () => {
             payload: {
               name: playerName,
               avatarSlug,
+              ...(avatarImage ? { avatarImage } : {}),
               reconnectToken,
             },
           });

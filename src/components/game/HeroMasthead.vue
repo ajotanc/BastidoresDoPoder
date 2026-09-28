@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { GAME_NAME, GAME_NAME_FIRST_LINE, GAME_NAME_SECOND_LINE, MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM } from "@/constants/gameConfig";
 import { GAME_META_STATS } from '@/constants/gameData';
 import AppButton from '@/components/ui/AppButton.vue';
 import { ArrowDown, BookOpen } from 'lucide-vue-next';
@@ -22,10 +23,10 @@ import { ArrowDown, BookOpen } from 'lucide-vue-next';
     <!-- Conteúdo principal -->
     <div class="relative flex flex-col gap-6 z-10 max-w-xl">
       <div class="flex justify-center items-center gap-3">
-        <img src="/images/bdp.webp" alt="Brasão Oficial de Bastidores do Poder"
+        <img src="/images/bdp.webp" :alt="'Brasão Oficial de ' + GAME_NAME"
           class="w-20 h-20 sm:w-32 sm:h-32 object-contain drop-shadow-md rounded-md" />
         <h1 class="font-serif font-bold text-3xl sm:text-5xl lg:text-6xl text-[#f7f0df] tracking-tight leading-tight">
-          Bastidores <span class="text-gold">do Poder</span>
+          {{ GAME_NAME_FIRST_LINE }} <span class="text-gold">{{ GAME_NAME_SECOND_LINE }}</span>
         </h1>
       </div>
       <p class="text-ink-muted text-base sm:text-lg leading-relaxed max-w-lg">
@@ -35,7 +36,7 @@ import { ArrowDown, BookOpen } from 'lucide-vue-next';
 
       <div>
         <span class="block text-xs uppercase tracking-[0.16em] text-gold-light font-bold">
-          Manual Completo · 3 a 8 jogadores
+          Manual Completo · {{ MIN_PLAYERS_TO_START }} a {{ MAX_PLAYERS_PER_ROOM }} jogadores
         </span>
         <span class="block text-[0.75rem] text-gold-muted/80 tracking-wide">
           Edição Oficial de Testes

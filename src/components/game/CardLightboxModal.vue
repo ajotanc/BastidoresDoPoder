@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { GAME_NAME } from "@/constants/gameConfig";
 import { ref, watch, nextTick } from 'vue';
 import { useLightbox } from '@/composables/useLightbox';
 import AppDialog from '@/components/ui/AppDialog.vue';
@@ -49,63 +50,19 @@ watch(
     max-width-class="max-w-2xl" @close="closeCardLightbox">
     <!-- Cabeçalho Fixo do Modal -->
     <template #header>
-      <div v-if="activeCard" class="flex items-center justify-between gap-4">
-        <!-- Lado Esquerdo: Ícone + Título + Tag + Metadados -->
-        <div class="flex flex-1 items-center gap-3.5 min-w-0">
-          <!-- Ícone / Brasão da Carta -->
-          <div
-            class="w-16 h-16 rounded-lg flex items-center justify-center bg-[#091017] border border-gold-dark/70 shadow-inner flex-shrink-0">
-            <img v-if="!isFlipped && activeCard.iconSrc" :src="activeCard.iconSrc"
-              :alt="`Símbolo de ${activeCard.name}`" class="w-full h-full p-2 object-contain" />
-            <img v-else src="/images/bdp.webp" alt="Brasão Bastidores do Poder"
-              class="w-full h-full p-2 object-contain" />
-          </div>
-
-          <!-- Informações e Tag Oficial -->
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2.5 flex-wrap">
-              <h2
-                class="font-serif font-bold text-xl sm:text-2xl text-[#f7f0e2] tracking-tight leading-tight break-words">
-                {{ isFlipped ? 'Verso' : activeCard.name }}
-              </h2>
-
-              <!-- Tag Refinada com Insígnia Governamental -->
-              <span
-                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[0.68rem] uppercase font-bold tracking-[0.14em] border shadow-sm backdrop-blur-sm select-none max-w-full"
-                :style="isFlipped
-                  ? {
-                    backgroundColor: '#e6bf7315',
-                    borderColor: '#e6bf7360',
-                    color: '#f5dcad'
-                  }
-                  : {
-                    backgroundColor: activeCard.roleColor + '18',
-                    borderColor: activeCard.roleColor + '60',
-                    color: activeCard.roleColor
-                  }
-                  ">
-                <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse"
-                  :style="{ backgroundColor: isFlipped ? '#e6bf73' : activeCard.roleColor }"></span>
-                <span>{{ isFlipped ? 'Deck' : activeCard.kind }}</span>
-              </span>
-            </div>
-
-            <!-- Metadados de Linha -->
-            <div class="flex items-center gap-2 mt-1.5 text-xs text-ink-muted flex-wrap">
-              <span>{{ isFlipped ? 'Padrão' : activeCard.category }}</span>
-              <span class="w-1 h-1 rounded-full bg-gold-dark/60" aria-hidden="true"></span>
-              <span class="text-gold-light/90">{{ isFlipped ? `${SUPPORT_CARDS_LENGTH} cartas do baralho` :
-                activeCard.copies }}</span>
-            </div>
-          </div>
+      <div v-if="activeCard" class="card-modal-header grid grid-cols-[40px_minmax(0,1fr)_44px] items-center gap-x-3 gap-y-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded border border-line-gold/50 bg-paper-deep p-1">
+          <img :src="isFlipped ? '/images/bdp.webp' : activeCard.iconSrc || '/images/bdp.webp'" :alt="GAME_NAME" class="h-full w-full object-contain" />
         </div>
-
-        <!-- Lado Direito: Fechar -->
-        <button type="button" @click="closeCardLightbox"
-          class="p-2 rounded-lg text-ink-muted hover:text-gold-light hover:bg-surface-hover border border-transparent hover:border-line transition-all focus-visible:outline-none flex-shrink-0"
-          aria-label="Fechar visualização">
-          <X class="w-5 h-5" aria-hidden="true" />
-        </button>
+        <div class="min-w-0">
+          <span class="block text-[11px] text-gold-muted">Visualização da carta</span>
+          <h2 class="mt-0.5 break-words font-serif text-base font-bold leading-tight text-ink sm:text-xl">{{ isFlipped ? 'Verso' : activeCard.name }}</h2>
+        </div>
+        <button type="button" @click="closeCardLightbox" class="online-icon-button self-start" aria-label="Fechar visualização"><X class="h-5 w-5" aria-hidden="true" /></button>
+        <div class="col-span-3 flex flex-wrap items-center justify-between gap-2 border-t border-line/60 pt-2 text-xs text-ink-muted">
+          <span>{{ isFlipped ? 'Verso padrão' : activeCard.category }}</span>
+          <span class="text-gold-light">{{ isFlipped ? `${SUPPORT_CARDS_LENGTH} cartas do baralho` : activeCard.copies }}</span>
+        </div>
       </div>
     </template>
 
@@ -113,7 +70,7 @@ watch(
       <button
         type="button"
         @click="toggleFlip"
-        class="card-3d-wrapper relative grid w-full max-w-[400px] cursor-pointer focus-visible:outline-none rounded-[18px] bg-transparent border-0 p-0 select-none group/flip"
+        class="card-3d-wrapper relative grid w-full max-w-[400px] cursor-pointer focus-visible:outline-none rounded bg-transparent border-0 p-0 select-none group/flip"
         :class="{ 'is-flipped': isFlipped }"
         :aria-pressed="isFlipped"
         :aria-label="isFlipped ? 'Verso da carta exibido. Clique para ver a frente.' : 'Frente da carta exibida. Clique para ver o verso.'"
@@ -123,24 +80,17 @@ watch(
         <Card face-down class="card-face card-face-back [grid-area:1/1]" :aria-hidden="!isFlipped" />
       </button>
 
-      <div class="text-center">
-        <button type="button" @click="toggleFlip" class="inline-flex items-center gap-1.5 text-xs text-gold-muted/80 bg-surface/90 px-3 py-1 rounded-md border border-line shadow-sm">
-          <RotateCw class="w-3.5 h-3.5 text-gold" aria-hidden="true" />
-          {{ isFlipped ? 'Frente' : 'Verso' }}
-        </button>
-      </div>
+
     </div>
 
     <!-- Rodapé Fixo Separado do Scroll com as Mesmas Cores e Estilo -->
     <template #footer>
-      <div v-if="activeCard"
-        class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-muted">
-        <span>
-          Layout gerado a partir das regras atuais.
-        </span>
-        <AppButton variant="gold" size="sm" :disabled="isPrinting" @click="printCard">
-          <Printer class="w-3.5 h-3.5" aria-hidden="true" />
-          <span>{{ isFlipped ? 'Imprimir verso' : 'Imprimir / Salvar PDF' }}</span>
+      <div v-if="activeCard" class="card-modal-actions grid grid-cols-2 gap-2">
+        <AppButton variant="secondary" size="sm" class="w-full" @click="toggleFlip">
+          <RotateCw class="h-4 w-4 shrink-0" aria-hidden="true" /><span>{{ isFlipped ? 'Ver frente' : 'Ver verso' }}</span>
+        </AppButton>
+        <AppButton variant="gold" size="sm" class="w-full" :disabled="isPrinting" :aria-label="isFlipped ? 'Imprimir verso' : 'Imprimir / Salvar PDF'" @click="printCard">
+          <Printer class="h-4 w-4 shrink-0" aria-hidden="true" /><span>Imprimir</span>
         </AppButton>
       </div>
     </template>

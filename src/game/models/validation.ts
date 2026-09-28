@@ -1,3 +1,4 @@
+import { isAvatarImage } from '@/utils/playerProfile';
 import type { ClientCommand } from './commands';
 import { ACTION_TYPES } from '../engine/rules';
 import { PLAYABLE_ROLES } from '@/constants/gameData';
@@ -15,7 +16,7 @@ export const isClientCommand = (value: unknown): value is ClientCommand => {
   switch (value.type) {
     case 'LEAVE_ROOM': return Object.keys(p).length === 0;
     case 'JOIN_ROOM': return typeof p.name === 'string' && p.name.trim().length > 0 &&
-      p.name.length <= 60 && isRole(p.avatarSlug) && isIdentifier(p.reconnectToken);
+      p.name.length <= 60 && (p.avatarImage === undefined || isAvatarImage(p.avatarImage)) && isRole(p.avatarSlug) && isIdentifier(p.reconnectToken);
     case 'RECONNECT': return isIdentifier(p.playerId) && isIdentifier(p.reconnectToken);
     case 'SET_READY': return typeof p.ready === 'boolean';
     case 'START_GAME': return p.settings === undefined;

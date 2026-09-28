@@ -27,6 +27,7 @@ export interface CommandReject {
 export interface JoinPayload {
   readonly name: string;
   readonly avatarSlug: RoleSlug;
+  readonly avatarImage?: string;
   readonly reconnectToken: string;
 }
 

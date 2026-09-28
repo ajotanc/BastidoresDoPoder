@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM } from "@/constants/gameConfig";
+import { GAME_NAME } from "@/constants/gameConfig";
 import { Shield } from 'lucide-vue-next';
 import { scrollToSection } from '@/utils/navigation';
 import { APP_VERSION } from '@/constants/appVersion';
@@ -17,14 +19,14 @@ const handleBackToTop = (event: MouseEvent): void => {
     <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-6">
       <div class="space-y-1">
         <div class="flex items-center justify-center sm:justify-start gap-2.5">
-          <img src="/images/bdp.webp" alt="Logo Bastidores do Poder" class="w-7 h-7 object-contain rounded" />
+          <img src="/images/bdp.webp" :alt="'Logo ' + GAME_NAME + ''" class="w-7 h-7 object-contain rounded" />
           <p class="font-serif font-bold text-gold-light text-base">
-            Bastidores do Poder <span class="font-sans font-normal text-xs text-ink-muted">· Manual v{{ APP_VERSION }}
+            {{ GAME_NAME }} <span class="font-sans font-normal text-xs text-ink-muted">· Manual v{{ APP_VERSION }}
               para testes</span>
           </p>
         </div>
         <p class="text-xs text-ink-muted max-w-xl">
-          Jogo de blefe e disputa política brasileira para 3 a 8 jogadores. Este manual apresenta as regras do protótipo, sujeitas a ajustes após testes de equilíbrio.
+          Jogo de blefe e disputa política brasileira para {{ MIN_PLAYERS_TO_START }} a {{ MAX_PLAYERS_PER_ROOM }} jogadores. Este manual apresenta as regras do protótipo, sujeitas a ajustes após testes de equilíbrio.
         </p>
       </div>
 

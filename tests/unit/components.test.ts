@@ -83,19 +83,13 @@ describe('RoleCardsSection - Filtro de Personagens e Ajuda', () => {
     const { default: RoleCardsSection } = await import('@/components/game/RoleCardsSection.vue');
     const wrapper = mount(RoleCardsSection);
 
-    // Encontra o botão do filtro "Ajuda"
-    const buttons = wrapper.findAll('button');
-    const helpButton = buttons.find((btn) => btn.text().trim() === 'Ajuda');
-    expect(helpButton).toBeDefined();
-
-    if (helpButton) {
-      await helpButton.trigger('click');
-
-      const cardItems = wrapper.findAllComponents({ name: 'RoleCardItem' });
-      expect(cardItems).toHaveLength(1);
-      expect(wrapper.text()).toContain('Guia de Mesa');
-      expect(wrapper.text()).not.toContain('Coronel');
-    }
+    const select = wrapper.findComponent({ name: 'AppSelect' });
+    select.vm.$emit('update:modelValue', 'help');
+    await wrapper.vm.$nextTick();
+    const cardItems = wrapper.findAllComponents({ name: 'RoleCardItem' });
+    expect(cardItems).toHaveLength(1);
+    expect(wrapper.text()).toContain('Guia de Mesa');
+    expect(wrapper.text()).not.toContain('Coronel');
   });
 });
 

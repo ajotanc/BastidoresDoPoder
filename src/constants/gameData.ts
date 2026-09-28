@@ -1,3 +1,4 @@
+import { GAME_NAME, MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM } from '@/constants/gameConfig';
 import { ROLE_THEME_COLORS } from '@/constants/themeColors';
 import type {
   RoleCard,
@@ -456,7 +457,7 @@ export const SUPPORT_CARDS_LENGTH = (CARDS_LENGTH * SUPPORT_CARDS_PER_ROLE);
  * Estatísticas rápidas exibidas no banner principal (Masthead)
  */
 export const GAME_META_STATS: readonly MetaStat[] = [
-  { value: '3–8', label: 'jogadores' },
+  { value: `${MIN_PLAYERS_TO_START}–${MAX_PLAYERS_PER_ROOM}`, label: 'jogadores' },
   { value: String(CARDS_LENGTH), label: 'personagens' },
   { value: String(SUPPORT_CARDS_LENGTH), label: 'cartas de apoio' },
   { value: 'C$', label: 'Conto · moeda do jogo' },
@@ -778,7 +779,7 @@ export const GAME_COINS: readonly GameCoin[] = [
     summary: 'Moeda básica de arrecadação oficial e saldo inicial.',
     description: 'A unidade elementar da economia do poder. Utilizada no Salário Oficial (C$ 1) e distribuída no início de cada partida (C$ 2 por jogador).',
     usage: 'Salário Oficial (+C$ 1), saldo inicial de jogadores (+C$ 2), e trocas fracionadas no cofre.',
-    imageAlt: 'Moeda Conto de Bronze C$ 1 de Bastidores do Poder',
+    imageAlt: `Moeda Conto de Bronze C$ 1 de ${GAME_NAME}`,
     imageSrc: '/images/coins/bronze.webp',
   },
   {
@@ -792,7 +793,7 @@ export const GAME_COINS: readonly GameCoin[] = [
     summary: 'Moeda de influência tática, subornos e taxa judicial.',
     description: 'Moeda de peso intermediário nos corredores de Brasília. Cobre exatamente a taxa judicial do Mandado de Busca do Investigador.',
     usage: 'Taxa judicial do Mandado de Busca (C$ 5) e consolidação de trocas no cofre.',
-    imageAlt: 'Moeda Conto de Prata C$ 5 de Bastidores do Poder',
+    imageAlt: `Moeda Conto de Prata C$ 5 de ${GAME_NAME}`,
     imageSrc: '/images/coins/silver.webp',
   },
   {
@@ -806,7 +807,7 @@ export const GAME_COINS: readonly GameCoin[] = [
     summary: 'Moeda de hegemonia máxima e Impeachment compulsório.',
     description: 'A moeda mais temida e cobiçada do jogo. Iniciar o turno com C$ 10 obriga a execução do Impeachment definitivo, um golpe irreversível e sem defesa.',
     usage: 'Impeachment definitivo compulsório (C$ 10), garantia de eliminação direta de rivais.',
-    imageAlt: 'Moeda Conto de Ouro C$ 10 de Bastidores do Poder',
+    imageAlt: `Moeda Conto de Ouro C$ 10 de ${GAME_NAME}`,
     imageSrc: '/images/coins/gold.webp',
   }
 ] as const;

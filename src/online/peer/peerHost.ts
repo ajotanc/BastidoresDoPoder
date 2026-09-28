@@ -1,3 +1,5 @@
+import { RECONNECT_GRACE_MS, HEARTBEAT_INTERVAL_MS, HEARTBEAT_TIMEOUT_MS } from '@/constants/gameConfig';
+import { sendPeerMessage, createPeerMessageReader } from './jsonTransport';
 import dayjs from 'dayjs';
 import Peer, { type DataConnection } from 'peerjs';
 import type { RoleSlug } from '@/types/game';
@@ -8,10 +10,11 @@ import { roomCodeToPeerId } from '../room/roomCode';
 import { isClientEnvelope, type WireMessageFromHost } from './protocol';
 import { isRecord } from '@/game/models/validation';
 import { PEER_SERVER_CONFIG } from './peerConfig';
+import { addBots } from '@/game/bots/createBots';
+import { chooseBotCommand } from '@/game/bots/botStrategy';
+import { BotController } from '@/game/bots/botController';
 
-export const RECONNECT_GRACE_MS = 60_000;
-export const HEARTBEAT_INTERVAL_MS = 5_000;
-export const HEARTBEAT_TIMEOUT_MS = 15_000;
+export { RECONNECT_GRACE_MS, HEARTBEAT_INTERVAL_MS, HEARTBEAT_TIMEOUT_MS } from '@/constants/gameConfig';
 export interface HostCallbacks {
   onStateChange: (state: GameState) => void;
   onPrivateViewChange: (view: PrivatePlayerView) => void;
@@ -30,6 +33,16 @@ export class PeerHost {
   private timeoutTimer: ReturnType<typeof setTimeout> | null = null;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private destroyed = false;
+  private bots = new BotController(id => {
+    if (this.destroyed) return;
+    const state = this.authoritativeState;
+    if (state.publicState.deadlineAt !== null && dayjs().valueOf() >= state.publicState.deadlineAt) {
+      this.handleTimeoutExpiry();
+      return;
+    }
+    const command = chooseBotCommand(state.publicState, { playerId: id, supports: state.privateHands[id] ?? [] });
+    if (command) this.applyResult(executeCommand(state, command, id, crypto.randomUUID()));
+  });
 
   constructor(
     public readonly roomCode: string,
@@ -38,8 +51,11 @@ export class PeerHost {
     hostAvatarSlug: RoleSlug,
     hostReconnectToken: string,
     private callbacks: HostCallbacks,
+    hostAvatarImage?: string,
+    botCount = 0,
   ) {
-    this.authoritativeState = createInitialAuthoritativeState(roomCode, hostPlayerId, hostName, hostAvatarSlug, hostReconnectToken);
+    this.authoritativeState = createInitialAuthoritativeState(roomCode, hostPlayerId, hostName, hostAvatarSlug, hostReconnectToken, undefined, hostAvatarImage);
+    this.authoritativeState = addBots(this.authoritativeState, botCount);
   }
 
   public init(): Promise<string> {
@@ -86,11 +102,14 @@ export class PeerHost {
       this.connections.add(conn);
       this.lastSeen.set(conn, dayjs().valueOf());
     });
-    conn.on('data', data => {
+    const readMessage = createPeerMessageReader();
+    conn.on('data', raw => {
+      const data = readMessage(raw);
+      if (data === undefined) return;
       if (this.destroyed || !this.connections.has(conn)) return;
       this.lastSeen.set(conn, dayjs().valueOf());
       if (isRecord(data) && data.type === 'HEARTBEAT') {
-        conn.send({ type: 'HEARTBEAT_ACK', timestamp: dayjs().valueOf() });
+        sendPeerMessage(conn, { type: 'HEARTBEAT_ACK', timestamp: dayjs().valueOf() });
         return;
       }
       if (!isClientEnvelope(data)) {
@@ -149,7 +168,7 @@ export class PeerHost {
       this.reconnectUntil.delete(id);
       this.processed.delete(id);
       this.applyResult(executeCommand(this.authoritativeState, command, id, messageId));
-      conn.send({ type: 'COMMAND_ACK', messageId, revision: this.authoritativeState.publicState.revision });
+      sendPeerMessage(conn, { type: 'COMMAND_ACK', messageId, revision: this.authoritativeState.publicState.revision });
       return;
     }
 
@@ -166,7 +185,7 @@ export class PeerHost {
       this.setConnected(id, true);
       this.broadcastPublicState();
       this.sendPrivateView(id);
-      conn.send({ type: 'COMMAND_ACK', messageId, revision: this.authoritativeState.publicState.revision });
+      sendPeerMessage(conn, { type: 'COMMAND_ACK', messageId, revision: this.authoritativeState.publicState.revision });
       return;
     }
 
@@ -175,13 +194,13 @@ export class PeerHost {
     } else {
       if (this.playerConnections.get(id) !== conn) return reject('UNAUTHORIZED', 'Conexão não autenticada.');
       if (this.processed.get(id)?.has(messageId)) {
-        conn.send({ type: 'COMMAND_ACK', messageId, revision: this.authoritativeState.publicState.revision });
+        sendPeerMessage(conn, { type: 'COMMAND_ACK', messageId, revision: this.authoritativeState.publicState.revision });
         return;
       }
       // Atualiza um deadline vencido antes de considerar uma intenção recebida com atraso.
       if (this.authoritativeState.publicState.deadlineAt !== null && dayjs().valueOf() >= this.authoritativeState.publicState.deadlineAt) this.handleTimeoutExpiry();
       if (envelope.revision !== this.authoritativeState.publicState.revision) {
-        conn.send({ type: 'ROOM_SNAPSHOT', state: this.authoritativeState.publicState });
+        sendPeerMessage(conn, { type: 'ROOM_SNAPSHOT', state: this.authoritativeState.publicState });
         return reject('STALE_STATE', 'A mesa mudou. Confira o estado atual e tente novamente.');
       }
     }
@@ -193,7 +212,7 @@ export class PeerHost {
     if (ids.size > 1024) ids.delete(ids.values().next().value!);
     this.processed.set(id, ids);
     this.applyResult(result);
-    conn.send({ type: 'COMMAND_ACK', messageId, revision: this.authoritativeState.publicState.revision });
+    sendPeerMessage(conn, { type: 'COMMAND_ACK', messageId, revision: this.authoritativeState.publicState.revision });
   }
 
   public executeLocalHostCommand(command: ClientCommand, messageId = crypto.randomUUID()): void {
@@ -206,19 +225,20 @@ export class PeerHost {
   }
 
   private reject(conn: DataConnection, messageId: string, reason: CommandReject['reason'], description: string): void {
-    if (conn.open) conn.send({ type: 'COMMAND_REJECTED', reject: { messageId, reason, description } });
+    if (conn.open) sendPeerMessage(conn, { type: 'COMMAND_REJECTED', reject: { messageId, reason, description } });
   }
 
   private applyResult(result: EngineExecutionResult): void {
     this.authoritativeState = result.nextAuthoritativeState;
     this.schedulePhaseTimeout();
+    this.bots.update(this.authoritativeState.publicState);
     this.broadcastPublicState();
     for (const id of this.playerConnections.keys()) this.sendPrivateView(id);
   }
 
   private sendPrivateView(id: string): void {
     const conn = this.playerConnections.get(id);
-    if (conn?.open) conn.send({ type: 'PRIVATE_VIEW', view: {
+    if (conn?.open) sendPeerMessage(conn, { type: 'PRIVATE_VIEW', view: {
       playerId: id, supports: this.authoritativeState.privateHands[id] || [],
       searchResultNotice: this.authoritativeState.privateNotices[id],
     } });
@@ -226,7 +246,7 @@ export class PeerHost {
 
   private broadcastPublicState(): void {
     const message: WireMessageFromHost = { type: 'ROOM_SNAPSHOT', state: this.authoritativeState.publicState };
-    for (const conn of this.playerConnections.values()) if (conn.open) conn.send(message);
+    for (const conn of this.playerConnections.values()) if (conn.open) sendPeerMessage(conn, message);
     this.emitLocalState();
   }
 
@@ -250,6 +270,7 @@ export class PeerHost {
 
   public destroy(): void {
     this.destroyed = true;
+    this.bots.stop();
     if (this.timeoutTimer) clearTimeout(this.timeoutTimer);
     if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
     for (const conn of this.connections) conn.close();
@@ -271,6 +292,7 @@ export class PeerHost {
     }
     this.applyResult(result);
     this.destroyed = true;
+    this.bots.stop();
     if (this.timeoutTimer) clearTimeout(this.timeoutTimer);
     if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
     // Deixa o snapshot final sair pelo canal antes de encerrar o PeerServer local.

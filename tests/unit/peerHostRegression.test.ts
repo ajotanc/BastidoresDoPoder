@@ -4,6 +4,7 @@ import type { GameState } from '@/game/models/gameState';
 import { DEFAULT_GAME_SETTINGS } from '@/game/models/gameState';
 import { PeerHost } from '@/online/peer/peerHost';
 import { isClientEnvelope } from '@/online/peer/protocol';
+import { BOT_DECISION_DELAY_MS } from '@/constants/gameConfig';
 
 const transport = vi.hoisted(() => {
   class Emitter {
@@ -70,6 +71,40 @@ describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
     await ready;
   });
   afterEach(() => { host.destroy(); vi.useRealTimers(); });
+
+  it('integra bots com humanos, protege suas identidades e cancela ações ao sair', async () => {
+    host.destroy();
+    const error = vi.fn();
+    host = new PeerHost('ROOM', 'a', 'Ana', 'executor', 'token-a', {
+      onStateChange: s => { state = s; }, onPrivateViewChange: vi.fn(), onError: error, onReady: vi.fn(),
+    }, undefined, 2);
+    const ready = host.init();
+    transport.peers.at(-1)!.emit('open', 'bdp-room');
+    await ready;
+    const bots = state.playerOrder.filter(id => state.players[id]?.isBot);
+    expect(bots).toHaveLength(2);
+    const human = join('b');
+    send(human, 'b', { type: 'SET_READY', payload: { ready: true } });
+    const attacker = connect('attacker');
+    send(attacker, bots[0]!, { type: 'JOIN_ROOM', payload: { name: 'Fake', avatarSlug: 'baron', reconnectToken: 'fake' } });
+    expect(messages(attacker, 'COMMAND_REJECTED')).toHaveLength(1);
+    host.executeLocalHostCommand({ type: 'START_GAME', payload: {} });
+    host.executeLocalHostCommand({ type: 'DECLARE_ACTION', payload: { actionType: 'salary' } });
+    for (let i = 0; i < 30 && state.activePlayerId !== 'b'; i++) {
+      if (state.responsePlayerIds[0] === 'a') host.executeLocalHostCommand({ type: 'PASS_RESPONSE', payload: { pass: true } });
+      if (state.responsePlayerIds[0] === 'b') send(human, 'b', { type: 'PASS_RESPONSE', payload: { pass: true } });
+      await vi.advanceTimersByTimeAsync(BOT_DECISION_DELAY_MS);
+    }
+    expect(state.activePlayerId).toBe('b');
+    expect(state.phase).toBe('WAITING_ACTION');
+    expect(error).not.toHaveBeenCalled();
+    for (const msg of messages(human, 'PRIVATE_VIEW')) expect((msg as { view: { playerId: string } }).view.playerId).toBe('b');
+    host.leaveRoom();
+    expect(state.phase).toBe('FINISHED');
+    const revision = state.revision;
+    await vi.advanceTimersByTimeAsync(BOT_DECISION_DELAY_MS * 3);
+    expect(state.revision).toBe(revision);
+  });
 
   it('não envia snapshot nem mãos antes de autenticar; rejeita identidade de outro jogador', () => {
     const { b } = start();

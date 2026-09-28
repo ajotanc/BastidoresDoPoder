@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { GAME_NAME } from "@/constants/gameConfig";
 import { computed } from 'vue';
 import type { RoleCard } from '@/types/game';
 import AppDialog from '@/components/ui/AppDialog.vue';
@@ -58,51 +59,19 @@ const handleOpenLightbox = (): void => {
     :bg-image-src="characterBgImage" max-width-class="max-w-lg" @close="handleClose">
     <!-- Cabeçalho Fixo do Modal -->
     <template #header>
-      <div v-if="props.card" class="flex items-center justify-between gap-4">
-        <!-- Lado Esquerdo: Ícone + Título + Tag -->
-        <div class="flex flex-1 items-center gap-3.5 min-w-0">
-          <div
-            class="w-16 h-16 rounded-lg flex items-center justify-center bg-[#091017] border border-gold-dark/70 shadow-inner flex-shrink-0">
-            <img v-if="props.card.iconSrc" :src="props.card.iconSrc" :alt="`Símbolo de ${props.card.name}`"
-              class="w-full h-full p-2 object-contain" />
-            <img v-else src="/images/bdp.webp" alt="Brasão Bastidores do Poder"
-              class="w-full h-full p-2 object-contain" />
-          </div>
-
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2.5 flex-wrap">
-              <h2
-                class="font-serif font-bold text-xl sm:text-2xl text-[#f7f0e2] tracking-tight leading-tight break-words">
-                {{ props.card.name }}
-              </h2>
-
-              <span
-                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[0.68rem] uppercase font-bold tracking-[0.14em] border shadow-sm backdrop-blur-sm select-none max-w-full"
-                :style="{
-                  backgroundColor: props.card.roleColor + '18',
-                  borderColor: props.card.roleColor + '60',
-                  color: props.card.roleColor
-                }">
-                <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse"
-                  :style="{ backgroundColor: props.card.roleColor }"></span>
-                <span>{{ props.card.kind }}</span>
-              </span>
-            </div>
-
-            <div class="flex items-center gap-2 mt-1.5 text-xs text-ink-muted flex-wrap">
-              <span>{{ props.card.category }}</span>
-              <span class="w-1 h-1 rounded-full bg-gold-dark/60" aria-hidden="true"></span>
-              <span class="text-gold-light/90">{{ props.card.copies }}</span>
-            </div>
-          </div>
+      <div v-if="props.card" class="card-modal-header grid grid-cols-[40px_minmax(0,1fr)_44px] items-center gap-x-3 gap-y-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded border border-line-gold/50 bg-paper-deep p-1">
+          <img :src="props.card.iconSrc || '/images/bdp.webp'" :alt="GAME_NAME" class="h-full w-full object-contain" />
         </div>
-
-        <!-- Lado Direito: Fechar -->
-        <button type="button" @click="handleClose"
-          class="p-2 rounded-lg text-ink-muted hover:text-gold-light hover:bg-surface-hover border border-transparent hover:border-line transition-all focus-visible:outline-none flex-shrink-0"
-          aria-label="Fechar regras">
-          <X class="w-5 h-5" aria-hidden="true" />
-        </button>
+        <div class="min-w-0">
+          <span class="block text-[11px] text-gold-muted">Regras e habilidades</span>
+          <h2 class="mt-0.5 break-words font-serif text-base font-bold leading-tight text-ink sm:text-xl">{{ props.card.name }}</h2>
+        </div>
+        <button type="button" @click="handleClose" class="online-icon-button self-start" aria-label="Fechar regras"><X class="h-5 w-5" aria-hidden="true" /></button>
+        <div class="col-span-3 flex flex-wrap items-center justify-between gap-2 border-t border-line/60 pt-2 text-xs text-ink-muted">
+          <span>{{ props.card.category }}</span>
+          <span class="text-gold-light">{{ props.card.copies }}</span>
+        </div>
       </div>
     </template>
 
@@ -161,16 +130,10 @@ const handleOpenLightbox = (): void => {
 
     <!-- Rodapé Fixo Separado do Scroll com as Mesmas Cores e Estilo -->
     <template #footer>
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-muted">
-        <button type="button" @click="handleOpenLightbox"
-          class="inline-flex items-center gap-1.5 text-xs font-semibold text-gold hover:text-gold-light transition-colors select-none focus-visible:outline-none">
-          <ZoomIn class="w-3.5 h-3.5" aria-hidden="true" />
-          <span>Ver arte da carta em 3D</span>
-        </button>
-
-        <AppButton variant="secondary" size="sm" @click="handleClose">
-          <X class="w-3.5 h-3.5" aria-hidden="true" />
-          <span>Fechar regras</span>
+      <div class="card-modal-actions grid grid-cols-2 gap-2">
+        <AppButton variant="secondary" size="sm" class="w-full" aria-label="Fechar regras" @click="handleClose">Fechar</AppButton>
+        <AppButton variant="gold" size="sm" class="w-full" aria-label="Ver arte da carta em 3D" @click="handleOpenLightbox">
+          <ZoomIn class="h-4 w-4 shrink-0" aria-hidden="true" /><span>Ver carta</span>
         </AppButton>
       </div>
     </template>

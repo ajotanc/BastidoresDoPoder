@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { playerAvatar } from "@/utils/playerProfile";
+import { GAME_NAME } from "@/constants/gameConfig";
 import { ref, computed } from 'vue';
-import { MIN_PLAYERS_TO_START, type GameState } from '@/game/models/gameState';
+import { MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM, type GameState } from '@/game/models/gameState';
 import { getRoleDisplayName } from '@/game/engine/gameEngine';
 import { Copy, Check, CheckCircle2, LogOut, Users, Share2 } from 'lucide-vue-next';
 
@@ -58,8 +60,8 @@ const handleShare = async (): Promise<void> => {
   if (typeof window !== 'undefined' && typeof window.navigator?.share === 'function') {
     try {
       await window.navigator.share({
-        title: 'Bastidores do Poder — Mesa Online',
-        text: `Participe da minha mesa política nos Bastidores do Poder! Código: ${props.roomCode}`,
+        title: GAME_NAME + ' — Mesa Online',
+        text: `Participe da minha mesa política em ${GAME_NAME}! Código: ${props.roomCode}`,
         url: shareableUrl.value,
       });
       return;
@@ -138,7 +140,7 @@ const handleShare = async (): Promise<void> => {
             Mesa de negociação
           </h2>
           <span class="shrink-0 whitespace-nowrap text-sm px-2 py-1 rounded bg-surface-elevated text-gold font-semibold">
-            {{ playerList.length }} / 8
+            {{ playerList.length }} / {{ MAX_PLAYERS_PER_ROOM }}
           </span>
         </div>
         <span class="text-xs text-ink-muted">
@@ -148,7 +150,7 @@ const handleShare = async (): Promise<void> => {
 
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <article v-for="(player, idx) in playerList" :key="player.id" class="lobby-player flex items-start gap-4 rounded border bg-paper-deep/60 p-4" :class="player.id === myPlayerId ? 'border-gold/40' : 'border-line'">
-          <img :src="`/images/characters/${player.avatarSlug}.webp`" :alt="player.name" class="h-16 w-16 shrink-0 rounded object-cover object-top" />
+          <img :src="playerAvatar(player)" :alt="player.name" class="h-16 w-16 shrink-0 rounded object-cover object-top" />
           <div class="min-w-0 flex-1">
             <h3 class="break-words text-sm font-semibold leading-relaxed text-ink">{{ player.name }}</h3>
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">

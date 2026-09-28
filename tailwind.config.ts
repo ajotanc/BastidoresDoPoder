@@ -8,6 +8,18 @@ export default {
     './src/**/*.{vue,js,ts,jsx,tsx}',
   ],
   theme: {
+    // Todos os tamanhos legados usam o mesmo token visual do Select.
+    borderRadius: {
+      none: '0',
+      DEFAULT: 'var(--ui-radius)',
+      sm: 'var(--ui-radius)',
+      md: 'var(--ui-radius)',
+      lg: 'var(--ui-radius)',
+      xl: 'var(--ui-radius)',
+      '2xl': 'var(--ui-radius)',
+      '3xl': 'var(--ui-radius)',
+      full: 'var(--ui-radius)',
+    },
     extend: {
       colors: {
         paper: {

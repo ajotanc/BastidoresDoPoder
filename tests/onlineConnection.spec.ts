@@ -16,6 +16,11 @@ test('dois navegadores entram na mesma sala pelo PeerServer real', async ({ brow
     }
     await host.goto('http://127.0.0.1:4174/online');
     await host.getByLabel('Seu Codinome Político').fill('Teste Host');
+    await host.getByLabel('Enviar foto de perfil').setInputFiles('public/images/characters/colonel.webp');
+    await expect(host.getByAltText('Sua foto de perfil')).toBeVisible();
+    await host.reload();
+    await expect(host.getByLabel('Seu Codinome Político')).toHaveValue('Teste Host');
+    await expect(host.getByAltText('Sua foto de perfil')).toBeVisible();
     await host.getByRole('button', { name: 'Criar Nova Partida Online' }).click();
     await expect(host.getByText('Sala de Articulação Política')).toBeVisible({ timeout: 30000 });
     const url = host.url();
@@ -24,6 +29,7 @@ test('dois navegadores entram na mesma sala pelo PeerServer real', async ({ brow
     await guest.getByRole('button', { name: 'Entrar na Sala P2P', exact: true }).click();
     await expect(guest.getByText('Sala de Articulação Política')).toBeVisible({ timeout: 30000 });
     await expect(host.getByText('Teste Convidado', { exact: true })).toBeVisible();
+    await expect(guest.locator('img[src^="data:image/jpeg;base64,"]')).toHaveCount(1);
     await guest.getByRole('button', { name: 'Marcar como Pronto' }).click();
     await expect(host.getByRole('button', { name: 'Iniciar disputa', exact: true })).toBeEnabled();
     await host.getByRole('button', { name: 'Iniciar disputa', exact: true }).click();
@@ -54,6 +60,8 @@ test('dois navegadores entram na mesma sala pelo PeerServer real', async ({ brow
     }
     await guest.getByRole('button', { name: 'Sair', exact: true }).click();
     await guest.getByRole('dialog', { name: 'Sair da mesa' }).getByRole('button', { name: 'Sair da Mesa', exact: true }).click();
+    await expect(guest).toHaveURL(/\/online$/);
+    await expect(guest.getByText(/Você foi convidado/)).toHaveCount(0);
     await expect(host.getByText('Poder Supremo Conquistado')).toBeVisible();
     await expect(host.getByRole('heading', { name: 'Teste Host', exact: true })).toBeVisible();
     await expect(host.getByText('2 / 24', { exact: true })).toBeVisible();

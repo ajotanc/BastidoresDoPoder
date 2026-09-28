@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { playerAvatar } from "@/utils/playerProfile";
 import AppDialog from '@/components/ui/AppDialog.vue';
 import { ref, computed, watch } from 'vue';
 import type { RoleSlug } from '@/types/game';
@@ -320,7 +321,7 @@ const filteredActions = computed(() => {
                   class="flex min-h-11 min-w-0 items-center gap-2 rounded border p-2 text-left cursor-pointer transition-colors"
                   :class="selectedTargetId === opp.id ? 'border-gold bg-gold/15' : 'border-line bg-surface'"
                 >
-                  <img :src="'/images/characters/'+opp.avatarSlug+'.webp'" alt="" class="h-8 w-8 shrink-0 rounded object-cover" />
+                  <img :src="playerAvatar(opp)" alt="" class="h-8 w-8 shrink-0 rounded object-cover" />
                   <span class="min-w-0">
                     <span class="block break-words text-sm font-semibold">{{ opp.name }}</span>
                     <span class="block text-xs text-gold">C$ {{ opp.coins }}</span>

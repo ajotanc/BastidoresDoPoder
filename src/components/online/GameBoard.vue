@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { playerAvatar } from "@/utils/playerProfile";
+import { GAME_NAME } from "@/constants/gameConfig";
 import AppModalOverlay from '@/components/ui/AppModalOverlay.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import Card from '@/components/game/Card.vue';
@@ -478,7 +480,7 @@ const copyGameLink = async (): Promise<void> => {
             <div class="flex flex-col items-start gap-2 min-w-0">
               <div class="w-8 h-8 rounded bg-surface-elevated border border-gold/40 flex items-center justify-center overflow-hidden shrink-0">
                 <img
-                  :src="`/images/characters/${opp.avatarSlug}.webp`"
+                  :src="playerAvatar(opp)"
                   :alt="opp.name"
                   class="w-full h-full object-cover"
                   loading="lazy"
@@ -662,7 +664,7 @@ const copyGameLink = async (): Promise<void> => {
           </h2>
           <p class="text-xs text-ink-muted leading-relaxed">
             {{ gameState.winnerPlayerId
-              ? 'É o último gabinete com apoios políticos ativos e assumiu o controle supremo dos Bastidores do Poder!'
+              ? `É o último gabinete com apoios políticos ativos e assumiu o controle de ${GAME_NAME}!`
               : 'A sala encerrou suas atividades. Inicie ou junte-se a uma nova mesa para disputar novamente.' }}
           </p>
         </div>

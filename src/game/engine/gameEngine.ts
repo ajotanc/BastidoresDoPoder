@@ -1,3 +1,4 @@
+import { GAME_NAME } from '@/constants/gameConfig';
 import dayjs from 'dayjs';
 import type { RoleSlug } from '@/types/game';
 import type {
@@ -61,12 +62,14 @@ export const createInitialAuthoritativeState = (
   hostName: string,
   hostAvatarSlug: RoleSlug,
   hostReconnectToken: string,
-  settings: GameSettings = DEFAULT_GAME_SETTINGS
+  settings: GameSettings = DEFAULT_GAME_SETTINGS,
+  hostAvatarImage?: string
 ): AuthoritativeGameState => {
   const initialPlayer: PublicPlayerState = {
     id: hostPlayerId,
     name: hostName,
     avatarSlug: hostAvatarSlug,
+    ...(hostAvatarImage ? { avatarImage: hostAvatarImage } : {}),
     coins: settings.initialCoins,
     activeSupportCount: 0,
     lostCards: [],
@@ -320,9 +323,9 @@ export const executeCommand = (
     }
     case 'JOIN_ROOM': {
       if (state.publicState.phase !== 'LOBBY') {
-        return createRejection('INVALID_PHASE', 'A partida já iniciou. Não é possível entrar.');
+        return createRejection('INVALID_PHASE', state.publicState.phase === 'FINISHED' ? 'Esta sala já foi encerrada. Crie uma nova sala.' : 'A partida já iniciou. Não é possível entrar.');
       }
-      const { name, avatarSlug, reconnectToken } = command.payload;
+      const { name, avatarSlug, avatarImage, reconnectToken } = command.payload;
       const existingPlayer = state.publicState.players[senderPlayerId];
       if (existingPlayer) return createRejection('UNAUTHORIZED', 'Jogador já registrado. Use reconexão.');
       if (state.publicState.playerOrder.length >= MAX_PLAYERS_PER_ROOM) {
@@ -334,6 +337,7 @@ export const executeCommand = (
           id: senderPlayerId,
           name,
           avatarSlug,
+          ...(avatarImage ? { avatarImage } : {}),
           coins: state.settings.initialCoins,
           activeSupportCount: 0,
           lostCards: [],
@@ -747,7 +751,7 @@ export const executeCommand = (
           winnerPlayerId: winnerId,
           revision: state.publicState.revision + 1,
         };
-        addEvent(`🏆 VITÓRIA POLÍTICA! ${winnerName} assumiu o controle absoluto dos Bastidores do Poder!`, 'breaking', 'GAME_FINISHED');
+        addEvent(`🏆 VITÓRIA POLÍTICA! ${winnerName} assumiu o controle absoluto de ${GAME_NAME}!`, 'breaking', 'GAME_FINISHED');
         state.lossContinuation = undefined;
         return engineResult(state);
       }

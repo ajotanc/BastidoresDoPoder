@@ -1,3 +1,5 @@
+import { HEARTBEAT_INTERVAL_MS, HEARTBEAT_TIMEOUT_MS, CONNECTION_TIMEOUT_MS } from '@/constants/gameConfig';
+import { sendPeerMessage, createPeerMessageReader } from './jsonTransport';
 import dayjs from 'dayjs';
 import Peer, { type DataConnection } from 'peerjs';
 import type { GameState, PrivatePlayerView } from '@/game/models/gameState';
@@ -39,7 +41,7 @@ export class PeerClient {
       const connectionTimeout = setTimeout(() => {
         this.destroy();
         reject(new Error('O host não respondeu à conexão.'));
-      }, 10000);
+      }, CONNECTION_TIMEOUT_MS);
 
       peer.on('open', () => {
         this.peer = peer;
@@ -57,16 +59,19 @@ export class PeerClient {
             const now = dayjs().valueOf();
             // Timers suspensos não comprovam falha de rede. Ao retomar,
             // primeiro envia uma sondagem e aguarda a resposta do host.
-            if (now - lastHeartbeatCheck > 15000) this.lastMessageAt = now;
+            if (now - lastHeartbeatCheck > HEARTBEAT_TIMEOUT_MS) this.lastMessageAt = now;
             lastHeartbeatCheck = now;
-            if (now - this.lastMessageAt > 15000) { conn.close(); return; }
-            if (conn.open) conn.send({ type: 'HEARTBEAT' });
-          }, 5000);
+            if (now - this.lastMessageAt > HEARTBEAT_TIMEOUT_MS) { conn.close(); return; }
+            if (conn.open) sendPeerMessage(conn, { type: 'HEARTBEAT' });
+          }, HEARTBEAT_INTERVAL_MS);
           this.callbacks.onConnected();
           resolve();
         });
 
-        conn.on('data', (data) => {
+        const readMessage = createPeerMessageReader();
+        conn.on('data', (raw) => {
+          const data = readMessage(raw);
+          if (data === undefined) return;
           if (this.destroyed) {
             if (isHostServerMessage(data) && data.type === 'COMMAND_ACK') this.destroy();
             return;
@@ -125,7 +130,7 @@ export class PeerClient {
       data: command,
     };
 
-    this.connection.send(envelope);
+    sendPeerMessage(this.connection, envelope);
   }
 
   public leaveRoom(): void {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { GAME_NAME, MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM } from "@/constants/gameConfig";
 import {
   SETUP_PLAYERS_TABLE,
   SUPPORT_CARDS_LENGTH,
@@ -14,7 +15,7 @@ import CoinsShowcase from '@/components/game/CoinsShowcase.vue';
 <template>
   <section id="setup" class="pt-12 border-t border-line/70">
     <AppSectionHeader label="Cartas e preparação" title="Quantas cartas usar?"
-      :description="`Bastidores do Poder utiliza sempre as ${SUPPORT_CARDS_LENGTH} cartas de apoio (${SUPPORT_CARDS_PER_ROLE} cópias de cada um dos ${CARDS_LENGTH} personagens), independentemente do número de participantes de 3 a 8 jogadores.`" />
+      :description="`${GAME_NAME} utiliza sempre as ${SUPPORT_CARDS_LENGTH} cartas de apoio (${SUPPORT_CARDS_PER_ROLE} cópias de cada um dos ${CARDS_LENGTH} personagens), independentemente do número de participantes de ${MIN_PLAYERS_TO_START} a ${MAX_PLAYERS_PER_ROOM} jogadores.`" />
 
     <!-- Tabela de contagem por número de jogadores -->
     <div class="overflow-x-auto my-6 bg-surface border border-line rounded-lg">
