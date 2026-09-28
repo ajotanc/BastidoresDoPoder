@@ -7,6 +7,7 @@ import { getRoleDisplayName } from '@/game/engine/gameEngine';
 import { AlertCircle, PlusCircle, LogIn, ArrowLeft, ArrowRight, Users } from 'lucide-vue-next';
 import LobbyRoom from './LobbyRoom.vue';
 import GameBoard from './GameBoard.vue';
+import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
 
 interface Props {
   initialRoomId?: string;
@@ -141,12 +142,12 @@ const handleJoin = async (): Promise<void> => {
       </button>
     </div>
 
-    <div v-if="mode === 'idle' || mode === 'creating' || mode === 'joining'" class="online-entry mx-auto max-w-xl space-y-6 sm:space-y-8">
-      <div class="entry-heading space-y-2 pt-3 text-center sm:pt-6">
-        <p class="font-serif text-[11px] font-bold uppercase tracking-[.22em] text-gold-muted">O poder está à mesa</p>
-        <h1 class="font-serif text-3xl font-bold leading-tight text-ink sm:text-4xl">Seu gabinete.<br /><span class="text-gold-light">Suas alianças.</span></h1>
-        <p class="mx-auto max-w-sm text-sm text-ink-muted">Reúna seus amigos, guarde seus segredos e dispute o poder.</p>
-      </div>
+    <div v-if="mode === 'idle' || mode === 'creating' || mode === 'joining'" class="online-entry pt-12 mx-auto max-w-xl space-y-6 sm:space-y-8">
+      <AppSectionHeader
+        label="O poder está à mesa"
+        title="Seu gabinete. Suas alianças."
+        description="Reúna seus amigos, guarde seus segredos e dispute o poder."
+      />
       <div class="rounded border border-line-gold/60 bg-surface p-4 shadow-card sm:p-7">
         <div v-if="props.initialRoomId && activeTab === 'join'" class="mb-5 flex items-center gap-3 rounded border border-gold/30 bg-gold/10 p-3 text-sm">
           <Users class="h-5 w-5 shrink-0 text-gold" aria-hidden="true" /><span>Você foi convidado para a mesa <strong class="text-gold">{{ inputRoomCode }}</strong>.</span>
