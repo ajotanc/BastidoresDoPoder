@@ -66,18 +66,16 @@ watch(
       </div>
     </template>
 
-    <div v-if="activeCard" class="card-perspective flex flex-col items-center justify-center py-4 gap-4">
+    <div v-if="activeCard" class="flex flex-col items-center justify-center py-4 gap-4">
       <button
         type="button"
         @click="toggleFlip"
-        class="card-3d-wrapper relative grid w-full max-w-[400px] cursor-pointer focus-visible:outline-none rounded bg-transparent border-0 p-0 select-none group/flip"
-        :class="{ 'is-flipped': isFlipped }"
+        class="relative block w-full max-w-[400px] cursor-pointer focus-visible:outline-none rounded bg-transparent border-0 p-0 select-none"
         :aria-pressed="isFlipped"
         :aria-label="isFlipped ? 'Verso da carta exibido. Clique para ver a frente.' : 'Frente da carta exibida. Clique para ver o verso.'"
         :title="isFlipped ? 'Clique para ver a frente' : 'Clique para ver o verso'"
       >
-        <Card :card="activeCard" class="card-face [grid-area:1/1]" :aria-hidden="isFlipped" />
-        <Card face-down class="card-face card-face-back [grid-area:1/1]" :aria-hidden="!isFlipped" />
+        <Card :card="activeCard" :face-down="isFlipped" />
       </button>
 
 

@@ -31,7 +31,10 @@ const displayCard = computed<RoleCard | undefined>(() => {
 </script>
 
 <template>
+  <div class="game-card-shell relative aspect-[2/3] w-full">
+  <Transition name="card-flip" mode="out-in">
   <div
+    :key="faceDown ? 'back' : 'front'"
     class="game-card relative isolate aspect-[2/3] w-full overflow-hidden select-none text-[#f4ead8]"
     :style="{ '--role-color': displayCard?.roleColor || '#dab65f' }"
     role="group"
@@ -86,9 +89,19 @@ const displayCard = computed<RoleCard | undefined>(() => {
       </div>
     </div>
   </div>
+  </Transition>
+  </div>
 </template>
 
 <style scoped>
+.game-card-shell { perspective: 1000px; }
+.card-flip-leave-active { transition: transform .45s cubic-bezier(.55, 0, 1, .45); }
+.card-flip-enter-active { transition: transform .45s cubic-bezier(0, .55, .45, 1); }
+.card-flip-enter-from { transform: rotateY(-90deg); }
+.card-flip-leave-to { transform: rotateY(90deg); }
+@media (prefers-reduced-motion: reduce) {
+  .card-flip-enter-active, .card-flip-leave-active { transition: none; }
+}
 .game-card {
   container-type: inline-size;
   border-radius: var(--ui-radius, 10px);

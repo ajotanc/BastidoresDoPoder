@@ -58,6 +58,18 @@ const revealWinnerSupport = (player: PublicPlayerState, slot: number) => {
   if (revealedWinnerCards.value.has(card.id)) handleInspectCard(card.roleSlug);
   else revealedWinnerCards.value.add(card.id);
 };
+const rivalSupportAt = (player: PublicPlayerState, slot: number) =>
+  player.lostCards[slot - 1] ?? winnerSupportAt(player, slot);
+const isRivalSupportHidden = (player: PublicPlayerState, slot: number) => {
+  if (player.lostCards[slot - 1]) return false;
+  const winnerCard = winnerSupportAt(player, slot);
+  return !winnerCard || !revealedWinnerCards.value.has(winnerCard.id);
+};
+const inspectRivalSupport = (player: PublicPlayerState, slot: number) => {
+  const lostCard = player.lostCards[slot - 1];
+  if (lostCard) handleInspectCard(lostCard.roleSlug);
+  else revealWinnerSupport(player, slot);
+};
 
 const emit = defineEmits<{
   (e: 'declare-action', intent: ActionIntent): void;
@@ -526,18 +538,15 @@ const copyGameLink = async (): Promise<void> => {
             <div class="grid max-w-48 grid-cols-2 gap-2">
               <div v-for="slot in 2" :key="slot" class="rival-support" :class="{ 'is-revealed': !!opp.lostCards[slot - 1] }">
                 <div class="rival-support-inner">
-                  <Transition name="support-flip" mode="out-in">
-                  <button v-if="opp.lostCards[slot - 1]" type="button" class="rival-support-front" @click="handleInspectCard(opp.lostCards[slot - 1]!.roleSlug)" :aria-label="`Ver apoio perdido: ${getRoleDisplayName(opp.lostCards[slot - 1]!.roleSlug)}`" :title="opp.lostCards[slot - 1]!.reason"><Card :role="opp.lostCards[slot - 1]!.roleSlug" /></button>
                   <button
-                    v-else-if="winnerSupportAt(opp, slot)"
-                    :key="`${winnerSupportAt(opp, slot)!.id}-${revealedWinnerCards.has(winnerSupportAt(opp, slot)!.id)}`"
                     type="button"
                     class="rival-support-front"
-                    :aria-label="`${revealedWinnerCards.has(winnerSupportAt(opp, slot)!.id) ? 'Ampliar' : 'Revelar'} apoio ${slot} do vencedor ${opp.name}`"
-                    @click="revealWinnerSupport(opp, slot)"
-                  ><Card :role="winnerSupportAt(opp, slot)!.roleSlug" :face-down="!revealedWinnerCards.has(winnerSupportAt(opp, slot)!.id)" /></button>
-                  <div v-else class="rival-support-back"><Card face-down /></div>
-                  </Transition>
+                    :aria-disabled="!rivalSupportAt(opp, slot)"
+                    :tabindex="rivalSupportAt(opp, slot) ? 0 : -1"
+                    :aria-label="opp.lostCards[slot - 1] ? `Ver apoio perdido: ${getRoleDisplayName(opp.lostCards[slot - 1]!.roleSlug)}` : winnerSupportAt(opp, slot) ? `${isRivalSupportHidden(opp, slot) ? 'Revelar' : 'Ampliar'} apoio ${slot} do vencedor ${opp.name}` : `Apoio secreto de ${opp.name}`"
+                    :title="opp.lostCards[slot - 1]?.reason"
+                    @click="inspectRivalSupport(opp, slot)"
+                  ><Card :role="rivalSupportAt(opp, slot)?.roleSlug" :face-down="isRivalSupportHidden(opp, slot)" /></button>
                 </div>
               </div>
             </div>

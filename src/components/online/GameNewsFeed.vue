@@ -33,7 +33,7 @@ watch(() => props.history[0]?.id, async () => {
         <Newspaper class="w-4 h-4 text-gold-light shrink-0" aria-hidden="true" />
         <h2 class="game-section-title">Plantão dos Bastidores</h2>
       </div>
-      <span class="text-xs text-gold-muted" :class="{ 'live-indicator': !isFinished }">{{ isFinished ? 'Partida encerrada' : 'Ao vivo' }}</span>
+      <span class="inline-flex items-center gap-2 text-xs text-gold-muted" :class="{ 'live-indicator': !isFinished }"><span v-if="!isFinished" class="live-dot" aria-hidden="true" />{{ isFinished ? 'Partida encerrada' : 'Ao vivo' }}</span>
     </header>
     <article
       v-if="latestEvent"
@@ -64,11 +64,19 @@ watch(() => props.history[0]?.id, async () => {
 
 <style scoped>
 .live-indicator {
-  animation: live-pulse 2s ease-in-out infinite;
+  color: var(--gold);
+  animation: live-pulse 1.4s ease-in-out infinite;
+}
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
 }
 @keyframes live-pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: .45; }
+  50% { opacity: .2; }
 }
 @media (prefers-reduced-motion: reduce) {
   .live-indicator { animation: none; }

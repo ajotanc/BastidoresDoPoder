@@ -78,25 +78,15 @@ watch(() => props.isOpen, () => { selectedToReturn.value = []; });
           type="button"
           @click="toggleSelect(card.id)"
           :aria-pressed="selectedToReturn.includes(card.id)"
-          class="group relative rounded-lg overflow-hidden border-2 transition-all p-2 flex flex-col items-center gap-2 bg-paper-deep cursor-pointer"
+          :aria-label="`Selecionar ${getRoleDisplayName(card.roleSlug)} para devolver`"
+          class="relative block w-full min-w-0 rounded border-0 bg-transparent p-0 cursor-pointer transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-paper-deep"
           :class="[
             selectedToReturn.includes(card.id)
-              ? 'border-gold shadow-lg ring-2 ring-gold/40 bg-gold/15'
-              : 'border-line hover:border-gold/40'
+              ? 'ring-2 ring-gold'
+              : 'hover:ring-2 hover:ring-gold/50'
           ]"
         >
-          <div class="w-full aspect-[2/3] rounded overflow-hidden bg-surface-elevated flex items-center justify-center relative">
-            <Card :role="card.roleSlug" />
-            <div
-              v-if="selectedToReturn.includes(card.id)"
-              class="absolute inset-0 bg-gold/30 flex items-center justify-center font-bold text-xs uppercase text-paper-deep font-serif"
-            >
-              Devolver
-            </div>
-          </div>
-          <span class="text-xs font-serif font-bold text-ink text-center truncate w-full">
-            {{ getRoleDisplayName(card.roleSlug) }}
-          </span>
+          <Card :role="card.roleSlug" />
         </button>
       </div>
     </div>
