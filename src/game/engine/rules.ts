@@ -30,3 +30,13 @@ export const clockwiseOpponents = (state: GameState, declarer: string): string[]
   return [...state.playerOrder.slice(index + 1), ...state.playerOrder.slice(0, index)]
     .filter(id => state.players[id]?.isAlive);
 };
+
+export const getEligibleChallengers = (state: GameState, pending: PendingAction, onBlock = false): string[] => {
+  const declarer = onBlock ? pending.blockedByPlayerId : pending.sourcePlayerId;
+  if (!declarer) return [];
+  const opponents = clockwiseOpponents(state, declarer);
+  if (!pending.targetPlayerId) return opponents;
+  // A directed action concerns its target; its defense concerns the attacker.
+  const affected = onBlock ? pending.sourcePlayerId : pending.targetPlayerId;
+  return opponents.filter(id => id === affected);
+};

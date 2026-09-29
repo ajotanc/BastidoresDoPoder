@@ -32,7 +32,7 @@ const displayCard = computed<RoleCard | undefined>(() => {
 
 <template>
   <div
-    class="game-card flex w-full aspect-[2/3] overflow-hidden select-none text-[#f4ead8] shadow-2xl border-2 border-[var(--role-color)] md:p-[0.5cqw] p-[2cqw]"
+    class="game-card flex w-full aspect-[2/3] overflow-hidden select-none text-[#f4ead8] shadow-2xl border border-[#334255] md:p-[0.5cqw] p-[2cqw]"
     :style="{
       '--role-color': displayCard?.roleColor || '#dab65f'
     }" role="group" :aria-label="faceDown ? 'Verso da carta — ' + GAME_NAME : displayCard ? 'Carta ' + displayCard.name : 'Carta ' + GAME_NAME">

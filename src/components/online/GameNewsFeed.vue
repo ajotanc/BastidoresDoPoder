@@ -3,9 +3,11 @@ import dayjs from 'dayjs';
 import { computed, ref, watch, nextTick } from 'vue';
 import type { GameEvent } from '@/game/models/gameState';
 import { Newspaper } from 'lucide-vue-next';
+import GameEventMessage from './GameEventMessage.vue';
 
 interface Props {
   history: readonly GameEvent[];
+  isFinished?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -31,7 +33,7 @@ watch(() => props.history[0]?.id, async () => {
         <Newspaper class="w-4 h-4 text-gold-light shrink-0" aria-hidden="true" />
         <h2 class="game-section-title">Plantão dos Bastidores</h2>
       </div>
-      <span class="text-xs text-gold-muted">Ao vivo</span>
+      <span class="text-xs text-gold-muted">{{ isFinished ? 'Partida encerrada' : 'Ao vivo' }}</span>
     </header>
     <article
       v-if="latestEvent"
@@ -42,7 +44,7 @@ watch(() => props.history[0]?.id, async () => {
         <span class="font-semibold" :class="latestEvent.importance === 'breaking' ? 'text-status-red' : 'text-gold'">{{ latestEvent.importance === 'breaking' ? 'Urgente' : 'Agora na mesa' }}</span>
         <time class="text-ink-subtle">{{ dayjs(latestEvent.timestamp).format('HH:mm') }}</time>
       </div>
-      <p class="text-sm leading-relaxed text-ink">{{ latestEvent.message }}</p>
+      <p class="text-sm leading-relaxed text-ink"><GameEventMessage :message="latestEvent.message" /></p>
     </article>
     <p v-else class="text-sm text-ink-muted">As jogadas da mesa aparecerão aqui.</p>
     <div v-if="recentEvents.length" ref="historyList" class="news-history mt-4 max-h-64 overflow-y-auto pr-2">
@@ -53,7 +55,7 @@ watch(() => props.history[0]?.id, async () => {
           class="space-y-1 border-b border-line/40 pb-3 last:border-b-0 last:pb-0"
         >
           <time class="block text-[11px] tabular-nums text-ink-subtle">{{ dayjs(ev.timestamp).format('HH:mm:ss') }}</time>
-          <p class="text-sm leading-relaxed text-ink-muted">{{ ev.message }}</p>
+          <p class="text-sm leading-relaxed text-ink-muted"><GameEventMessage :message="ev.message" /></p>
         </li>
       </ol>
     </div>

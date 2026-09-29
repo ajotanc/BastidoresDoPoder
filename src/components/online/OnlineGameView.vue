@@ -228,7 +228,7 @@ const handleJoin = async (): Promise<void> => {
           <div v-if="activeTab === 'create'" class="space-y-3 rounded border border-line bg-paper-deep/50 p-3 sm:p-4">
             <div class="flex items-center gap-3">
               <Checkbox id="play-against-bots" v-model:checked="playAgainstBots" :disabled="isSubmitting" />
-              <label for="play-against-bots" class="flex min-h-11 flex-1 cursor-pointer items-center font-semibold text-ink">Jogar contra bot</label>
+              <label for="play-against-bots" class="flex flex-1 cursor-pointer items-center font-semibold text-ink">Jogar contra bot</label>
             </div>
             <div v-if="playAgainstBots" class="space-y-2">
               <label for="bot-count" class="block font-serif font-bold text-ink">Quantidade de bots</label>

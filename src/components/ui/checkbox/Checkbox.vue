@@ -24,6 +24,6 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </template>
 
 <style>
-button.app-checkbox { width: 30px; height: 30px; min-height: 30px; padding: 0; border-color: #8d784f; }
+button.app-checkbox { width: 22px; height: 22px; min-height: 22px; padding: 0; border-color: #8d784f; border-radius: calc(var(--ui-radius) / 2) !important; }
 button.app-checkbox[data-state='checked'] { border-color: var(--gold); background: rgb(230 191 115 / 10%); }
 </style>

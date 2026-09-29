@@ -68,6 +68,7 @@ watch(() => props.isOpen, () => { selectedCardId.value = ''; });
           type="button"
           @click="selectedCardId = card.id"
           :aria-pressed="selectedCardId === card.id"
+          :aria-label="`Selecionar ${getRoleDisplayName(card.roleSlug)} para perder`"
           class="group relative rounded-lg overflow-hidden border-2 transition-all p-3 flex flex-col items-center gap-3 bg-paper-deep cursor-pointer"
           :class="[
             selectedCardId === card.id
@@ -78,9 +79,6 @@ watch(() => props.isOpen, () => { selectedCardId.value = ''; });
           <div class="w-full aspect-[2/3] rounded overflow-hidden bg-surface-elevated flex items-center justify-center relative">
             <Card :role="card.roleSlug" />
           </div>
-          <span class="text-xs font-serif font-bold text-ink text-center">
-            {{ getRoleDisplayName(card.roleSlug) }}
-          </span>
         </button>
       </div>
     </div>

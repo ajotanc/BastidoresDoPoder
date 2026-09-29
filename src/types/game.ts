@@ -42,6 +42,7 @@ export interface RoleCard {
   readonly summary: string;
   readonly characterSrc?: string;
   readonly iconSrc?: string;
+  readonly gender?: string;
   readonly cardText: RoleCardText;
   readonly rules: readonly RoleCardRuleItem[];
   readonly officialRuleNotice: string;

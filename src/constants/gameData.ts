@@ -44,7 +44,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     summary: 'Ataque econômico com bloqueio próprio e defesa contra Investigador.',
     characterSrc: '/images/characters/colonel.webp',
     iconSrc: '/images/icons/colonel.webp',
-
+    gender: 'male',
     cardText: {
       action: {
         title: 'Extorsão',
@@ -57,7 +57,6 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         cost: 'GRÁTIS'
       }
     },
-
     rules: [
       {
         title: 'Extorsão (ação)',
@@ -78,11 +77,9 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         type: 'defense'
       }
     ],
-
     officialRuleNotice:
       'O Coronel pode bloquear Extorsão e Mandado de Busca apenas quando for o alvo. Não protege outros jogadores.'
   },
-
   {
     id: 'card-executor',
     slug: 'executor',
@@ -95,7 +92,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
       'Eliminação rápida com custo moderado, bloqueável por Advogada.',
     characterSrc: '/images/characters/executor.webp',
     iconSrc: '/images/icons/executor.webp',
-
+    gender: 'male',
     cardText: {
       action: {
         title: 'Execução',
@@ -108,7 +105,6 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         cost: null
       }
     },
-
     rules: [
       {
         title: 'Execução (ação)',
@@ -121,7 +117,6 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     officialRuleNotice:
       'O custo de C$ 3 é pago na declaração e nunca é devolvido, mesmo se a ação for bloqueada ou contestada.'
   },
-
   {
     id: 'card-untouchable',
     slug: 'untouchable',
@@ -134,7 +129,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
       'Defesa paga contra Impeachment comum. Não protege do definitivo.',
     characterSrc: '/images/characters/untouchable.webp',
     iconSrc: '/images/icons/untouchable.webp',
-
+    gender: 'male',
     cardText: {
       action: {
         title: 'Sem ação',
@@ -147,7 +142,6 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         cost: 'C$ 3'
       }
     },
-
     rules: [
       {
         title: 'Bloqueio de Impeachment comum (defesa)',
@@ -156,11 +150,9 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         type: 'defense'
       }
     ],
-
     officialRuleNotice:
       'Requer saldo prévio de C$ 3 para declarar a defesa. O valor vai para o cofre e nunca retorna.'
   },
-
   {
     id: 'card-lawyer',
     slug: 'lawyer',
@@ -173,7 +165,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
       'Defesa contra eliminação e contra investigação.',
     characterSrc: '/images/characters/lawyer.webp',
     iconSrc: '/images/icons/lawyer.webp',
-
+    gender: 'female',
     cardText: {
       action: {
         title: 'Sem ação',
@@ -186,7 +178,6 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         cost: 'GRÁTIS'
       }
     },
-
     rules: [
       {
         title: 'Bloqueio de Execução (defesa)',
@@ -205,7 +196,6 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     officialRuleNotice:
       'Não possui ação própria em seu turno; atua exclusivamente como defesa contra ataques direcionados.'
   },
-
   {
     id: 'card-baron',
     slug: 'baron',
@@ -218,7 +208,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
       'Receita rápida e bloqueio de Vaquinha Virtual.',
     characterSrc: '/images/characters/baron.webp',
     iconSrc: '/images/icons/baron.webp',
-
+    gender: 'male',
     cardText: {
       action: {
         title: 'Caixa 2',
@@ -231,7 +221,6 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         cost: 'GRÁTIS'
       }
     },
-
     rules: [
       {
         title: 'Caixa 2 (ação)',
@@ -246,11 +235,9 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         type: 'defense'
       }
     ],
-
     officialRuleNotice:
       'O bloqueio da Vaquinha pode ser declarado por qualquer adversário, não apenas pelo jogador seguinte.'
   },
-
   {
     id: 'card-marketer',
     slug: 'marketer',
@@ -263,7 +250,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
       'Troca de cartas no baralho e bloqueio de Extorsão.',
     characterSrc: '/images/characters/marketer.webp',
     iconSrc: '/images/icons/marketer.webp',
-
+    gender: 'female',
     cardText: {
       action: {
         title: 'Troca de Cartas',
@@ -276,7 +263,6 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         cost: 'GRÁTIS'
       }
     },
-
     rules: [
       {
         title: 'Troca de Cartas (ação)',
@@ -291,11 +277,9 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         type: 'defense'
       }
     ],
-
     officialRuleNotice:
       'Se possuir apenas um apoio ativo, compra 2 cartas, fica com 3 temporariamente e devolve 2, mantendo um apoio ativo.'
   },
-
   {
     id: 'card-investigator',
     slug: 'investigator',
@@ -308,7 +292,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
       'Ataque focado por nome de personagem contra um rival.',
     characterSrc: '/images/characters/investigator.webp',
     iconSrc: '/images/icons/investigator.webp',
-
+    gender: 'male',
     cardText: {
       action: {
         title: 'Mandado de Busca',
@@ -321,7 +305,6 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         cost: null
       }
     },
-
     rules: [
       {
         title: 'Mandado de Busca (ação)',
@@ -330,11 +313,9 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         type: 'action'
       }
     ],
-
     officialRuleNotice:
       'Pode ser bloqueado pelo alvo se alegar Advogada ou Coronel. O custo de C$ 5 nunca é devolvido. Verifique os apoios que o alvo possui no momento do efeito, após eventuais reposições de cartas em desafios. O alvo não pode mentir sobre possuir o personagem procurado.'
   },
-
   {
     id: 'card-coordinator',
     slug: 'coordinator',
@@ -347,7 +328,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
       'Receba C$ 2 e favoreça outro jogador com C$ 1, ambos do cofre.',
     characterSrc: '/images/characters/coordinator.webp',
     iconSrc: '/images/icons/coordinator.webp',
-
+    gender: 'female',
     cardText: {
       action: {
         title: 'Acordo de Bastidor',
@@ -360,7 +341,6 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         cost: null
       }
     },
-
     rules: [
       {
         title: 'Acordo de Bastidor (ação gratuita)',
@@ -371,15 +351,13 @@ export const ROLE_CARDS: readonly RoleCard[] = [
       {
         title: 'Sem bloqueio',
         description:
-          'A Articuladora não bloqueia ações. O Acordo de Bastidor não pode ser bloqueado, mas pode ser contestado por qualquer adversário vivo.',
+          'A Articuladora não bloqueia ações. O Acordo de Bastidor não pode ser bloqueado e só pode ser contestado pelo beneficiário escolhido.',
         type: 'passive'
       }
     ],
-
     officialRuleNotice:
       'Distribua os Contos somente após resolver a contestação. Se a alegação não for comprovada, aplique a perda habitual de apoio e ninguém recebe moedas. Se o beneficiário for eliminado no desafio, cancele o acordo para ambos, sem escolher outro. Promessas não são obrigatórias. A ação não permite doações, empréstimos ou trocas de cartas entre jogadores; os dois pagamentos vêm do cofre. Com C$ 10 ou mais no início do turno, o Impeachment definitivo continua obrigatório.'
   },
-
   {
     id: 'card-guide',
     slug: 'guide',
@@ -391,7 +369,6 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     summary:
       'Carta de consulta rápida com resumo de todos os poderes e ações.',
     iconSrc: '/images/icons/guide.webp',
-
     cardText: {
       action: {
         title: 'Referência rápida',
@@ -404,7 +381,6 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         cost: null
       }
     },
-
     rules: [
       {
         title: 'Distribuição',
@@ -413,7 +389,6 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         type: 'passive'
       }
     ],
-
     officialRuleNotice:
       'Não entra no baralho de personagens nem pode ser perdida em desafios ou ataques.'
   }
@@ -508,7 +483,7 @@ export const TURN_STEPS: readonly TurnStep[] = [
   {
     stepNumber: 2,
     title: 'Resolva o desafio à ação',
-    description: 'Se a ação exige personagem, qualquer adversário vivo pode contestar antes de qualquer efeito. Ações gerais não podem ser contestadas; as alegações usadas para bloqueá-las podem.',
+    description: 'Se a ação exige personagem e tem alvo, somente esse alvo pode contestar. Sem alvo, qualquer adversário vivo pode contestar, respeitando a ordem da mesa. Ações gerais não podem ser contestadas; as alegações usadas para bloqueá-las podem.',
     details: [
       'Alegação comprovada: o declarante mostra um apoio ativo do personagem e o substitui imediatamente por outro apoio secreto do baralho. A carta mostrada volta ao baralho, que é reembaralhado. O contestador perde um apoio; se a partida continuar, a ação segue para a etapa de bloqueio. A compra pode trazer outra cópia do mesmo personagem.',
       'Alegação não comprovada: o declarante perde um apoio à escolha dele; a ação é cancelada e o turno termina. Ele também pode optar por não comprovar, aceitando a penalidade.',
@@ -523,7 +498,7 @@ export const TURN_STEPS: readonly TurnStep[] = [
   {
     stepNumber: 4,
     title: 'Resolva o desafio ao bloqueio',
-    description: 'Qualquer outro jogador vivo, inclusive o autor da ação, pode contestar o bloqueio declarado.',
+    description: 'Em ações com alvo, somente o autor da ação pode contestar o bloqueio do alvo. Em ações sem alvo, os demais jogadores vivos podem contestar, respeitando a ordem da mesa.',
     details: [
       'Bloqueio comprovado: o defensor substitui imediatamente a carta mostrada por outro apoio secreto do baralho e devolve a comprovada, reembaralhando o baralho. O contestador perde um apoio. O bloqueio vale e a ação é cancelada. A compra pode trazer outra cópia do mesmo personagem.',
       'Bloqueio não comprovado: o defensor perde um apoio, o bloqueio é cancelado e a ação original continua se o alvo ainda estiver vivo e a partida não tiver terminado.',
@@ -548,7 +523,7 @@ export const RESOLUTION_RULES: readonly string[] = [
   'Beneficiário eliminado em desafio: o Acordo de Bastidor é cancelado para ambos, sem novo beneficiário e sem distribuição de Contos.',
   'Uma contestação por alegação: a ação pode ter um desafio e o bloqueio pode ter outro. Uma alegação já resolvida não é contestada novamente.',
   'Uma tentativa de bloqueio por ação: se for desmascarada, ninguém apresenta uma segunda defesa, nem mesmo usando outro personagem.',
-  'Prioridade em sentido horário: comece pelo próximo jogador após quem declarou. O primeiro que aceitar usa a oportunidade. Depois que todos passam, a janela fecha.',
+  'Ações com alvo: somente o alvo contesta a ação, e somente o autor contesta o bloqueio. Sem alvo, a prioridade é em sentido horário entre os adversários vivos; depois que todos passam, a janela fecha.',
   'Sem voltar no tempo: não se contesta depois de resolvido o efeito; o Marqueteira só olha as novas cartas quando sua ação já foi validada.',
   'Alvo eliminado em desafio: o ataque ou roubo termina sem novo alvo e sem devolução de custo.',
   'Vitória imediata: ao restar apenas um jogador vivo, encerra-se a partida imediatamente sem resolver efeitos pendentes.'

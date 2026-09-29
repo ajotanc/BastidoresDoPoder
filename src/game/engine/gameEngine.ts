@@ -24,7 +24,7 @@ import type {
 import { createInitialDeck, shuffleDeck } from './deck';
 import { SUPPORT_CARDS_PER_ROLE, ROLE_DISPLAY_NAMES } from '@/constants/gameData';
 import { PLAYABLE_ROLES } from './deck';
-import { clockwiseOpponents, getBlockRoles, getEligibleBlockRoles } from './rules';
+import { clockwiseOpponents, getBlockRoles, getEligibleBlockRoles, getEligibleChallengers } from './rules';
 import { isClientCommand } from '../models/validation';
 
 /**
@@ -234,13 +234,14 @@ export const executeCommand = (
     };
   };
 
-  const addEvent = (message: string, importance: GameEvent['importance'] = 'normal', type = 'ACTION'): void => {
+  const addEvent = (message: string, importance: GameEvent['importance'] = 'normal', type = 'ACTION', facts: Pick<GameEvent, 'playerId' | 'role' | 'actionType'> = {}): void => {
     const event: GameEvent = {
       id: `ev-${dayjs().valueOf()}-${Math.random().toString(36).substring(2, 6)}`,
       timestamp: dayjs().valueOf(),
       type,
       message,
       importance,
+      ...facts,
     };
     state.publicState = {
       ...state.publicState,
@@ -511,7 +512,7 @@ export const executeCommand = (
       const actionLabel = getActionDisplayName(intent.actionType);
       const targetName = intent.targetPlayerId ? state.publicState.players[intent.targetPlayerId]?.name : '';
       const targetTxt = targetName ? ` contra ${targetName}` : '';
-      addEvent(`${player.name} declarou ${actionLabel}${targetTxt}.`, 'alert', 'ACTION_DECLARED');
+      addEvent(`${player.name} declarou ${actionLabel}${targetTxt}.`, 'alert', 'ACTION_DECLARED', { playerId: senderPlayerId, role: claimedRole, actionType: intent.actionType });
 
       // Se a ação alega cargo de personagem (Caixa 2, Extorsão, Execução, Troca, Mandado, Acordo), abre contestação ("Fake News!")
       if (claimedRole) {
@@ -550,6 +551,9 @@ export const executeCommand = (
       if (!challenger || !challenger.isAlive) {
         return createRejection('PLAYER_NOT_ALIVE', 'Apenas jogadores ativos podem contestar.');
       }
+      if (!getEligibleChallengers(state.publicState, pending, isBlockChallenge).includes(senderPlayerId)) {
+        return createRejection('NOT_ELIGIBLE_TO_REACT', 'Você não é o jogador afetado por esta alegação.');
+      }
 
       const suspectPlayerId = isBlockChallenge ? pending.blockedByPlayerId : pending.sourcePlayerId;
       if (!suspectPlayerId || suspectPlayerId === senderPlayerId) {
@@ -563,9 +567,9 @@ export const executeCommand = (
 
       const suspectName = state.publicState.players[suspectPlayerId]?.name || 'Jogador';
       addEvent(
-        `🚨 FAKE NEWS! ${challenger.name} contestou a alegação de ${getRoleDisplayName(claimedRole)} de ${suspectName}!`,
+        `FAKE NEWS! ${challenger.name} contestou a alegação de ${getRoleDisplayName(claimedRole)} de ${suspectName}!`,
         'breaking',
-        'CHALLENGE_DECLARED'
+        'CHALLENGE_DECLARED', { playerId: senderPlayerId, role: claimedRole }
       );
 
       // Verificação no estado privado do host
@@ -582,8 +586,8 @@ export const executeCommand = (
         state.privateHands[suspectPlayerId] = suspectHand.map(card =>
           card.id === matchingCard.id ? { ...replacement, isLost: false } : card);
         // VERDADEIRO! O desafiado realmente tinha o cargo alegado
-        addEvent(`Comprovado! ${suspectName} provou possuir ${getRoleDisplayName(claimedRole)}.`, 'alert', 'CHALLENGE_PROVED');
-        addEvent(`${suspectName} devolveu o apoio comprovado ao baralho e recebeu outro apoio secreto.`, 'normal', 'PROVED_CARD_REPLACED');
+        addEvent(`Comprovado! ${suspectName} provou possuir ${getRoleDisplayName(claimedRole)}.`, 'alert', 'CHALLENGE_PROVED', { playerId: suspectPlayerId, role: claimedRole });
+        addEvent(`${suspectName} devolveu o apoio comprovado ao baralho e recebeu outro apoio secreto.`, 'normal', 'PROVED_CARD_REPLACED', { playerId: suspectPlayerId });
 
         // A compra já foi concluída, mesmo se o desafiante abandonar ou for eliminado.
         state.lossContinuation = {
@@ -606,7 +610,7 @@ export const executeCommand = (
         }
       } else {
         // BLEFE DESMASCARADO! O desafiado não tinha a carta alegada
-        addEvent(`Blefe desmascarado! ${suspectName} mentiu sobre ter ${getRoleDisplayName(claimedRole)}!`, 'breaking', 'BLUFF_EXPOSED');
+        addEvent(`Blefe desmascarado! ${suspectName} mentiu sobre ter ${getRoleDisplayName(claimedRole)}!`, 'breaking', 'BLUFF_EXPOSED', { playerId: suspectPlayerId, role: claimedRole });
 
         if (isBlockChallenge) {
           // Se o bloqueio era mentira, o bloqueador mentiroso perde 1 apoio pelo blefe
@@ -659,9 +663,9 @@ export const executeCommand = (
       };
 
       addEvent(
-        `🛡️ BLOQUEIO! ${blocker.name} alegou ${getRoleDisplayName(claimedBlockRole)} para bloquear a ação!`,
+        `BLOQUEIO! ${blocker.name} alegou ${getRoleDisplayName(claimedBlockRole)} para bloquear a ação!`,
         'alert',
-        'BLOCK_DECLARED'
+        'BLOCK_DECLARED', { playerId: senderPlayerId, role: claimedBlockRole }
       );
 
       return openResponseWindow(state, 'WAITING_CHALLENGE_BLOCK', senderPlayerId);
@@ -728,13 +732,13 @@ export const executeCommand = (
       };
 
       addEvent(
-        `💥 APOIO PERDIDO! ${player?.name || 'Jogador'} perdeu o apoio de ${getRoleDisplayName(card.roleSlug)}.`,
+        `APOIO PERDIDO! ${player?.name || 'Jogador'} perdeu o apoio de ${getRoleDisplayName(card.roleSlug)}.`,
         'breaking',
-        'SUPPORT_LOST'
+        'SUPPORT_LOST', { playerId: senderPlayerId, role: card.roleSlug }
       );
 
       if (activeCount === 0) {
-        addEvent(`⛔ ELIMINAÇÃO! ${player?.name || 'Jogador'} perdeu todos os apoios e está fora do jogo!`, 'breaking', 'PLAYER_ELIMINATED');
+        addEvent(`ELIMINAÇÃO! ${player?.name || 'Jogador'} perdeu todos os apoios e está fora do jogo!`, 'breaking', 'PLAYER_ELIMINATED');
       }
 
       // Verifica condição de vitória imediatamente
@@ -751,7 +755,7 @@ export const executeCommand = (
           winnerPlayerId: winnerId,
           revision: state.publicState.revision + 1,
         };
-        addEvent(`🏆 VITÓRIA POLÍTICA! ${winnerName} assumiu o controle absoluto de ${GAME_NAME}!`, 'breaking', 'GAME_FINISHED');
+        addEvent(`VITÓRIA POLÍTICA! ${winnerName} assumiu o controle absoluto de ${GAME_NAME}!`, 'breaking', 'GAME_FINISHED');
         state.lossContinuation = undefined;
         return engineResult(state);
       }
@@ -845,16 +849,18 @@ const resolveApprovedAction = (state: AuthoritativeGameState): EngineExecutionRe
   if (!source?.isAlive) return finishTurn(state);
   if (pending.targetPlayerId && !state.publicState.players[pending.targetPlayerId]?.isAlive) return finishTurn(state);
 
-  const addEvent = (msg: string, importance: GameEvent['importance'] = 'normal'): void => {
+  const addEvent = (msg: string, importance: GameEvent['importance'] = 'normal', facts: Pick<GameEvent, 'type' | 'playerId' | 'role'> = { type: 'ACTION_RESOLVED' }): void => {
     state.publicState = {
       ...state.publicState,
       history: [
         {
           id: `ev-${dayjs().valueOf()}-${Math.random().toString(36).substring(2, 6)}`,
           timestamp: dayjs().valueOf(),
-          type: 'ACTION_RESOLVED',
+          playerId: pending.sourcePlayerId,
+          actionType: pending.actionType,
           message: msg,
           importance,
+          ...facts,
         },
         ...state.publicState.history.slice(0, 49),
       ],
@@ -987,7 +993,7 @@ const resolveApprovedAction = (state: AuthoritativeGameState): EngineExecutionRe
           : `Mandado contra ${target?.name}: nada encontrado.`;
 
         if (hasNamedRole) {
-          addEvent(`Mandado de Busca bem-sucedido! ${target?.name} possuía ${getRoleDisplayName(pending.namedRole)} e perderá o apoio.`, 'breaking');
+          addEvent(`Mandado de Busca bem-sucedido! ${target?.name} possuía ${getRoleDisplayName(pending.namedRole)} e perderá o apoio.`, 'breaking', { type: 'SUPPORT_LOST', playerId: pending.targetPlayerId, role: pending.namedRole });
           const targetCard = targetHand.find((c) => !c.isLost && c.roleSlug === pending.namedRole);
           if (targetCard) {
             const updatedHand = targetHand.map((c) => (c.id === targetCard.id ? { ...c, isLost: true } : c));
@@ -1167,8 +1173,9 @@ const openResponseWindow = (
   declarer: string,
 ): EngineExecutionResult => {
   const pending = state.publicState.pendingAction;
-  const eligible = clockwiseOpponents(state.publicState, declarer).filter(id =>
-    phase !== 'WAITING_BLOCK' || (pending && getEligibleBlockRoles(state.publicState, pending, id).length > 0));
+  const eligible = !pending ? [] : phase === 'WAITING_BLOCK'
+    ? clockwiseOpponents(state.publicState, declarer).filter(id => getEligibleBlockRoles(state.publicState, pending, id).length > 0)
+    : getEligibleChallengers(state.publicState, pending, phase === 'WAITING_CHALLENGE_BLOCK');
   state.playersPassedResponse.clear();
   state.publicState = {
     ...state.publicState, phase, responsePlayerIds: eligible,
@@ -1208,3 +1215,4 @@ export const executeTimeout = (state: AuthoritativeGameState, now = dayjs().valu
   }
   return engineResult(state);
 };
+

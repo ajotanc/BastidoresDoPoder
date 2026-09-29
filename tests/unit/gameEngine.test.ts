@@ -1,4 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+// These fixtures intentionally start duels, independently of the production minimum.
+vi.mock('@/constants/gameConfig', async importOriginal => ({
+  ...await importOriginal<typeof import('@/constants/gameConfig')>(), MIN_PLAYERS_TO_START: 2,
+}));
 import {
   createInitialAuthoritativeState,
   executeCommand,
@@ -418,4 +422,3 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
     expect(state.publicState.winnerPlayerId).toBe('p1');
   });
 });
-

@@ -7,6 +7,10 @@ import LobbyRoom from '@/components/online/LobbyRoom.vue';
 import { createInitialAuthoritativeState } from '@/game/engine/gameEngine';
 import type { GameState } from '@/game/models/gameState';
 
+vi.mock('@/constants/gameConfig', async importOriginal => ({
+  ...await importOriginal<typeof import('@/constants/gameConfig')>(), MIN_PLAYERS_TO_START: 2,
+}));
+
 function state(): GameState {
   const s = createInitialAuthoritativeState('ROOM', 'a', 'Ana', 'baron', 'token-a').publicState;
   return { ...s, phase: 'WAITING_BLOCK', responsePlayerIds: ['b'], playerOrder: ['a', 'b'],
@@ -17,9 +21,19 @@ function state(): GameState {
 }
 
 describe('Controles online seguem a elegibilidade da engine', () => {
+  it('terceiro não recebe botão de contestar uma ação direcionada', () => {
+    const s = state();
+    const directed: GameState = { ...s, phase: 'WAITING_CHALLENGE_ACTION', playerOrder: ['a', 'b', 'c'],
+      players: { ...s.players, c: { ...s.players.b!, id: 'c', name: 'Carlos' } }, responsePlayerIds: ['b'],
+      pendingAction: { actionType: 'execution', sourcePlayerId: 'a', targetPlayerId: 'b', claimedRole: 'executor', costPaid: 3 } };
+    const wrapper = shallowMount(GameBoard, { props: { gameState: directed, myPlayerId: 'c', privateView: null, isHost: false } });
+    expect(wrapper.findAll('button').some(button => button.text().includes('Contestar'))).toBe(false);
+    expect(wrapper.text()).toContain('Somente o alvo desta ação pode contestar');
+    wrapper.unmount();
+  });
   it('mantém notícia nova no topo e reinicia a rolagem do histórico', async () => {
     const event = state().history[0]!;
-    const wrapper = shallowMount(GameNewsFeed, { props: { history: [event, { ...event, id: 'older' }] } });
+    const wrapper = shallowMount(GameNewsFeed, { props: { history: [event, { ...event, id: 'older' }] }, global: { stubs: { GameEventMessage: false } } });
     const list = wrapper.get('.news-history').element as HTMLElement;
     list.scrollTop = 200;
     await wrapper.setProps({ history: [{ ...event, id: 'new', message: 'Notícia mais recente' }, event, { ...event, id: 'older' }] });

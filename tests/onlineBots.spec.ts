@@ -22,8 +22,11 @@ test('opção de bots acessível, quantidade padrão e limites', async ({ page }
   await checkbox.uncheck();
   await expect(count).toHaveCount(0);
   const box = await checkbox.boundingBox();
-  expect(box!.height).toBe(30);
-  expect(box!.width).toBe(30);
+  expect(box!.height).toBeGreaterThanOrEqual(20);
+  expect(box!.height).toBeLessThan(44);
+  expect(box!.width).toBe(box!.height);
+  await page.locator('label[for="play-against-bots"]').click();
+  await expect(checkbox).toBeChecked();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 

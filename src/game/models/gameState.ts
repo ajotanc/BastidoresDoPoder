@@ -97,6 +97,10 @@ export interface PendingAction {
  * Evento do feed de notícias do jogo.
  */
 export interface GameEvent {
+  /** Structured public facts; never contains an unrevealed card. */
+  readonly playerId?: string;
+  readonly role?: RoleSlug;
+  readonly actionType?: ActionType;
   readonly id: string;
   readonly timestamp: number;
   readonly type: string;

@@ -148,6 +148,13 @@ const handleShare = async (): Promise<void> => {
         </span>
       </div>
 
+      <!-- Alerta de Quórum Mínimo Atingido -->
+      <div v-if="canStart"
+        class="p-3 bg-status-green-bg/80 border border-status-green/50 rounded flex items-center gap-2 text-xs text-status-green font-medium">
+        <CheckCircle2 class="w-4 h-4 shrink-0" aria-hidden="true" />
+        <span>Quórum mínimo atingido ({{ playerList.length }} participantes na mesa). O Host já pode dar início à partida!</span>
+      </div>
+
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <article v-for="(player, idx) in playerList" :key="player.id" class="lobby-player flex items-start gap-4 rounded border bg-paper-deep/60 p-4" :class="player.id === myPlayerId ? 'border-gold/40' : 'border-line'">
           <img :src="playerAvatar(player)" :alt="player.name" class="h-16 w-16 shrink-0 rounded object-cover object-top" />
@@ -169,26 +176,15 @@ const handleShare = async (): Promise<void> => {
 
     <!-- Barra de Controle do Lobby -->
     <div class="flex flex-col items-stretch gap-3 pt-4 border-t border-line/40">
-      <button type="button" @click="emit('leave')"
-        class="text-xs font-semibold text-ink-muted hover:text-status-red transition-colors order-2 sm:order-1 flex items-center gap-1.5">
-        <LogOut class="w-3.5 h-3.5" aria-hidden="true" />
-        <span>Abandonar Gabinete</span>
-      </button>
-
-      <!-- Alerta de Quórum Mínimo Atingido -->
-      <div v-if="canStart"
-        class="p-3 bg-status-green-bg/80 border border-status-green/50 rounded flex items-center justify-between text-xs text-status-green font-medium">
-        <span class="flex items-center gap-2">
-          <CheckCircle2 class="w-4 h-4 text-status-green shrink-0" aria-hidden="true" />
-          <span>Quórum mínimo atingido ({{ playerList.length }} participantes na mesa). O Host já pode dar início à
-            partida!</span>
-        </span>
-      </div>
-
-      <div class="flex items-center gap-3 w-full order-1">
+      <div class="lobby-actions flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <button type="button" @click="emit('leave')"
+          class="order-2 flex min-h-11 w-full items-center gap-2 text-sm font-semibold text-ink-muted transition-colors hover:text-status-red sm:order-1 sm:w-auto">
+          <LogOut class="h-4 w-4" aria-hidden="true" />
+          <span>Abandonar Gabinete</span>
+        </button>
         <!-- Botão de Pronto para jogadores comuns -->
         <button v-if="!isHost" type="button" @click="emit('set-ready', !myPlayer?.isReady)"
-          class="w-full sm:w-auto px-6 py-3 rounded font-sans font-bold text-xs tracking-normal transition-all border flex items-center justify-center gap-1.5"
+          class="order-1 min-h-11 w-full sm:order-2 sm:w-auto px-6 py-3 rounded font-sans font-bold text-xs tracking-normal transition-all border flex items-center justify-center gap-1.5"
           :class="[
             myPlayer?.isReady
               ? 'bg-status-green-bg border-status-green text-status-green hover:bg-status-green-bg/80'
@@ -200,7 +196,7 @@ const handleShare = async (): Promise<void> => {
 
         <!-- Botão de Iniciar para o Host -->
         <button v-if="isHost" type="button" aria-label="Iniciar disputa" :disabled="!canStart" @click="emit('start-game')"
-          class="w-full sm:w-auto px-8 py-3.5 rounded font-sans font-bold text-xs tracking-normal transition-all shadow-lg flex items-center justify-center gap-2"
+          class="order-1 min-h-11 w-full sm:order-2 sm:w-auto sm:min-w-48 px-6 py-3 rounded font-sans font-bold text-xs tracking-normal transition-all shadow-lg flex items-center justify-center gap-2"
           :class="[
             canStart
               ? 'bg-gold hover:bg-gold-light text-paper-deep hover:shadow-gold/20 active:scale-95'

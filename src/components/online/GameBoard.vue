@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { playerAvatar } from "@/utils/playerProfile";
-import { GAME_NAME } from "@/constants/gameConfig";
-import AppModalOverlay from '@/components/ui/AppModalOverlay.vue';
+import GameResultBanner from './GameResultBanner.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import Card from '@/components/game/Card.vue';
 import { ref, computed, watch } from 'vue';
@@ -13,11 +12,10 @@ import { useGameTimer } from '@/composables/useGameTimer';
 import { useLightbox } from '@/composables/useLightbox';
 import { ROLE_CARDS } from '@/constants/gameData';
 import { getRoleDisplayName, getActionDisplayName } from '@/game/engine/gameEngine';
-import { getEligibleBlockRoles } from '@/game/engine/rules';
+import { getEligibleBlockRoles, getEligibleChallengers } from '@/game/engine/rules';
 import { PLAYABLE_ROLES } from '@/game/engine/deck';
 import {
   ShieldCheck,
-  Trophy,
   Flame,
   Gavel,
   FolderLock,
@@ -61,7 +59,12 @@ const { openCardLightbox } = useLightbox();
 
 const isActionModalOpen = ref(false);
 const showLeaveModal = ref(false);
-watch(() => props.gameState.phase, phase => { if (phase !== 'WAITING_ACTION') isActionModalOpen.value = false; });
+watch(() => props.gameState.phase, phase => {
+  if (phase !== 'WAITING_ACTION') isActionModalOpen.value = false;
+  if (phase === 'FINISHED') showLeaveModal.value = false;
+});
+const isFinished = computed(() => props.gameState.phase === 'FINISHED');
+const winner = computed(() => props.gameState.players[props.gameState.winnerPlayerId ?? '']);
 const phaseLabel = computed(() => ({ WAITING_CHALLENGE_ACTION: 'Contestar ação', WAITING_BLOCK: 'Bloquear ação', WAITING_CHALLENGE_BLOCK: 'Contestar bloqueio', WAITING_CARD_CHOICE: 'Escolher apoio', WAITING_EXCHANGE_CHOICE: 'Trocar apoios' }[props.gameState.phase as string] || 'Em andamento'));
 const secondaryMobileTab = ref<'plantao' | 'contabilidade'>('plantao');
 
@@ -113,6 +116,7 @@ const isExchangePendingForMe = computed(() => {
 });
 
 const isMyResponse = computed(() => props.gameState.responsePlayerIds[0] === props.myPlayerId);
+const canIChallenge = computed(() => !!pending.value && isMyResponse.value && getEligibleChallengers(props.gameState, pending.value, props.gameState.phase === 'WAITING_CHALLENGE_BLOCK').includes(props.myPlayerId));
 const respondingPlayer = computed(() => props.gameState.players[props.gameState.responsePlayerIds[0] || '']);
 const possibleBlockRoles = computed(() => pending.value ? getEligibleBlockRoles(props.gameState, pending.value, props.myPlayerId) : []);
 const canIBlock = computed(() => isMyResponse.value && possibleBlockRoles.value.length > 0);
@@ -193,8 +197,8 @@ const copyGameLink = async (): Promise<void> => {
           <span class="font-serif text-sm sm:text-base font-bold text-gold-light">Turno {{ gameState.turn }}</span>
         </div>
         <div class="p-3.5 sm:p-4 flex flex-col justify-center min-w-0">
-          <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-ink-muted truncate">{{ isMyTurn ? 'Sua vez de decidir' : 'No comando da rodada' }}</span>
-          <strong class="font-serif text-sm sm:text-base font-bold text-ink truncate block">{{ activePlayer?.name }}</strong>
+          <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-ink-muted truncate">{{ isFinished ? 'Resultado final' : isMyTurn ? 'Sua vez de decidir' : 'No comando da rodada' }}</span>
+          <strong class="font-serif text-sm sm:text-base font-bold text-ink break-words block">{{ isFinished ? winner?.name ?? 'Sem vencedor' : activePlayer?.name }}</strong>
         </div>
       </div>
       <!-- Linha de separação e contagem regressiva integrada -->
@@ -219,16 +223,17 @@ const copyGameLink = async (): Promise<void> => {
 
     <!-- 2. PALCO PRINCIPAL DE DELIBERAÇÃO / SUA VEZ (Topo no mobile para máxima usabilidade!) -->
     <section aria-label="Deliberações e Ações da Mesa" class="space-y-3">
+      <GameResultBanner v-if="isFinished" :game-state="gameState" @play-again="emit('leave')" />
       <!-- Caso A: Quando há Ação Declarada em Aberto -->
       <div
-        v-if="pending"
+        v-else-if="pending"
         class="bg-surface border border-line border-l-4 border-l-gold rounded p-4 sm:p-5 shadow-card space-y-3.5 relative overflow-hidden"
       >
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-line/40 pb-2.5">
-          <span class="font-serif font-bold text-xs uppercase tracking-wider text-gold-light flex items-center gap-1.5">
-            <Radio class="w-3.5 h-3.5 text-gold-light animate-pulse" aria-hidden="true" />
+          <h3 class="game-section-title flex items-center gap-2">
+            <Radio class="h-4 w-4 shrink-0 text-gold-light" aria-hidden="true" />
             <span>Jogada em análise</span>
-          </span>
+          </h3>
           <span class="text-[11px] font-semibold text-ink-muted px-2 py-0.5 rounded bg-paper-deep border border-line">
             {{ phaseLabel }}
           </span>
@@ -254,7 +259,9 @@ const copyGameLink = async (): Promise<void> => {
         </p>
 
         <!-- Janela de Contestação de Ação ("Fake News!") -->
-        <div v-if="gameState.phase === 'WAITING_CHALLENGE_ACTION' && isMyResponse" class="space-y-2.5 pt-2.5 border-t border-line/40">
+        <p v-if="pending.targetPlayerId && gameState.phase === 'WAITING_CHALLENGE_ACTION'" class="text-xs text-ink-muted">Somente o alvo desta ação pode contestar.</p>
+        <p v-if="pending.targetPlayerId && gameState.phase === 'WAITING_CHALLENGE_BLOCK'" class="text-xs text-ink-muted">Somente o autor da ação pode contestar esta defesa.</p>
+        <div v-if="gameState.phase === 'WAITING_CHALLENGE_ACTION' && canIChallenge" class="space-y-2.5 pt-2.5 border-t border-line/40">
           <div class="flex items-center gap-1.5 text-xs text-ink font-semibold">
             <span>Você desconfia dessa alegação política?</span>
           </div>
@@ -304,7 +311,7 @@ const copyGameLink = async (): Promise<void> => {
         </div>
 
         <!-- Janela de Contestação de Bloqueio -->
-        <div v-if="gameState.phase === 'WAITING_CHALLENGE_BLOCK' && isMyResponse" class="space-y-2.5 pt-2.5 border-t border-line/40">
+        <div v-if="gameState.phase === 'WAITING_CHALLENGE_BLOCK' && canIChallenge" class="space-y-2.5 pt-2.5 border-t border-line/40">
           <p class="text-xs text-ink font-semibold">
             Contestar a alegação de defesa do bloqueador?
           </p>
@@ -382,6 +389,10 @@ const copyGameLink = async (): Promise<void> => {
             <h2 class="game-section-title">
               Seu Gabinete
             </h2>
+            <p class="mt-1 flex items-center gap-1.5 text-xs text-ink-muted">
+              <Maximize2 class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              Toque na carta para ampliar
+            </p>
           </div>
         </div>
 
@@ -401,19 +412,19 @@ const copyGameLink = async (): Promise<void> => {
       </p>
 
       <div class="mx-auto grid max-w-lg grid-cols-2 gap-3 sm:gap-4">
-        <div
+        <button
           v-for="card in privateView?.supports || []"
           :key="card.id"
-          class="border transition-all flex flex-col bg-paper-deep relative group shadow-md"
+          type="button"
+          :aria-label="'Ampliar carta ' + getRoleDisplayName(card.roleSlug) + (card.isLost ? ' (apoio perdido)' : '')"
+          class="cabinet-card relative block w-full min-w-0 bg-paper-deep transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-4 focus-visible:ring-offset-surface"
+          @click="handleInspectCard(card.roleSlug)"
           :class="[
             card.isLost
-              ? 'opacity-40 border-line/40 grayscale'
-              : 'border-line-gold/50 hover:border-gold shadow-md'
+              ? 'opacity-60 grayscale'
+              : 'hover:ring-2 hover:ring-gold/60'
           ]"
         >
-
-          <!-- Renderização da Carta -->
-          <div class="w-full bg-surface-elevated relative cursor-pointer" @click="handleInspectCard(card.roleSlug)">
             <Card :role="card.roleSlug" />
             <div
               v-if="card.isLost"
@@ -421,22 +432,7 @@ const copyGameLink = async (): Promise<void> => {
             >
               CASSADO
             </div>
-          </div>
-
-          <button type="button" @click="handleInspectCard(card.roleSlug)" class="flex w-full items-center justify-center border-y border-line bg-paper-deep text-gold-light" :aria-label="'Ampliar carta ' + getRoleDisplayName(card.roleSlug)"><Maximize2 class="h-4 w-4" aria-hidden="true" /><span>Ver carta</span></button>
-          <!-- Rodapé do Card -->
-          <div class="p-2 flex flex-wrap items-center justify-between gap-2 bg-surface/90 border-t border-line/40">
-            <span class="font-serif font-bold text-[11px] sm:text-xs text-ink break-words">
-              {{ getRoleDisplayName(card.roleSlug) }}
-            </span>
-            <span
-              class="text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.5 rounded border shrink-0"
-              :class="card.isLost ? 'bg-status-red-bg border-status-red/40 text-status-red' : 'bg-gold/15 border-gold/30 text-gold-light'"
-            >
-              {{ card.isLost ? 'Perdido' : 'Ativo' }}
-            </span>
-          </div>
-        </div>
+        </button>
 
         <div v-if="!privateView || privateView.supports.length === 0" class="text-xs text-ink-muted py-6 col-span-full text-center">
           Carregando apoios secretos do gabinete...
@@ -554,10 +550,11 @@ const copyGameLink = async (): Promise<void> => {
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
         <!-- Plantão de Notícias (Visível sempre no desktop; no mobile apenas se aba 'plantao' ativa) -->
         <div
+          aria-label="Histórico da partida"
           class="lg:col-span-6 w-full"
           :class="{ 'hidden lg:block': secondaryMobileTab !== 'plantao' }"
         >
-          <GameNewsFeed :history="gameState.history" />
+          <GameNewsFeed :history="gameState.history" :is-finished="isFinished" />
         </div>
 
         <!-- Painel de Contabilidade de Cartas Descartadas (Visível sempre no desktop; no mobile se 'contabilidade' ativa) -->
@@ -648,37 +645,6 @@ const copyGameLink = async (): Promise<void> => {
       </div>
     </section>
 
-    <!-- Modal de Vitória / Encerramento da Partida -->
-    <AppModalOverlay
-      :is-open="gameState.phase === 'FINISHED'"
-      aria-label="Partida Encerrada"
-    >
-      <div class="w-full max-w-md bg-[#0a121b] border border-gold rounded-lg p-6 sm:p-8 shadow-modal text-center space-y-5" @click.stop>
-        <Trophy class="w-14 h-14 text-gold mx-auto animate-bounce drop-shadow-md" aria-hidden="true" />
-        <div class="space-y-2">
-          <span class="text-xs font-serif uppercase tracking-widest text-gold font-bold">
-            {{ gameState.winnerPlayerId ? 'Poder Supremo Conquistado' : 'Partida encerrada' }}
-          </span>
-          <h2 class="font-serif font-black text-xl sm:text-2xl text-ink">
-            {{ gameState.players[gameState.winnerPlayerId || '']?.name || 'Sessão Concluída' }}
-          </h2>
-          <p class="text-xs text-ink-muted leading-relaxed">
-            {{ gameState.winnerPlayerId
-              ? `É o último gabinete com apoios políticos ativos e assumiu o controle de ${GAME_NAME}!`
-              : 'A sala encerrou suas atividades. Inicie ou junte-se a uma nova mesa para disputar novamente.' }}
-          </p>
-        </div>
-
-        <button
-          type="button"
-          @click="emit('leave')"
-          class="online-primary w-full py-3.5 border border-gold hover:border-gold-light cursor-pointer"
-        >
-          Voltar ao Início
-        </button>
-      </div>
-    </AppModalOverlay>
-
     <!-- Modal de Confirmação para Sair da Mesa -->
     <AppDialog :is-open="showLeaveModal" aria-label="Sair da mesa" max-width-class="max-w-sm" @close="showLeaveModal = false">
       <div class="space-y-4 text-center py-2">
@@ -686,9 +652,9 @@ const copyGameLink = async (): Promise<void> => {
           <AlertTriangle class="w-6 h-6" aria-hidden="true" />
         </div>
         <div class="space-y-1">
-          <h3 class="font-serif font-bold text-base text-ink">Abandonar Partida?</h3>
+          <h3 class="font-serif font-bold text-base text-ink">{{ isFinished ? 'Sair da mesa?' : 'Abandonar Partida?' }}</h3>
           <p class="text-xs text-ink-muted leading-relaxed">
-            Se você sair agora, seu gabinete perderá a conexão e será eliminado da disputa.
+            {{ isFinished ? 'A partida já terminou. Ao sair, você volta para a tela de salas.' : 'Se você sair agora, seu gabinete perderá a conexão e será eliminado da disputa.' }}
           </p>
         </div>
       </div>
@@ -737,3 +703,13 @@ const copyGameLink = async (): Promise<void> => {
     />
   </div>
 </template>
+
+<style scoped>
+button.cabinet-card {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  cursor: zoom-in;
+}
+</style>
+
