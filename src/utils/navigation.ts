@@ -45,7 +45,7 @@ export function customSmoothScroll(targetY: number, duration = 380): void {
  */
 export function clearUrlHash(): void {
   if (typeof window !== 'undefined' && window.location.hash) {
-    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
   }
 }
 

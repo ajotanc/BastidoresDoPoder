@@ -1,4 +1,4 @@
-import { randName } from 'randino';
+import { createPlayerName, characterGender } from '@/utils/playerName';
 import { MAX_BOTS_PER_ROOM } from '@/constants/gameConfig';
 import { PLAYABLE_ROLES } from '../engine/deck';
 import { executeCommand, type AuthoritativeGameState } from '../engine/gameEngine';
@@ -14,9 +14,10 @@ export function addBots(initial: AuthoritativeGameState, count: number): Authori
   let state = initial;
   for (let index = 0; index < count; index++) {
     const id = `bot-${crypto.randomUUID()}`;
+    const avatarSlug = PLAYABLE_ROLES[index % PLAYABLE_ROLES.length]!;
     const result = executeCommand(state, { type: 'JOIN_ROOM', payload: {
-      name: `${randName({ language: 'en', includeSurname: true, includeMiddleName: false })[0]} (Bot)`,
-      avatarSlug: PLAYABLE_ROLES[index % PLAYABLE_ROLES.length]!, reconnectToken: crypto.randomUUID(),
+      name: `${createPlayerName(characterGender(avatarSlug))} (Bot)`,
+      avatarSlug, reconnectToken: crypto.randomUUID(),
     } }, id, crypto.randomUUID());
     if (result.rejection) throw new Error(result.rejection.description);
     state = result.nextAuthoritativeState;

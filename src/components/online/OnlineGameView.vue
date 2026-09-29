@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { randName } from 'randino';
+import { createPlayerName, characterGender, type PlayerGender } from '@/utils/playerName';
 import { loadProfile, saveProfile, prepareAvatar } from "@/utils/playerProfile";
 import { ref, computed, watch, onMounted } from 'vue';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -8,7 +8,7 @@ import type { RoleSlug } from '@/types/game';
 import { useOnlineGame } from '@/composables/useOnlineGame';
 import { PLAYABLE_ROLES } from '@/game/engine/deck';
 import { getRoleDisplayName } from '@/game/engine/gameEngine';
-import { AlertCircle, PlusCircle, LogIn, ArrowLeft, ArrowRight, Camera, Upload, Shuffle, Trash2 } from 'lucide-vue-next';
+import { AlertCircle, PlusCircle, LogIn, ArrowLeft, ArrowRight, Camera, Upload, Shuffle, Trash2, Mars, Venus, Users } from 'lucide-vue-next';
 import LobbyRoom from './LobbyRoom.vue';
 import GameBoard from './GameBoard.vue';
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
@@ -48,10 +48,16 @@ const {
 } = useOnlineGame();
 
 const storedProfile = loadProfile();
+const gender = ref<PlayerGender>(storedProfile.gender ?? 'all');
+const genderLabel = computed(() => ({ all: 'Todos', male: 'Masculino', female: 'Feminino' })[gender.value]);
+const filteredRoles = computed(() => PLAYABLE_ROLES.filter(role => gender.value === 'all' || characterGender(role) === gender.value));
 const inputName = ref(storedProfile.name);
 const generatePlayerName = (): void => {
-  const names = randName({ language: 'en', includeSurname: true, includeMiddleName: false, count: 2, unique: true });
-  inputName.value = names.find(name => name !== inputName.value) ?? names[0] ?? '';
+  inputName.value = createPlayerName(gender.value, inputName.value);
+};
+const cycleGender = (): void => {
+  gender.value = gender.value === 'all' ? 'male' : gender.value === 'male' ? 'female' : 'all';
+  if (!filteredRoles.value.includes(selectedAvatar.value)) selectedAvatar.value = filteredRoles.value[0]!;
 };
 const avatarImage = ref(storedProfile.avatarImage);
 const profileError = ref('');
@@ -59,8 +65,8 @@ const isPreparingPhoto = ref(false);
 const photoInput = ref<(HTMLElement & { click(): void }) | null>(null);
 const inputRoomCode = ref('');
 const selectedAvatar = ref<RoleSlug>(storedProfile.avatarSlug);
-watch([inputName, selectedAvatar, avatarImage], () => {
-  if (!saveProfile({ name: inputName.value, avatarSlug: selectedAvatar.value, avatarImage: avatarImage.value })) profileError.value = 'Seu navegador não permitiu salvar o perfil. Você ainda pode jogar.';
+watch([inputName, selectedAvatar, avatarImage, gender], () => {
+  if (!saveProfile({ name: inputName.value, avatarSlug: selectedAvatar.value, avatarImage: avatarImage.value, gender: gender.value })) profileError.value = 'Seu navegador não permitiu salvar o perfil. Você ainda pode jogar.';
 });
 const uploadPhoto = async (event: Event) => {
   const input = event.target as InstanceType<typeof window.HTMLInputElement>; const file = input.files?.[0];
@@ -188,7 +194,9 @@ const handleJoin = async (): Promise<void> => {
             <div class="flex items-center gap-2">
               <input id="player-name" v-model="inputName" type="text" maxlength="60" autocomplete="nickname" placeholder="Como vão chamar você?" required :disabled="isSubmitting" class="online-input flex-1" />
               <button type="button" class="online-icon-button random-name-button border border-gold/40 bg-surface-elevated text-gold" :disabled="isSubmitting" aria-label="Gerar outro nome" title="Gerar outro nome" @click="generatePlayerName"><Shuffle class="h-4 w-4" aria-hidden="true" /></button>
+              <button type="button" class="online-icon-button random-name-button border border-gold/40 bg-surface-elevated text-gold" :disabled="isSubmitting" :aria-label="`Gênero: ${genderLabel}. Alterar filtro`" :title="`Gênero: ${genderLabel}. Alternar todos, masculino e feminino`" @click="cycleGender"><component :is="gender === 'male' ? Mars : gender === 'female' ? Venus : Users" class="h-4 w-4" aria-hidden="true" /></button>
             </div>
+            <p class="text-xs text-ink-muted" aria-live="polite">Nomes e personagens: {{ genderLabel }}</p>
           </div>
           <div v-if="activeTab === 'join'" class="space-y-2">
             <label for="room-code" class="font-serif text-sm font-bold text-ink">Código da sala</label>
@@ -219,8 +227,8 @@ const handleJoin = async (): Promise<void> => {
             </div>
             <p v-if="profileError" role="alert" class="text-sm text-status-red">{{ profileError }}</p>
             <div class="grid grid-cols-4 gap-3">
-              <button v-for="role in PLAYABLE_ROLES" :key="role" type="button" @click="selectedAvatar = role; avatarImage = undefined" :aria-label="getRoleDisplayName(role)" :aria-pressed="!avatarImage && selectedAvatar === role" class="profile-option relative aspect-square min-h-11 overflow-hidden rounded border-2 p-0.5 transition-colors" :class="!avatarImage && selectedAvatar === role ? 'border-gold bg-gold/20 ring-2 ring-gold/30 ring-offset-2 ring-offset-surface' : 'border-line bg-paper-deep hover:border-gold/50'">
-                <img :src="'/images/characters/'+role+'.webp'" alt="" class="h-full w-full rounded object-cover" />
+              <button v-for="role in filteredRoles" :key="role" type="button" @click="selectedAvatar = role; avatarImage = undefined" :aria-label="getRoleDisplayName(role)" :aria-pressed="!avatarImage && selectedAvatar === role" class="profile-option relative aspect-square min-h-11 overflow-hidden rounded border-2 p-0.5 transition-colors" :class="!avatarImage && selectedAvatar === role ? 'border-gold bg-gold/20 ring-2 ring-gold/30 ring-offset-2 ring-offset-surface' : 'border-line bg-paper-deep hover:border-gold/50'">
+                <img :src="`/images/characters/${role}.webp`" alt="" class="h-full w-full rounded object-cover" />
               </button>
             </div>
             <p class="break-words text-center text-xs text-ink-muted" aria-live="polite">Seu perfil: <strong class="text-gold-light">{{ inputName.trim() || 'Informe seu nome' }}</strong></p>
@@ -274,3 +282,4 @@ const handleJoin = async (): Promise<void> => {
     />
   </div>
 </template>
+

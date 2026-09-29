@@ -149,6 +149,8 @@ export interface GameState {
   readonly pendingAction: PendingAction | null;
   readonly deadlineAt: number | null;
   readonly winnerPlayerId: string | null;
+  /** Remaining winner supports, published only after the match has ended. */
+  readonly winnerSupports?: readonly CardRef[];
   readonly history: readonly GameEvent[];
   readonly cardChoicePlayerId: string | null;
   readonly cardChoiceReason: string | null;

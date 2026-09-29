@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { createInitialAuthoritativeState, executeCommand, executeTimeout, type AuthoritativeGameState } from '@/game/engine/gameEngine';
+import { createInitialAuthoritativeState, executeCommand, executeTimeout, finishTurn, type AuthoritativeGameState } from '@/game/engine/gameEngine';
 import { createInitialDeck, PLAYABLE_ROLES } from '@/game/engine/deck';
 import type { ClientCommand } from '@/game/models/commands';
 import type { ActionType } from '@/game/models/gameState';
@@ -52,6 +52,22 @@ function setup(hands: RoleSlug[][] = [['executor', 'coordinator'], ['baron', 'ma
 }
 
 describe('Regressões das regras online', () => {
+  it('publica somente os apoios restantes do vencedor ao encerrar por saída', () => {
+    let s = setup([['executor', 'baron'], ['marketer']]);
+    expect(s.publicState.winnerSupports).toBeUndefined();
+    s = run(s, { type: 'LEAVE_ROOM', payload: {} }, 'b');
+    expect(s.publicState.phase).toBe('FINISHED');
+    expect(s.publicState.winnerSupports).toEqual(s.privateHands.a!.filter(card => !card.isLost).map(({ id, roleSlug }) => ({ id, roleSlug })));
+    expect(s.publicState.discard).toHaveLength(1);
+    expect(s.publicState.players.a!.activeSupportCount).toBe(2);
+    expect(s.publicState.history.filter(event => event.type === 'WINNER_SUPPORTS_AVAILABLE')).toHaveLength(1);
+    expect(finishTurn(s).broadcastPublicState.history.filter(event => event.type === 'WINNER_SUPPORTS_AVAILABLE')).toHaveLength(1);
+  });
+  it('não publica apoios quando a sessão termina sem vencedor', () => {
+    const s = setup();
+    for (const player of Object.values(s.publicState.players)) s.publicState.players[player.id] = { ...player, isAlive: false };
+    expect(finishTurn(s).broadcastPublicState.winnerSupports).toEqual([]);
+  });
   it('impeachment de 7 só admite defesa e contestação da defesa; o de 10 não admite reação', () => {
     let common = action(setup(), 'commonImpeachment');
     expect(common.publicState.phase).toBe('WAITING_BLOCK');
@@ -60,7 +76,8 @@ describe('Regressões das regras online', () => {
     common = run(common, { type: 'DECLARE_BLOCK', payload: { claimedBlockRole: 'untouchable' } }, 'b');
     expect(common.publicState.players.b!.coins).toBe(4);
     expect(common.publicState.phase).toBe('WAITING_CHALLENGE_BLOCK');
-    expect(common.publicState.responsePlayerIds).toEqual(['a']);
+    expect(common.publicState.responsePlayerIds).toEqual(['c', 'a']);
+    common = pass(common);
     expect(executeCommand(common, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: true } }, 'a', 'defense').rejection).toBeUndefined();
 
     const base = setup();
@@ -76,14 +93,12 @@ describe('Regressões das regras online', () => {
       ] as const) expect(executeCommand(definitive, command, id, 'denied').rejection).toBeDefined();
     }
   });
-  it.each(['execution', 'extortion', 'searchWarrant', 'backroomDeal'] as const)('%s direcionada só permite contestação do alvo, mesmo fora da ordem', actionType => {
+  it.each(['execution', 'extortion', 'searchWarrant', 'backroomDeal'] as const)('%s direcionada permite contestação por terceiro', actionType => {
     let s = run(setup(), { type: 'DECLARE_ACTION', payload: { actionType, targetPlayerId: 'c', namedRole: 'baron' } });
-    expect(s.publicState.responsePlayerIds).toEqual(['c']);
-    const before = JSON.stringify(s);
-    expect(executeCommand(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: false } }, 'b', 'third-party').rejection?.reason).toBe('NOT_ELIGIBLE_TO_REACT');
-    expect(JSON.stringify(s)).toBe(before);
-    s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: false } }, 'c');
-    expect(s.publicState.phase).not.toBe('WAITING_CHALLENGE_ACTION');
+    expect(s.publicState.responsePlayerIds).toEqual(['b', 'c']);
+    s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: false } }, 'b');
+    expect(s.publicState.phase).toBe('WAITING_CARD_CHOICE');
+    expect(s.publicState.cardChoicePlayerId).toBe(['execution', 'backroomDeal'].includes(actionType) ? 'b' : 'a');
   });
   it.each(['slushFund', 'exchange'] as const)('%s sem alvo permite que qualquer adversário conteste na sua oportunidade', actionType => {
     let s = action(setup(), actionType);
@@ -93,13 +108,13 @@ describe('Regressões das regras online', () => {
     s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: false } }, 'c');
     expect(s.publicState.phase).not.toBe('WAITING_CHALLENGE_ACTION');
   });
-  it.each([['execution', 'lawyer'], ['extortion', 'colonel'], ['searchWarrant', 'lawyer'], ['commonImpeachment', 'untouchable']] as const)('só o autor pode contestar defesa contra %s', (actionType, role) => {
+  it.each([['execution', 'lawyer'], ['extortion', 'colonel'], ['searchWarrant', 'lawyer'], ['commonImpeachment', 'untouchable']] as const)('qualquer terceiro pode contestar defesa contra %s', (actionType, role) => {
     let s = action(setup(), actionType);
     if (s.publicState.phase === 'WAITING_CHALLENGE_ACTION') s = passWindow(s);
     s = run(s, { type: 'DECLARE_BLOCK', payload: { claimedBlockRole: role } }, 'b');
-    expect(s.publicState.responsePlayerIds).toEqual(['a']);
-    expect(executeCommand(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: true } }, 'c', 'outsider').rejection?.reason).toBe('NOT_ELIGIBLE_TO_REACT');
-    expect(executeCommand(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: true } }, 'a', 'author').rejection).toBeUndefined();
+    expect(s.publicState.responsePlayerIds).toEqual(['c', 'a']);
+    s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: true } }, 'c');
+    expect(s.publicState.cardChoicePlayerId).toBe('b');
   });
   it.each([
     ['slushFund', 'baron'], ['extortion', 'colonel'], ['execution', 'executor'],
@@ -138,7 +153,7 @@ describe('Regressões das regras online', () => {
     if (s.publicState.phase === 'WAITING_CHALLENGE_ACTION') s = passWindow(s);
     const proved = s.privateHands.b![0]!;
     s = run(s, { type: 'DECLARE_BLOCK', payload: { claimedBlockRole: role } }, 'b');
-    s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: true } }, actionType === 'crowdfunding' ? 'c' : 'a');
+    s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: true } }, 'c');
     const replacement = s.privateHands.b![0]!;
     expect(replacement.id).not.toBe(proved.id);
     expect(s.deck).toContainEqual({ id: proved.id, roleSlug: proved.roleSlug });
@@ -213,6 +228,9 @@ describe('Regressões das regras online', () => {
     }
     expect(JSON.stringify(s.publicState)).toBe(original);
     s = pass(s);
+    expect(s.publicState.phase).toBe('WAITING_CHALLENGE_ACTION');
+    expect(s.publicState.responsePlayerIds).toEqual(['c']);
+    s = pass(s);
     expect(s.publicState.phase).toBe('WAITING_BLOCK');
     expect(executeCommand(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: false } }, 'b', 'late').rejection).toBeDefined();
     expect(s.publicState.phase).toBe('WAITING_BLOCK');
@@ -238,6 +256,7 @@ describe('Regressões das regras online', () => {
       let s = action(setup(), attack);
       if (s.publicState.phase === 'WAITING_CHALLENGE_ACTION') s = passWindow(s);
       s = run(s, { type: 'DECLARE_BLOCK', payload: { claimedBlockRole: defense } }, 'b');
+      s = pass(s);
       s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: true } }, 'a');
       s = choose(s);
       expect(s.publicState.players.b!.activeSupportCount).toBe(0);
@@ -250,6 +269,7 @@ describe('Regressões das regras online', () => {
   it('bloqueio verdadeiro cancela o ataque, mas o desafiante perde apoio', () => {
     let s = passWindow(action(setup([['executor', 'baron'], ['lawyer', 'baron'], ['colonel', 'marketer']]), 'execution'));
     s = run(s, { type: 'DECLARE_BLOCK', payload: { claimedBlockRole: 'lawyer' } }, 'b');
+    s = pass(s);
     s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: true } }, 'a');
     s = choose(s);
     expect(s.publicState.players.b!.activeSupportCount).toBe(2);
@@ -276,6 +296,7 @@ describe('Regressões das regras online', () => {
     expect(s.publicState.deadlineAt).toBeNull();
     expect(s.publicState.pendingAction).toBeNull();
     expect(s.privateHands.a![0]!.id).not.toBe(hand![0]!.id);
+    expect(s.publicState.winnerSupports).toEqual(s.privateHands.a!.filter(card => !card.isLost).map(({ id, roleSlug }) => ({ id, roleSlug })));
     expect(s.deck.some(card => card.id === hand![0]!.id)).toBe(true);
   });
 
@@ -352,6 +373,9 @@ describe('Regressões das regras online', () => {
   it('timeout passa só um respondente, escolhe carta e executa impeachment obrigatório', () => {
     let s = action(setup(), 'execution');
     s = executeTimeout(s, s.publicState.deadlineAt!).nextAuthoritativeState;
+    expect(s.publicState.responsePlayerIds).toEqual(['c']);
+    expect(s.publicState.phase).toBe('WAITING_CHALLENGE_ACTION');
+    s = executeTimeout(s, s.publicState.deadlineAt!).nextAuthoritativeState;
     expect(s.publicState.responsePlayerIds).toEqual(['b']);
     expect(s.publicState.phase).toBe('WAITING_BLOCK');
     s = executeTimeout(s, s.publicState.deadlineAt!).nextAuthoritativeState;
@@ -386,3 +410,5 @@ describe('Regressões das regras online', () => {
     expect(!result.rejection).toBe(allowed.includes(role));
   });
 });
+
+

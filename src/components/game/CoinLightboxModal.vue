@@ -40,8 +40,8 @@ const { isOpen, activeCoin, closeCoinLightbox } = useCoinLightbox();
               <span
                 class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-serif font-bold tracking-wider border shadow-sm select-none whitespace-nowrap"
                 :style="{
-                  backgroundColor: activeCoin.color + '20',
-                  borderColor: activeCoin.color + '70',
+                  backgroundColor: `${activeCoin.color}20`,
+                  borderColor: `${activeCoin.color}70`,
                   color: activeCoin.color
                 }"
               >

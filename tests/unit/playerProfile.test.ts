@@ -7,7 +7,7 @@ describe('Perfil salvo e foto pública', () => {
   beforeEach(() => localStorage.clear());
   it('restaura nome, personagem e foto e tolera armazenamento inválido', () => {
     expect(saveProfile({ name: 'Ana', avatarSlug: 'baron', avatarImage: photo })).toBe(true);
-    expect(loadProfile()).toEqual({ name: 'Ana', avatarSlug: 'baron', avatarImage: photo });
+    expect(loadProfile()).toEqual({ name: 'Ana', avatarSlug: 'baron', avatarImage: photo, gender: 'all' });
     localStorage.setItem(PROFILE_STORAGE_KEY, '{invalid');
     expect(loadProfile().name).toBe('');
   });

@@ -32,91 +32,57 @@ const displayCard = computed<RoleCard | undefined>(() => {
 
 <template>
   <div
-    class="game-card flex w-full aspect-[2/3] overflow-hidden select-none text-[#f4ead8] shadow-2xl border border-[#334255] md:p-[0.5cqw] p-[2cqw]"
-    :style="{
-      '--role-color': displayCard?.roleColor || '#dab65f'
-    }" role="group" :aria-label="faceDown ? 'Verso da carta — ' + GAME_NAME : displayCard ? 'Carta ' + displayCard.name : 'Carta ' + GAME_NAME">
-    <div v-if="faceDown" class="flex flex-1 overflow-hidden">
-      <img src="/images/cards/back-card.png" :alt="'Verso da carta ' + GAME_NAME + ''" class="w-full h-full object-cover"
-        draggable="false" loading="lazy" decoding="async" />
-
-      <div class="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/20 via-transparent to-black/5"
-        aria-hidden="true" />
+    class="game-card relative isolate aspect-[2/3] w-full overflow-hidden select-none text-[#f4ead8]"
+    :style="{ '--role-color': displayCard?.roleColor || '#dab65f' }"
+    role="group"
+    :aria-label="faceDown ? `Verso da carta — ${GAME_NAME}` : displayCard ? `Carta ${displayCard.name}` : `Carta ${GAME_NAME}`"
+  >
+    <div v-if="faceDown" class="card-back-surface absolute inset-0 overflow-hidden rounded-[inherit]">
+      <img src="/images/cards/back-card.webp" :alt="`Verso da carta ${GAME_NAME}`"
+        class="h-full w-full" draggable="false" loading="lazy" decoding="async" />
     </div>
 
-    <div v-else-if="displayCard" class="flex-1 border border-[#334255] pointer-events-none"
+    <div v-else-if="displayCard"
+      class="card-content-surface absolute inset-0 grid grid-rows-[15fr_45fr_40fr] gap-[2.5cqw] p-[4cqw]"
       aria-hidden="true">
-      <div class="p-[3cqw] flex flex-1 flex-col gap-[3cqw] h-full">
-        <header class="flex items-center justify-between gap-[3cqw] shrink-0">
-          <div v-if="displayCard.iconSrc"
-            class="h-[16cqw] w-[16cqw] flex items-center justify-center border border-[#334255] p-[1cqw]">
-            <img :src="displayCard.iconSrc" :alt="`Ícone ${displayCard.name}`" class="w-full h-full object-contain"
-              loading="lazy" decoding="async" />
-          </div>
-          <div class="flex flex-1 flex-col gap-[1cqw] items-start justify-center text-center leading-none">
-            <span class="font-serif text-[7cqw] font-black uppercase leading-[.85] text-[#f5ead7]">
-              {{ displayCard.name }}
-            </span>
-
-            <span class="text-[4cqw] font-black uppercase leading-none tracking-[.12em]"
-              :style="{ color: displayCard.roleColor }">
-              {{ displayCard.category }}
-            </span>
-          </div>
-        </header>
-
-        <section class="aspect-[4/3] shrink-0 overflow-hidden border border-[var(--role-color)]">
-          <img :src="displayCard.characterSrc ?? '/images/bdp.webp'" :alt="`Personagem ${displayCard.name}`"
-            class="w-full h-full object-cover object-top"
-            :class="{ 'object-contain p-[15%]': !displayCard.characterSrc }" draggable="false" loading="lazy"
-            decoding="async" />
-
-          <div class="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/20 via-transparent to-black/5"
-            aria-hidden="true" />
-        </section>
-
-        <div class="flex-1 flex flex-col gap-[1.5cqw] min-h-0">
-          <section v-for="(item, index) in [displayCard.cardText.action, displayCard.cardText.defense]" :key="index"
-            class="relative flex flex-col gap-[1.5cqw] px-[3.5cqw] py-[2.0cqw]  justify-center text-left flex-1 min-h-0 border border-[#314456] bg-[#152536] overflow-hidden">
-            <div class="absolute left-0 top-0 h-full w-[1cqw]" :style="{ backgroundColor: displayCard.roleColor }" />
-
-            <div class="w-full flex items-center justify-between">
-              <div class="uppercase font-black tracking-[.12em] text-[3.0cqw]"
-                :style="{ color: displayCard.roleColor }">
-                <template v-if="index === 0">
-                  <div class="flex items-center justify-center gap-[1.5cqw]">
-                    <SwordsIcon class="w-[3cqw] h-[3cqw] shrink-0" aria-hidden="true" />
-                    <span class="leading-none">Ação</span>
-                  </div>
-                </template>
-                <template v-else-if="index === 1">
-                  <div class="flex items-center justify-center gap-[1.5cqw]">
-                    <ShieldPlus class="w-[3cqw] h-[3cqw] shrink-0" aria-hidden="true" />
-                    <span class="leading-none">Bloqueio</span>
-                  </div>
-                </template>
-              </div>
-
-              <span class="uppercase font-black tracking-[.12em] text-[3.0cqw]"
-                :style="{ color: displayCard.roleColor }">
-                {{ item.cost || '-' }}
-              </span>
-            </div>
-
-            <div class="flex justify-center flex-col flex-1 min-h-0">
-              <h3 class="font-serif font-black text-[5cqw] leading-tight text-[#f7eedc]">
-                {{ item.title }}
-              </h3>
-
-              <p class="text-[3.5cqw] leading-[1.2] text-[#f2eadd]">
-                {{ item.description }}
-              </p>
-            </div>
-          </section>
+      <header class="flex min-h-0 min-w-0 items-center gap-[3cqw]">
+        <div v-if="displayCard.iconSrc"
+          class="card-emblem flex size-[14cqw] shrink-0 items-center justify-center rounded-[2cqw] p-[1.5cqw]">
+          <img :src="displayCard.iconSrc" alt="" class="h-full w-full object-contain" loading="lazy" decoding="async" />
         </div>
-        <div
-          class="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/[0.01] to-white/[0.04]"
-          aria-hidden="true" />
+        <div class="flex min-w-0 flex-col gap-[1.8cqw] text-left">
+          <span class="card-name font-serif text-[6cqw] font-black uppercase leading-[1.25] tracking-[-0.035em] text-[#f5ead7]">
+            {{ displayCard.name }}
+          </span>
+          <span class="text-[3cqw] font-bold uppercase leading-[1.3] tracking-[0.16em] text-[var(--role-color)]">
+            {{ displayCard.category }}
+          </span>
+        </div>
+      </header>
+
+      <section class="card-portrait relative min-h-0 overflow-hidden rounded-[2cqw]">
+        <img :src="displayCard.characterSrc ?? '/images/bdp.webp'" alt=""
+          class="h-full w-full object-cover object-top"
+          :class="{ 'object-contain p-[15%]': !displayCard.characterSrc }"
+          draggable="false" loading="lazy" decoding="async" />
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b1521]/35 to-transparent" />
+      </section>
+
+      <div class="grid min-h-0 grid-rows-2 gap-[2cqw]">
+        <section v-for="(item, index) in [displayCard.cardText.action, displayCard.cardText.defense]" :key="index"
+          class="card-ability flex min-h-0 flex-col justify-center gap-[1.5cqw] rounded-[2cqw] px-[3cqw] py-[2cqw] text-left">
+          <div class="flex items-center justify-between gap-[2cqw] text-[2.9cqw] font-bold uppercase leading-none tracking-[0.1em] text-[var(--role-color)]">
+            <span class="flex items-center gap-[1.5cqw]">
+              <component :is="index === 0 ? SwordsIcon : ShieldPlus" class="size-[3.5cqw] shrink-0" />
+              {{ index === 0 ? 'Ação' : 'Bloqueio' }}
+            </span>
+            <span v-if="item.cost" class="card-cost rounded-[1cqw] px-[1.5cqw] py-[0.8cqw] tabular-nums">{{ item.cost }}</span>
+          </div>
+          <div class="space-y-[0.8cqw]">
+            <h3 class="font-serif text-[4.4cqw] font-bold leading-[1.3] text-[#f7eedc]">{{ item.title }}</h3>
+            <p class="text-[3.5cqw] font-normal leading-[1.3] text-[#cbd4de]">{{ item.description }}</p>
+          </div>
+        </section>
       </div>
     </div>
   </div>
@@ -125,25 +91,42 @@ const displayCard = computed<RoleCard | undefined>(() => {
 <style scoped>
 .game-card {
   container-type: inline-size;
-  background: url('/images/bg-card.png') no-repeat center;
-  background-size: cover;
-  overflow: hidden;
+  border-radius: var(--ui-radius, 10px);
+  background: #0d1824 url('/images/bg-card.png') center / cover no-repeat;
+  box-shadow: 0 6px 16px #0004;
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
-
-.game-card::before {
+.card-content-surface {
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 0 0, color-mix(in srgb, var(--role-color) 12%, transparent), transparent 60%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--role-color) 65%, #334255), inset 0 1px 0 #ffffff30;
+}
+.card-back-surface::after {
   content: '';
   position: absolute;
   inset: 0;
+  border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(115deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.018) 35%,
-      transparent 55%);
-  z-index: 30;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #dab65f 65%, #334255), inset 0 1px 0 #ffffff30;
 }
-
+.card-name {
+  text-shadow: 0 1px 2px #0009;
+}
+.card-emblem {
+  background: linear-gradient(135deg, #e6bf7338, #111c29 65%, #e6bf7315);
+  box-shadow: inset 0 0 0 1px #e6bf7350, inset 0 1px 0 #ffe5aa45, 0 1cqw 2cqw #0004;
+}
+.card-portrait {
+  box-shadow: 0 0 0 1px #ffffff12;
+}
+.card-ability {
+  background: linear-gradient(110deg, color-mix(in srgb, var(--role-color) 9%, #142331), #142331ed);
+}
+.card-cost {
+  background: color-mix(in srgb, var(--role-color) 13%, #0d1824);
+  color: color-mix(in srgb, var(--role-color) 65%, #fff);
+}
 .game-card img {
   user-select: none;
   -webkit-user-drag: none;

@@ -10,6 +10,7 @@ import { ACTION_TIMEOUT_SECONDS, RESPONSE_TIMEOUT_SECONDS } from '@/game/models/
 import type { ActionIntent, BlockIntent } from '@/game/models/commands';
 import { useGameTimer } from '@/composables/useGameTimer';
 import { useLightbox } from '@/composables/useLightbox';
+import { useDragScroll } from '@/composables/useDragScroll';
 import { ROLE_CARDS } from '@/constants/gameData';
 import { getRoleDisplayName, getActionDisplayName } from '@/game/engine/gameEngine';
 import { getEligibleBlockRoles, getEligibleChallengers } from '@/game/engine/rules';
@@ -23,7 +24,6 @@ import {
   Copy,
   Check,
   LogOut,
-  Maximize2,
   Coins,
   Radio,
   AlertTriangle,
@@ -44,6 +44,20 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const rivalDrag = useDragScroll();
+const revealedDrag = useDragScroll();
+const recentRevealedCards = computed(() => [...props.gameState.discard].reverse());
+const revealedWinnerCards = ref(new Set<string>());
+const winnerSupportAt = (player: PublicPlayerState, slot: number) =>
+  props.gameState.phase === 'FINISHED' && props.gameState.winnerPlayerId === player.id
+    ? props.gameState.winnerSupports?.[slot - 1 - player.lostCards.length]
+    : undefined;
+const revealWinnerSupport = (player: PublicPlayerState, slot: number) => {
+  const card = winnerSupportAt(player, slot);
+  if (!card) return;
+  if (revealedWinnerCards.value.has(card.id)) handleInspectCard(card.roleSlug);
+  else revealedWinnerCards.value.add(card.id);
+};
 
 const emit = defineEmits<{
   (e: 'declare-action', intent: ActionIntent): void;
@@ -259,8 +273,8 @@ const copyGameLink = async (): Promise<void> => {
         </p>
 
         <!-- Janela de Contestação de Ação ("Fake News!") -->
-        <p v-if="pending.targetPlayerId && gameState.phase === 'WAITING_CHALLENGE_ACTION'" class="text-xs text-ink-muted">Somente o alvo desta ação pode contestar.</p>
-        <p v-if="pending.targetPlayerId && gameState.phase === 'WAITING_CHALLENGE_BLOCK'" class="text-xs text-ink-muted">Somente o autor da ação pode contestar esta defesa.</p>
+        <p v-if="pending.targetPlayerId && gameState.phase === 'WAITING_CHALLENGE_ACTION'" class="text-xs text-ink-muted">Qualquer outro jogador ativo pode contestar esta ação.</p>
+        <p v-if="pending.targetPlayerId && gameState.phase === 'WAITING_CHALLENGE_BLOCK'" class="text-xs text-ink-muted">Qualquer outro jogador ativo pode contestar esta defesa.</p>
         <div v-if="gameState.phase === 'WAITING_CHALLENGE_ACTION' && canIChallenge" class="space-y-2.5 pt-2.5 border-t border-line/40">
           <div class="flex items-center gap-1.5 text-xs text-ink font-semibold">
             <span>Você desconfia dessa alegação política?</span>
@@ -381,6 +395,7 @@ const copyGameLink = async (): Promise<void> => {
     <section
       aria-label="Seu Gabinete Pessoal"
       class="bg-surface border border-line-gold/50 rounded p-4 sm:p-6 shadow-card space-y-3.5 relative overflow-hidden"
+      :class="{ 'cabinet-winner': isFinished && gameState.winnerPlayerId === myPlayerId }"
     >
       <div class="flex items-center justify-between gap-3 border-b border-line-gold/30 pb-3">
         <div class="flex items-center gap-2.5 min-w-0">
@@ -389,10 +404,6 @@ const copyGameLink = async (): Promise<void> => {
             <h2 class="game-section-title">
               Seu Gabinete
             </h2>
-            <p class="mt-1 flex items-center gap-1.5 text-xs text-ink-muted">
-              <Maximize2 class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-              Toque na carta para ampliar
-            </p>
           </div>
         </div>
 
@@ -416,7 +427,7 @@ const copyGameLink = async (): Promise<void> => {
           v-for="card in privateView?.supports || []"
           :key="card.id"
           type="button"
-          :aria-label="'Ampliar carta ' + getRoleDisplayName(card.roleSlug) + (card.isLost ? ' (apoio perdido)' : '')"
+          :aria-label="`Ampliar carta ${getRoleDisplayName(card.roleSlug)}${card.isLost ? ' (apoio perdido)' : ''}`"
           class="cabinet-card relative block w-full min-w-0 bg-paper-deep transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-4 focus-visible:ring-offset-surface"
           @click="handleInspectCard(card.roleSlug)"
           :class="[
@@ -428,7 +439,7 @@ const copyGameLink = async (): Promise<void> => {
             <Card :role="card.roleSlug" />
             <div
               v-if="card.isLost"
-              class="absolute inset-0 bg-paper-deep/85 flex items-center justify-center text-status-red font-serif font-black text-xs uppercase tracking-widest border border-status-red"
+              class="absolute inset-0 rounded-[inherit] bg-paper-deep/85 flex items-center justify-center text-status-red font-serif font-black text-xs uppercase tracking-widest border border-status-red"
             >
               CASSADO
             </div>
@@ -456,13 +467,25 @@ const copyGameLink = async (): Promise<void> => {
       </div>
 
       <!-- Container adaptativo: carrossel horizontal suave no mobile, grid no tablet/desktop -->
-      <div class="rivals-carousel grid grid-flow-col gap-3 overflow-x-auto pb-3 snap-x snap-mandatory">
+      <div
+        class="rivals-carousel drag-scroll grid grid-flow-col gap-3 overflow-x-auto pb-3 snap-x snap-mandatory"
+        @pointerdown="rivalDrag.onPointerDown"
+        @pointermove="rivalDrag.onPointerMove"
+        @pointerup="rivalDrag.onPointerEnd"
+        @pointercancel="rivalDrag.onPointerEnd"
+        @lostpointercapture="rivalDrag.onPointerEnd"
+        @pointerleave="rivalDrag.onPointerLeave"
+        @click.capture="rivalDrag.onClickCapture"
+        @dragstart.prevent
+      >
         <article
           v-for="opp in opponents"
           :key="opp.id"
           class="min-w-0 snap-start p-2 sm:p-4 rounded sm:rounded border transition-all flex flex-col gap-3 relative overflow-hidden bg-surface"
           :class="[
-            !opp.isAlive
+            isFinished && gameState.winnerPlayerId === opp.id
+              ? 'cabinet-winner'
+              : !opp.isAlive
               ? 'bg-paper-deep/60 border-line/30'
               : opp.id === gameState.activePlayerId
               ? 'bg-gold/10 border-gold shadow-md ring-1 ring-gold/40'
@@ -503,10 +526,19 @@ const copyGameLink = async (): Promise<void> => {
             <div class="grid max-w-48 grid-cols-2 gap-2">
               <div v-for="slot in 2" :key="slot" class="rival-support" :class="{ 'is-revealed': !!opp.lostCards[slot - 1] }">
                 <div class="rival-support-inner">
-                  <div class="rival-support-back" :aria-hidden="!!opp.lostCards[slot - 1]"><Card face-down /></div>
-                  <button v-if="opp.lostCards[slot - 1]" type="button" class="rival-support-front" @click="handleInspectCard(opp.lostCards[slot - 1]!.roleSlug)" :aria-label="'Ver apoio perdido: ' + getRoleDisplayName(opp.lostCards[slot - 1]!.roleSlug)" :title="opp.lostCards[slot - 1]!.reason"><Card :role="opp.lostCards[slot - 1]!.roleSlug" /></button>
+                  <Transition name="support-flip" mode="out-in">
+                  <button v-if="opp.lostCards[slot - 1]" type="button" class="rival-support-front" @click="handleInspectCard(opp.lostCards[slot - 1]!.roleSlug)" :aria-label="`Ver apoio perdido: ${getRoleDisplayName(opp.lostCards[slot - 1]!.roleSlug)}`" :title="opp.lostCards[slot - 1]!.reason"><Card :role="opp.lostCards[slot - 1]!.roleSlug" /></button>
+                  <button
+                    v-else-if="winnerSupportAt(opp, slot)"
+                    :key="`${winnerSupportAt(opp, slot)!.id}-${revealedWinnerCards.has(winnerSupportAt(opp, slot)!.id)}`"
+                    type="button"
+                    class="rival-support-front"
+                    :aria-label="`${revealedWinnerCards.has(winnerSupportAt(opp, slot)!.id) ? 'Ampliar' : 'Revelar'} apoio ${slot} do vencedor ${opp.name}`"
+                    @click="revealWinnerSupport(opp, slot)"
+                  ><Card :role="winnerSupportAt(opp, slot)!.roleSlug" :face-down="!revealedWinnerCards.has(winnerSupportAt(opp, slot)!.id)" /></button>
+                  <div v-else class="rival-support-back"><Card face-down /></div>
+                  </Transition>
                 </div>
-                <span v-if="opp.lostCards[slot - 1]" class="mt-1 block break-words text-[11px] text-status-red">{{ getRoleDisplayName(opp.lostCards[slot - 1]!.roleSlug) }}</span>
               </div>
             </div>
           </div>
@@ -562,17 +594,17 @@ const copyGameLink = async (): Promise<void> => {
           class="lg:col-span-6 w-full bg-surface/90 border border-line-gold/40 rounded sm:rounded p-4 sm:p-5 shadow-card space-y-3"
           :class="{ 'hidden lg:block': secondaryMobileTab !== 'contabilidade' }"
         >
-          <div class="flex items-center justify-between border-b border-line/40 pb-2.5">
+          <header class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-line/40 pb-2.5">
             <div class="flex items-center gap-2">
-              <BookOpen class="w-4 h-4 text-gold-light" aria-hidden="true" />
+              <BookOpen class="w-4 h-4 text-gold-light shrink-0" aria-hidden="true" />
               <h2 class="game-section-title">
                 Cartas reveladas
               </h2>
             </div>
-            <span class="shrink-0 whitespace-nowrap text-sm font-semibold px-3 py-1 rounded bg-paper-deep border border-line text-ink-muted">
+            <span class="text-xs text-gold-muted tabular-nums">
               {{ totalDiscarded }} / 24
             </span>
-          </div>
+          </header>
 
           <!-- Grade dos 8 Personagens com Contagem de Saídas (X / 3) -->
           <div class="grid grid-cols-2 gap-3">
@@ -618,29 +650,40 @@ const copyGameLink = async (): Promise<void> => {
           </div>
 
           <!-- Fita Histórica de Descartes Recentes -->
-          <div v-if="gameState.discard.length > 0" class="pt-2 border-t border-line/30 space-y-1.5">
-            <span class="text-[9px] uppercase font-bold tracking-wider text-ink-subtle block">
-              Últimos Apoios Revelados:
-            </span>
-            <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
-              <div
-                v-for="revealed in gameState.discard"
-                :key="revealed.id"
-                class="flex items-center gap-1.5 bg-paper-deep border border-status-red/30 rounded p-1 pr-2.5 shrink-0 shadow-xs"
-              >
-                <div class="w-5 shrink-0 grayscale opacity-85"><Card :role="revealed.roleSlug" /></div>
-                <div class="flex flex-col text-left">
-                  <span class="text-[11px] font-serif font-bold text-ink leading-tight">
-                    {{ getRoleDisplayName(revealed.roleSlug) }}
-                  </span>
-                  <span class="text-[9px] text-ink-muted">
-                    {{ gameState.players[revealed.lostByPlayerId]?.name || 'Jogador' }}
-                  </span>
-                  <span class="text-[10px] text-status-red">{{ revealed.reason }}</span>
-                </div>
-              </div>
+          <section v-if="gameState.discard.length > 0" aria-label="Últimos apoios revelados" class="min-w-0 pt-4 border-t border-line/50 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="game-section-title">Últimos apoios revelados</h3>
+              <span class="text-sm text-ink-muted">Arraste para explorar →</span>
             </div>
-          </div>
+            <div
+              class="revealed-carousel drag-scroll grid grid-flow-col auto-cols-[100%] sm:auto-cols-[320px] gap-3 overflow-x-auto pb-3 snap-x snap-mandatory"
+              @pointerdown="revealedDrag.onPointerDown"
+              @pointermove="revealedDrag.onPointerMove"
+              @pointerup="revealedDrag.onPointerEnd"
+              @pointercancel="revealedDrag.onPointerEnd"
+              @lostpointercapture="revealedDrag.onPointerEnd"
+              @pointerleave="revealedDrag.onPointerLeave"
+              @click.capture="revealedDrag.onClickCapture"
+              @dragstart.prevent
+            >
+              <article
+                v-for="revealed in recentRevealedCards"
+                :key="revealed.id"
+                class="flex min-w-0 items-start gap-3 bg-paper-deep/70 border border-line rounded p-3 snap-start"
+              >
+                <button type="button" class="revealed-card w-20 shrink-0 cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold" :aria-label="`Ampliar apoio revelado: ${getRoleDisplayName(revealed.roleSlug)}`" @click="handleInspectCard(revealed.roleSlug)"><Card :role="revealed.roleSlug" /></button>
+                <div class="min-w-0 text-left">
+                  <h4 class="font-serif text-sm font-bold text-gold-light leading-snug">
+                    {{ getRoleDisplayName(revealed.roleSlug) }}
+                  </h4>
+                  <p class="break-words text-sm font-semibold leading-snug text-ink">
+                    {{ gameState.players[revealed.lostByPlayerId]?.name || 'Jogador' }}
+                  </p>
+                  <p class="break-words border-t border-line/50 pt-2 mt-3 text-xs leading-relaxed text-ink-muted">{{ revealed.reason }}</p>
+                </div>
+              </article>
+            </div>
+          </section>
         </div>
       </div>
     </section>
@@ -708,8 +751,9 @@ const copyGameLink = async (): Promise<void> => {
 button.cabinet-card {
   padding: 0;
   border: 0;
-  border-radius: 0;
+  border-radius: var(--ui-radius);
   cursor: zoom-in;
 }
 </style>
+
 

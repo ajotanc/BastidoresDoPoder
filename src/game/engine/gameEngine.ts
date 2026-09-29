@@ -753,8 +753,10 @@ export const executeCommand = (
           deadlineAt: null,
           responsePlayerIds: [],
           winnerPlayerId: winnerId,
+          winnerSupports: winnerId ? (state.privateHands[winnerId] || []).filter(card => !card.isLost).map(({ id, roleSlug }) => ({ id, roleSlug })) : [],
           revision: state.publicState.revision + 1,
         };
+        addWinnerRevealNotice(state);
         addEvent(`VITÓRIA POLÍTICA! ${winnerName} assumiu o controle absoluto de ${GAME_NAME}!`, 'breaking', 'GAME_FINISHED');
         state.lossContinuation = undefined;
         return engineResult(state);
@@ -1083,6 +1085,18 @@ const prepareCardLoss = (
 /**
  * Finaliza o turno atual e passa para o próximo jogador vivo.
  */
+function addWinnerRevealNotice(state: AuthoritativeGameState): void {
+  const pub = state.publicState;
+  if (pub.phase !== 'FINISHED' || !pub.winnerPlayerId || !pub.winnerSupports?.length || pub.history.some(event => event.type === 'WINNER_SUPPORTS_AVAILABLE')) return;
+  state.publicState = { ...pub, history: [{
+    id: `winner-supports-${pub.roomCode}-${pub.revision}`,
+    timestamp: dayjs().valueOf(),
+    type: 'WINNER_SUPPORTS_AVAILABLE',
+    message: `Os apoios restantes de ${pub.players[pub.winnerPlayerId]?.name || 'quem venceu'} estão disponíveis. Toque nas cartas do gabinete vencedor para virá-las.`,
+    importance: 'normal' as const,
+  }, ...pub.history].slice(0, 50) };
+}
+
 export const finishTurn = (state: AuthoritativeGameState): EngineExecutionResult => {
   state.lossContinuation = undefined;
   state.publicState = { ...state.publicState, responsePlayerIds: [], cardChoicePlayerId: null, cardChoiceReason: null };
@@ -1094,10 +1108,12 @@ export const finishTurn = (state: AuthoritativeGameState): EngineExecutionResult
       ...state.publicState,
       phase: 'FINISHED',
       winnerPlayerId: winnerId,
+      winnerSupports: winnerId ? (state.privateHands[winnerId] || []).filter(card => !card.isLost).map(({ id, roleSlug }) => ({ id, roleSlug })) : [],
       pendingAction: null,
       deadlineAt: null,
       revision: state.publicState.revision + 1,
     };
+    addWinnerRevealNotice(state);
     return {
       nextAuthoritativeState: state,
       broadcastPublicState: state.publicState,

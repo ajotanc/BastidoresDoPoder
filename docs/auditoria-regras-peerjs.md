@@ -2,7 +2,7 @@
 
 ## Atualização após as correções
 
-Regra atual de contestação: quando a ação tem alvo, somente esse alvo pode contestá-la. Se o alvo bloquear, somente o autor da ação pode contestar a defesa. Para ações sem alvo, a contestação continua disponível aos demais jogadores vivos, em ordem horária. As ações gerais continuam sem contestação direta; suas defesas podem ser contestadas. A elegibilidade é centralizada em `getEligibleChallengers`, usada pela engine, interface e cálculo de risco dos bots.
+Regra atual de contestação: qualquer outro jogador vivo pode contestar uma alegação de ação ou bloqueio, com ou sem alvo, em ordem horária. O Impeachment definitivo não admite bloqueio nem contestação. As ações gerais continuam sem contestação direta; suas defesas podem ser contestadas. A elegibilidade é centralizada em `getEligibleChallengers`, usada pela engine, interface e cálculo de risco dos bots.
 
 As falhas da engine e da camada online descritas na auditoria abaixo foram corrigidas. O texto original foi preservado como registro histórico, não como descrição dos problemas ainda presentes.
 
@@ -102,3 +102,4 @@ Permitir alegar um personagem ausente da mão está correto: o manual permite bl
 As reproduções usaram a engine TypeScript atual transpilada em memória e estados controlados de três jogadores. Os estados controlados de mãos serviram para isolar os fluxos; não foram usados para testar conservação do baralho. A matriz avaliou aceitação de bloqueios por personagem, sem afirmar que todas as continuações pós-desafio funcionam.
 
 Não foram realizadas partidas entre navegadores nem testes reais de reconexão/WebRTC. Falhas do transporte e timers acima foram identificadas por leitura de código. Prioridade recomendada: autenticar conexão/identidade; corrigir janelas de respostas e continuação após desafios; completar timeouts; reforçar validação de comandos e reconexão; depois atualizar o documento para refletir a implementação validada.
+

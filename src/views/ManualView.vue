@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import HeroMasthead from '@/components/game/HeroMasthead.vue';
 import GameGoalSection from '@/components/game/GameGoalSection.vue';
+import OnlineModeSection from '@/components/game/OnlineModeSection.vue';
 import RoleCardsSection from '@/components/game/RoleCardsSection.vue';
 import SetupSection from '@/components/game/SetupSection.vue';
 import GeneralActionsSection from '@/components/game/GeneralActionsSection.vue';
@@ -17,6 +18,7 @@ import QuickReferenceSection from '@/components/game/QuickReferenceSection.vue';
 
     <!-- 01 / O Jogo e Objetivos -->
     <GameGoalSection />
+    <OnlineModeSection />
 
     <!-- 02 / Cartas e Guia de Ajuda -->
     <RoleCardsSection />

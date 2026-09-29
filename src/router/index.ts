@@ -9,7 +9,7 @@ const routes: RouteRecordRaw[] = [
     name: 'home',
     component: ManualView,
     meta: {
-      title: GAME_NAME + ' — Manual de Regras',
+      title: `${GAME_NAME  } — Manual de Regras`,
     },
   },
   {
@@ -17,7 +17,7 @@ const routes: RouteRecordRaw[] = [
     name: 'rules',
     component: ManualView,
     meta: {
-      title: GAME_NAME + ' — Manual de Regras',
+      title: `${GAME_NAME  } — Manual de Regras`,
     },
   },
   {
@@ -25,7 +25,7 @@ const routes: RouteRecordRaw[] = [
     name: 'online',
     component: OnlineView,
     meta: {
-      title: GAME_NAME + ' — Gabinete Online',
+      title: `${GAME_NAME  } — Gabinete Online`,
     },
   },
   {
@@ -34,7 +34,7 @@ const routes: RouteRecordRaw[] = [
     component: OnlineView,
     props: true,
     meta: {
-      title: GAME_NAME + ' — Mesa de Jogo',
+      title: `${GAME_NAME  } — Mesa de Jogo`,
     },
   },
   // Redirecionamento amigável em inglês (/play/:id -> /game/:id)

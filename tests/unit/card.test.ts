@@ -23,6 +23,6 @@ describe('Card — layout compartilhado', () => {
   it('guia usa o brasão quando não existe retrato', () => {
     const guide = mount(Card, { props: { role: 'guide' } });
     expect(guide.text()).toContain('Guia de Mesa');
-    expect(guide.find('img[alt="Personagem Guia de Mesa"]').attributes('src')).toBe('/images/bdp.webp');
+    expect(guide.find('.card-portrait img').attributes('src')).toBe('/images/bdp.webp');
   });
 });

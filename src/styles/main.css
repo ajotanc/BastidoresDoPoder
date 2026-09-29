@@ -155,7 +155,7 @@ button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-c
   font-weight: 600;
   line-height: 1.4;
 }
-button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-select-trigger):not(:has(.block)) {
+button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-select-trigger):not(.rules-action):not(:has(.block)) {
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -178,6 +178,9 @@ button[title="Copiar link da mesa"], button[title="Ampliar carta e ver regras co
 .game-status button { display: inline-flex; }
 .revealed-card { padding: 0; border: 0; border-radius: 0; }
 .rivals-carousel { scroll-padding-inline: 0; }
+.drag-scroll { cursor: grab; user-select: none; }
+.drag-scroll.is-dragging { cursor: grabbing; scroll-snap-type: none; scroll-behavior: auto; }
+.drag-scroll.is-dragging * { cursor: grabbing; }
 
 
 :where(button, .app-button) { border-color: var(--line); }
@@ -193,13 +196,26 @@ button.text-ink-muted, button.text-ink-subtle, .online-icon-button, .secondary-t
 button.random-name-button, button.profile-photo-button { border-color: rgb(230 191 115 / 40%); }
 button.remove-photo-button { border-color: var(--red); }
 .rivals-carousel { grid-auto-columns: calc((100% - .75rem) / 2); }
+@media (min-width: 1024px) {
+  .rivals-carousel { grid-auto-columns: calc((100% - 2.25rem) / 4); }
+}
 .rival-support { min-width: 0; perspective: 800px; }
-.rival-support-inner { position: relative; width: 100%; aspect-ratio: 2 / 3; transform-style: preserve-3d; transition: transform .6s ease; }
-.rival-support.is-revealed .rival-support-inner { transform: rotateY(180deg); }
-.rival-support-back, button.rival-support-front { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-button.rival-support-front { width: 100%; height: 100%; padding: 0; border: 0; border-radius: 0; transform: rotateY(180deg); background: transparent; }
+.cabinet-winner {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, rgb(230 191 115 / 23%), rgb(230 191 115 / 6%)), var(--surface);
+  box-shadow: inset 0 1px 0 rgb(255 228 170 / 30%), 0 4px 16px rgb(230 191 115 / 10%);
+}
+.rival-support-inner { position: relative; width: 100%; aspect-ratio: 2 / 3; }
+.rival-support-back, button.rival-support-front { position: absolute; inset: 0; }
+button.rival-support-front { width: 100%; height: 100%; padding: 0; border: 0; border-radius: var(--ui-radius); background: transparent; }
+.support-flip-leave-active { transition: transform .45s cubic-bezier(.55, 0, 1, .45); }
+.support-flip-enter-active { transition: transform .45s cubic-bezier(0, .55, .45, 1); }
+.support-flip-enter-from { transform: rotateY(-90deg); }
+.support-flip-leave-to { transform: rotateY(90deg); }
 .rival-support .game-card { box-shadow: none; }
-@media (prefers-reduced-motion: reduce) { .rival-support-inner { transition: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .support-flip-enter-active, .support-flip-leave-active { transition: none; }
+}
 
 .game-section-title { font-family: 'Cinzel', Georgia, serif; font-size: 16px; font-weight: 700; line-height: 1.5; color: #f3d59a; letter-spacing: 0; }
 html.modal-scroll-locked { overflow: hidden !important; overscroll-behavior: none; }
@@ -210,3 +226,8 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select { 
 .online-input { padding-top: 8px; padding-bottom: 8px; }
 button.rules-action { border-color: #8d784f; }
 button.app-select-trigger { justify-content: space-between; min-height: 44px; }
+
+/* Keep numeric entry and keyboard stepping, without browser spinner buttons. */
+input[type='number'] { appearance: textfield; -moz-appearance: textfield; }
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }

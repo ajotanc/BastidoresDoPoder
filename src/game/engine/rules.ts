@@ -32,11 +32,8 @@ export const clockwiseOpponents = (state: GameState, declarer: string): string[]
 };
 
 export const getEligibleChallengers = (state: GameState, pending: PendingAction, onBlock = false): string[] => {
+  if (pending.actionType === 'definitiveImpeachment') return [];
   const declarer = onBlock ? pending.blockedByPlayerId : pending.sourcePlayerId;
   if (!declarer) return [];
-  const opponents = clockwiseOpponents(state, declarer);
-  if (!pending.targetPlayerId) return opponents;
-  // A directed action concerns its target; its defense concerns the attacker.
-  const affected = onBlock ? pending.sourcePlayerId : pending.targetPlayerId;
-  return opponents.filter(id => id === affected);
+  return clockwiseOpponents(state, declarer);
 };

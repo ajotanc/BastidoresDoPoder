@@ -11,7 +11,7 @@ const finalEvents = computed(() => {
   const history = props.gameState.history;
   const boundary = history.findIndex(event => ['TURN_CHANGED', 'GAME_STARTED', 'ROOM_CREATED'].includes(event.type));
   return history.slice(0, boundary < 0 ? history.length : boundary)
-    .filter(event => event.type !== 'GAME_FINISHED').reverse();
+    .filter(event => !['GAME_FINISHED', 'WINNER_SUPPORTS_AVAILABLE'].includes(event.type)).reverse();
 });
 </script>
 

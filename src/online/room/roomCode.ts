@@ -12,7 +12,7 @@ export const generateRoomCode = (length = 4): string => {
   let result = '';
   for (let i = 0; i < length; i++) {
     const randomIndex = Math.floor(Math.random() * ALPHABET.length);
-    result += ALPHABET.charAt(randomIndex);
+    result = `${result}${ALPHABET.charAt(randomIndex)}`;
   }
   return result;
 };

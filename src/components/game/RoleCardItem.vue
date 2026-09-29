@@ -88,21 +88,22 @@ const handleShowRules = (): void => {
         <button
           type="button"
           @click="handleShowRules"
-          class="rules-action w-full min-h-11 flex items-center justify-between gap-2 rounded border border-gold/50 bg-gold/10 px-3 text-gold-light hover:bg-gold/20 transition-colors group/rules"
+          class="rules-action flex w-full min-h-11 justify-between rounded border text-gold-light transition-colors group/rules"
           :aria-label="`Ver regras e habilidades de ${props.card.name}`"
         >
-          <div class="flex items-center gap-2 min-w-0">
+          <div class="flex items-center gap-3 min-w-0">
             <BookOpen
               class="w-4 h-4 text-gold-muted group-hover/rules:text-gold transition-colors flex-shrink-0"
               aria-hidden="true"
             />
-            <span class="text-sm font-semibold text-gold-light group-hover/rules:text-gold-light transition-colors">
-              Regras e Habilidades
+            <span class="min-w-0 text-left leading-tight">
+              <span class="block text-[10px] font-medium uppercase tracking-[0.1em] text-gold-muted">Regras e</span>
+              <span class="block text-sm font-semibold text-gold-light">Habilidades</span>
             </span>
           </div>
 
           <span
-            class="rules-count inline-flex w-6 aspect-square items-center justify-center rounded text-xs leading-none font-bold tabular-nums bg-[#0a1118] text-gold-muted border border-line-subtle group-hover/rules:border-gold/60 group-hover/rules:text-gold-light group-hover/rules:bg-[#101a24] transition-all flex-shrink-0"
+            class="rules-count inline-flex h-6 w-6 aspect-square items-center justify-center text-xs leading-none font-bold tabular-nums text-gold-light border border-gold/30 transition-colors flex-shrink-0"
             title="Quantidade de regras e poderes deste personagem"
           >
             {{ props.card.rules.length }}
@@ -112,3 +113,24 @@ const handleShowRules = (): void => {
     </div>
   </article>
 </template>
+
+<style scoped>
+button.rules-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-color: rgb(230 191 115 / 35%);
+  background: linear-gradient(110deg, rgb(230 191 115 / 13%), rgb(230 191 115 / 3%));
+  box-shadow: inset 0 1px 0 rgb(255 228 170 / 8%);
+}
+button.rules-action:hover {
+  border-color: var(--gold);
+  background-color: rgb(230 191 115 / 10%);
+}
+.rules-count {
+  border-radius: calc(var(--ui-radius) / 2);
+  background: rgb(8 15 22 / 60%);
+}
+</style>

@@ -19,7 +19,7 @@ const handleBackToTop = (event: MouseEvent): void => {
     <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-6">
       <div class="space-y-1">
         <div class="flex items-center justify-center sm:justify-start gap-2.5">
-          <img src="/images/bdp.webp" :alt="'Logo ' + GAME_NAME + ''" class="w-7 h-7 object-contain rounded" />
+          <img src="/images/bdp.webp" :alt="`Logo ${GAME_NAME}`" class="w-7 h-7 object-contain rounded" />
           <p class="font-serif font-bold text-gold-light text-base">
             {{ GAME_NAME }} <span class="font-sans font-normal text-xs text-ink-muted">· Manual v{{ APP_VERSION }}
               para testes</span>

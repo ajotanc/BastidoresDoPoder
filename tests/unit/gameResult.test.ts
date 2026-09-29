@@ -21,6 +21,16 @@ function finished(): GameState {
 }
 
 describe('Resultado visível na mesa', () => {
+  it('permite virar os apoios do vencedor apenas após encerrar', async () => {
+    const end = { ...finished(), winnerSupports: [{ id: 'remaining', roleSlug: 'baron' as const }] };
+    const wrapper = shallowMount(GameBoard, { props: { gameState: { ...end, phase: 'WAITING_ACTION' }, myPlayerId: 'b', privateView: null, isHost: false } });
+    expect(wrapper.find('button[aria-label^="Revelar apoio"]').exists()).toBe(false);
+    await wrapper.setProps({ gameState: end });
+    await wrapper.get('button[aria-label^="Revelar apoio"]').trigger('click');
+    expect(wrapper.find('button[aria-label^="Ampliar apoio"]').exists()).toBe(true);
+    expect(wrapper.emitted('choose-card')).toBeUndefined();
+    wrapper.unmount();
+  });
   it('remove emojis de mensagens antigas e destaca chamadas sem interpretar HTML', () => {
     const wrapper = mount(GameEventMessage, { props: { message: '🚨 FAKE NEWS! <img src=x> contestou. 🛡️ BLOQUEIO!' } });
     expect(wrapper.text()).toBe('FAKE NEWS! <img src=x> contestou.  BLOQUEIO!');

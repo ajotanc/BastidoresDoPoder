@@ -23,7 +23,7 @@ import { ArrowDown, BookOpen } from 'lucide-vue-next';
     <!-- Conteúdo principal -->
     <div class="relative flex flex-col gap-6 z-10 max-w-xl">
       <div class="flex justify-center items-center gap-3">
-        <img src="/images/bdp.webp" :alt="'Brasão Oficial de ' + GAME_NAME"
+        <img src="/images/bdp.webp" :alt="`Brasão Oficial de ${GAME_NAME}`"
           class="w-20 h-20 sm:w-32 sm:h-32 object-contain drop-shadow-md rounded-md" />
         <h1 class="font-serif font-bold text-3xl sm:text-5xl lg:text-6xl text-[#f7f0df] tracking-tight leading-tight">
           {{ GAME_NAME_FIRST_LINE }} <span class="text-gold">{{ GAME_NAME_SECOND_LINE }}</span>

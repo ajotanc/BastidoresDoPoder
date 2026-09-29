@@ -21,14 +21,14 @@ function state(): GameState {
 }
 
 describe('Controles online seguem a elegibilidade da engine', () => {
-  it('terceiro não recebe botão de contestar uma ação direcionada', () => {
+  it('terceiro recebe botão de contestar uma ação direcionada na sua vez', () => {
     const s = state();
     const directed: GameState = { ...s, phase: 'WAITING_CHALLENGE_ACTION', playerOrder: ['a', 'b', 'c'],
-      players: { ...s.players, c: { ...s.players.b!, id: 'c', name: 'Carlos' } }, responsePlayerIds: ['b'],
+      players: { ...s.players, c: { ...s.players.b!, id: 'c', name: 'Carlos' } }, responsePlayerIds: ['c'],
       pendingAction: { actionType: 'execution', sourcePlayerId: 'a', targetPlayerId: 'b', claimedRole: 'executor', costPaid: 3 } };
     const wrapper = shallowMount(GameBoard, { props: { gameState: directed, myPlayerId: 'c', privateView: null, isHost: false } });
-    expect(wrapper.findAll('button').some(button => button.text().includes('Contestar'))).toBe(false);
-    expect(wrapper.text()).toContain('Somente o alvo desta ação pode contestar');
+    expect(wrapper.findAll('button').some(button => button.text().includes('Contestar'))).toBe(true);
+    expect(wrapper.text()).toContain('Qualquer outro jogador ativo pode contestar esta ação');
     wrapper.unmount();
   });
   it('mantém notícia nova no topo e reinicia a rolagem do histórico', async () => {
@@ -97,3 +97,4 @@ describe('Controles online seguem a elegibilidade da engine', () => {
     wrapper.unmount();
   });
 });
+

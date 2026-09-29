@@ -72,8 +72,8 @@ const handleClick = (): void => {
       sizeClasses.wrapper
     ]"
     :style="{
-      backgroundColor: coin.color + '15',
-      borderColor: coin.color + '55',
+      backgroundColor: `${coin.color}15`,
+      borderColor: `${coin.color}55`,
       color: coin.color
     }"
     :title="props.clickable ? `Clique para ver o ${coin.name} em alta resolução` : coin.name"

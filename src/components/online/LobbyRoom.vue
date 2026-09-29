@@ -60,7 +60,7 @@ const handleShare = async (): Promise<void> => {
   if (typeof window !== 'undefined' && typeof window.navigator?.share === 'function') {
     try {
       await window.navigator.share({
-        title: GAME_NAME + ' — Mesa Online',
+        title: `${GAME_NAME  } — Mesa Online`,
         text: `Participe da minha mesa política em ${GAME_NAME}! Código: ${props.roomCode}`,
         url: shareableUrl.value,
       });

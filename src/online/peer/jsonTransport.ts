@@ -3,7 +3,7 @@ const CHUNK_SIZE = 6000;
 const MAX_CHUNKS = 200;
 type Sender = { send(data: unknown): void };
 export function sendPeerMessage(connection: Sender, message: unknown): void {
-  const json = JSON.stringify(message).replace(/[\u007f-\uffff]/g, char => '\\u' + char.charCodeAt(0).toString(16).padStart(4, '0'));
+  const json = JSON.stringify(message).replace(/[\u007f-\uffff]/g, char => `\\u${  char.charCodeAt(0).toString(16).padStart(4, '0')}`);
   if (json.length <= CHUNK_SIZE) { connection.send(message); return; }
   const total = Math.ceil(json.length / CHUNK_SIZE);
   if (total > MAX_CHUNKS) throw new Error('Mensagem da sala excedeu o limite de tamanho.');
