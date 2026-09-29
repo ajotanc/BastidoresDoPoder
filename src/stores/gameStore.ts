@@ -1,3 +1,4 @@
+import { DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from '@/game/bots/botDifficulty';
 import { MAX_RECONNECT_ATTEMPTS, RECONNECT_RETRY_MS } from '@/constants/gameConfig';
 import { defineStore } from 'pinia';
 import { ref, computed, shallowRef } from 'vue';
@@ -65,7 +66,7 @@ export const useGameStore = defineStore('game', () => {
   /**
    * Cria uma nova sala como Host P2P
    */
-  const createRoom = async (playerName: string, avatarSlug: RoleSlug = 'colonel', avatarImage?: string, botCount = 0, attempt = 0): Promise<string> => {
+  const createRoom = async (playerName: string, avatarSlug: RoleSlug = 'colonel', avatarImage?: string, botCount = 0, botDifficulty: BotDifficulty = DEFAULT_BOT_DIFFICULTY, attempt = 0): Promise<string> => {
     try {
       validateBotCount(botCount);
       clearError();
@@ -107,7 +108,7 @@ export const useGameStore = defineStore('game', () => {
             isHost: true,
           });
         },
-      }, avatarImage, botCount);
+      }, avatarImage, botCount, botDifficulty);
 
       hostInstance.value = host;
       await host.init();
@@ -116,7 +117,7 @@ export const useGameStore = defineStore('game', () => {
       hostInstance.value?.destroy();
       hostInstance.value = null;
       if (err && typeof err === 'object' && 'type' in err && err.type === 'unavailable-id' && attempt < 4) {
-        return createRoom(playerName, avatarSlug, avatarImage, botCount, attempt + 1);
+        return createRoom(playerName, avatarSlug, avatarImage, botCount, botDifficulty, attempt + 1);
       }
       mode.value = 'idle';
       if (err instanceof Error) {

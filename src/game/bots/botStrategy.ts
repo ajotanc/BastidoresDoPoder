@@ -3,7 +3,7 @@ import type { GameState, PrivatePlayerView, ActionType } from '../models/gameSta
 import type { RoleSlug } from '@/types/game';
 import { getEligibleBlockRoles, getBlockRoles, getEligibleChallengers } from '../engine/rules';
 import { getActionCost, getRequiredRoleForAction } from '../engine/gameEngine';
-import { BOT_STRATEGY } from '@/constants/gameConfig';
+import { BOT_DIFFICULTY_PROFILES, DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from './botDifficulty';
 import { PLAYABLE_ROLES } from '@/constants/gameData';
 import { evaluateTable } from './botEvaluation';
 
@@ -16,12 +16,13 @@ export function decisionPlayerId(state: GameState): string | undefined {
 
 /** Scores legal choices from public beliefs and the bot's own hand. Randomness
  * varies close decisions and willingness to bluff, never picks a target blindly. */
-export function chooseBotCommand(state: GameState, view: PrivatePlayerView, random = Math.random): ClientCommand | null {
+export function chooseBotCommand(state: GameState, view: PrivatePlayerView, random = Math.random, difficulty: BotDifficulty = DEFAULT_BOT_DIFFICULTY): ClientCommand | null {
   if (!state.players[view.playerId]?.isAlive || decisionPlayerId(state) !== view.playerId) return null;
-  const t = evaluateTable(state, view);
+  const profile = BOT_DIFFICULTY_PROFILES[difficulty];
+  const t = evaluateTable(state, view, profile);
   const pass: ClientCommand = { type: 'PASS_RESPONSE', payload: { pass: true } };
-  const variation = () => (random() - 0.5) * BOT_STRATEGY.decisionVariation;
-  const riskCost = t.lossValue / BOT_STRATEGY.riskTolerance;
+  const variation = () => (random() - 0.5) * profile.decisionVariation;
+  const riskCost = t.lossValue / profile.riskTolerance;
 
   if (state.phase === 'WAITING_CARD_CHOICE') {
     const discarded = [...t.hand].sort((a, b) => t.handValue(t.hand.filter(c => c.id !== b.id)) - t.handValue(t.hand.filter(c => c.id !== a.id)))[0];
@@ -49,8 +50,9 @@ export function chooseBotCommand(state: GameState, view: PrivatePlayerView, rand
   if (state.phase === 'WAITING_ACTION') {
     if (!t.rivals.length) return null;
     const candidates: { intent: ActionIntent; score: number }[] = [];
-    const allowBluff = random() < BOT_STRATEGY.bluffWillingness;
-    const coinGain = (amount: number) => amount + (t.me.coins < 7 && t.me.coins + amount >= 7 ? 1.2 : 0) + (t.own('executor') && t.me.coins < 3 && t.me.coins + amount >= 3 ? 0.8 : 0);
+    const allowBluff = random() < profile.bluffWillingness;
+    const coinGain = (amount: number) => amount + (t.me.coins < 7 && t.me.coins + amount >= 7 ? 1.2 : 0) + (t.own('executor') && t.me.coins < 3 && t.me.coins + amount >= 3 ? 0.8 : 0)
+      + profile.planningWeight * (t.coinPosition(t.me.coins + amount) - t.coinPosition(t.me.coins));
     const add = (actionType: ActionType, benefit: number, targetPlayerId?: string, namedRole?: RoleSlug) => {
       const cost = getActionCost(actionType);
       if (cost > t.me.coins || (t.me.coins >= 10 && actionType !== 'definitiveImpeachment')) return;
@@ -60,7 +62,13 @@ export function chooseBotCommand(state: GameState, view: PrivatePlayerView, rand
       const eligible = getEligibleChallengers(state, { actionType, sourcePlayerId: t.me.id, targetPlayerId, costPaid: cost });
       const caught = bluff ? t.challengeRisk(role, eligible) : 0;
       const success = (1 - caught) * (1 - blockedProbability(actionType, targetPlayerId));
-      const score = benefit * success - cost * 0.8 - caught * riskCost + variation();
+      const reserve = t.me.coins - cost;
+      const preparation = profile.planningWeight * (t.coinPosition(reserve) - t.coinPosition(t.me.coins));
+      const lethal = targetPlayerId && state.players[targetPlayerId]!.activeSupportCount === 1
+        && ['execution', 'commonImpeachment', 'definitiveImpeachment'].includes(actionType);
+      // A certain immediate win must outrank saving money for a turn that won't happen.
+      const certainWin = profile.planningWeight && lethal && t.rivals.length === 1 && success === 1;
+      const score = certainWin ? 1000 - cost : preparation + benefit * success - cost * 0.8 - caught * riskCost + variation();
       candidates.push({ intent: { actionType, ...(targetPlayerId ? { targetPlayerId } : {}), ...(namedRole ? { namedRole } : {}) }, score });
     };
     add('salary', coinGain(1));
@@ -75,8 +83,9 @@ export function chooseBotCommand(state: GameState, view: PrivatePlayerView, rand
       add('definitiveImpeachment', attack, rival.id);
       add('commonImpeachment', attack, rival.id);
       add('execution', attack, rival.id);
-      if (rival.coins > 0) add('extortion', coinGain(Math.min(2, rival.coins)) + Math.min(2, rival.coins) * (0.35 + t.threat(rival.id) * 0.08), rival.id);
-      add('backroomDeal', coinGain(2) - (t.rivals.length === 1 ? 1.1 : 0.35) - (rival.coins === 6 || rival.coins === 9 ? 1.5 : 0) - t.threat(rival.id) * 0.08, rival.id);
+      if (rival.coins > 0) add('extortion', coinGain(Math.min(2, rival.coins)) + Math.min(2, rival.coins) * (0.35 + t.threat(rival.id) * 0.08) + profile.planningWeight * t.denialValue(rival.id, 2), rival.id);
+      const armsRival = profile.planningWeight * (rival.coins === 2 ? t.probability(rival.id, 'executor') * 3 : rival.coins === 6 || rival.coins === 9 ? 3 : 0);
+      add('backroomDeal', coinGain(2) - (t.rivals.length === 1 ? 1.1 : 0.35) - (rival.coins === 6 || rival.coins === 9 ? 1.5 : 0) - t.threat(rival.id) * 0.08 - armsRival, rival.id);
       const likelyRole = [...PLAYABLE_ROLES].sort((a, b) => t.probability(rival.id, b) - t.probability(rival.id, a))[0]!;
       add('searchWarrant', attack * t.probability(rival.id, likelyRole), rival.id, likelyRole);
     }
@@ -95,7 +104,7 @@ export function chooseBotCommand(state: GameState, view: PrivatePlayerView, rand
     const prevented = harm || (pending.actionType === 'crowdfunding' ? 1 + t.threat(pending.sourcePlayerId) * 0.3 : 0);
     const fee = pending.actionType === 'commonImpeachment' ? 2.4 : 0;
     const desperate = targeted && damaging && t.me.activeSupportCount === 1;
-    if (!desperate && random() >= BOT_STRATEGY.bluffWillingness) return pass;
+    if (!desperate && random() >= profile.bluffWillingness) return pass;
     const choices = eligible.filter(role => t.remaining(role) > 0).map(role => {
       const eligible = getEligibleChallengers(state, { ...pending, blockedByPlayerId: t.me.id }, true);
       const caught = t.challengeRisk(role, eligible);
@@ -115,6 +124,8 @@ export function chooseBotCommand(state: GameState, view: PrivatePlayerView, rand
   const saved = onBlock ? (pending.sourcePlayerId === t.me.id ? (damaging ? t.attackValue(suspect) : 2) : 0) : (canDefend ? 0 : harm);
   const gain = t.attackValue(suspect) * (t.rivals.length === 1 ? 0.7 : 0.45) + saved;
   const unavoidableLoss = !onBlock && targeted && damaging && !canDefend && t.me.activeSupportCount === 1;
-  const failure = unavoidableLoss ? 0 : riskCost;
+  // Losing a challenge can cost one support and leave the original attack pending.
+  const doubleLoss = profile.planningWeight && !onBlock && targeted && damaging && !canDefend && t.me.activeSupportCount === 2;
+  const failure = unavoidableLoss ? 0 : riskCost + (doubleLoss ? 10 : 0);
   return (1 - truth) * gain - truth * failure + variation() > 0 ? { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: onBlock } } : pass;
 }

@@ -1,3 +1,4 @@
+import { BOT_DIFFICULTY_PROFILES } from './botDifficulty';
 import type { GameState, PrivatePlayerView, SupportCard } from '../models/gameState';
 import type { RoleSlug } from '@/types/game';
 import { PLAYABLE_ROLES, SUPPORT_CARDS_PER_ROLE } from '@/constants/gameData';
@@ -5,14 +6,14 @@ import { PLAYABLE_ROLES, SUPPORT_CARDS_PER_ROLE } from '@/constants/gameData';
 export const clamp = (value: number, min = 0, max = 1) => Math.max(min, Math.min(max, value));
 
 /** Beliefs are reconstructed from the recent public feed, never from host secrets. */
-export function evaluateTable(state: GameState, view: PrivatePlayerView) {
+export function evaluateTable(state: GameState, view: PrivatePlayerView, profile = BOT_DIFFICULTY_PROFILES.intermediate) {
   const me = state.players[view.playerId]!;
   const hand = view.supports.filter(card => !card.isLost);
   const rivals = state.playerOrder.map(id => state.players[id]!).filter(p => p.isAlive && p.id !== me.id);
   const own = (role: RoleSlug) => hand.filter(card => card.roleSlug === role).length;
   const remaining = (role: RoleSlug) => Math.max(0, SUPPORT_CARDS_PER_ROLE - own(role) - state.discard.filter(card => card.roleSlug === role).length);
   const unknown = PLAYABLE_ROLES.reduce((sum, role) => sum + remaining(role), 0);
-  const recent = (id: string) => state.history.filter(event => event.playerId === id);
+  const recent = (id: string) => state.history.slice(0, profile.historyDepth).filter(event => event.playerId === id);
   const claims = (id: string) => {
     const result: RoleSlug[] = [];
     for (const event of recent(id)) {
@@ -40,10 +41,23 @@ export function evaluateTable(state: GameState, view: PrivatePlayerView) {
     const p = state.players[id]!;
     const order = state.playerOrder.filter(pid => state.players[pid]?.isAlive);
     const distance = (order.indexOf(id) - order.indexOf(me.id) + order.length) % order.length;
-    return p.coins / 3 + p.activeSupportCount * 0.6 + (p.coins >= 7 ? 1.5 : 0) + (distance === 1 ? 0.5 : 0);
+    return profile.threatWeight * (p.coins / 3 + p.activeSupportCount * 0.6 + (p.coins >= 7 ? 1.5 : 0) + (distance === 1 ? 0.5 : 0));
   };
   const attackValue = (id: string) => 5 + threat(id) * 0.7 + (state.players[id]!.activeSupportCount === 1 ? (rivals.length === 1 ? 22 : 7) : 0);
   const lossValue = me.activeSupportCount <= 1 ? 16 : 6;
+  // Value of crossing an actionable threshold, rather than hoarding coins forever.
+  const coinPosition = (coins: number) =>
+    (coins >= 3 && own('executor') ? 1.8 : 0)
+    + (coins >= 3 && own('untouchable') && rivals.some(p => p.coins >= 7) ? 1.5 : 0)
+    + (coins >= 5 && own('investigator') ? 0.8 : 0)
+    + (coins >= 7 ? 2 : 0) + (coins >= 10 ? 2.5 : 0);
+  const denialValue = (id: string, amount: number) => {
+    const coins = state.players[id]!.coins;
+    const after = coins - amount;
+    return (coins >= 10 && after < 10 ? 3 : 0)
+      + (coins >= 7 && after < 7 ? 2 : 0)
+      + (coins >= 3 && after < 3 ? probability(id, 'executor') * 2 : 0);
+  };
   const challengeRisk = (role: RoleSlug, eligibleIds = rivals.map(p => p.id)) => {
     if (state.discard.filter(c => c.roleSlug === role).length >= SUPPORT_CARDS_PER_ROLE) return 1;
     let unchallenged = 1;
@@ -52,7 +66,9 @@ export function evaluateTable(state: GameState, view: PrivatePlayerView) {
       const challenges = recent(rival.id).filter(e => e.type === 'CHALLENGE_DECLARED').length;
       const myLies = recent(me.id).filter(e => e.type === 'BLUFF_EXPOSED').length;
       const consistent = claims(me.id).includes(role) ? -0.04 : 0;
-      const rate = clamp(0.12 + challenges * 0.09 + myLies * 0.1 + consistent + (remaining(role) === 1 ? 0.1 : 0), 0.05, 0.75);
+      const contradictory = new Set([...claims(me.id), role]).size > me.activeSupportCount;
+      const rate = clamp(0.12 + challenges * 0.09 + myLies * 0.1 + consistent + (remaining(role) === 1 ? 0.1 : 0)
+        + profile.planningWeight * (contradictory ? 0.18 : 0), 0.05, 0.75);
       unchallenged *= 1 - rate;
     }
     return 1 - unchallenged;
@@ -70,6 +86,12 @@ export function evaluateTable(state: GameState, view: PrivatePlayerView) {
       default: return 0;
     }
   };
-  const handValue = (cards: readonly SupportCard[]) => cards.reduce((sum, card, index) => sum + roleValue(card.roleSlug) * (cards.slice(0, index).some(c => c.roleSlug === card.roleSlug) ? 0.3 : 1), 0);
-  return { me, hand, rivals, own, remaining, probability, threat, attackValue, lossValue, challengeRisk, roleValue, handValue };
+  const handValue = (cards: readonly SupportCard[]) => {
+    const roles = new Set(cards.map(c => c.roleSlug));
+    const defense = roles.has('lawyer') ? Math.max(0, ...rivals.map(p => p.coins >= 3 ? probability(p.id, 'executor') * (cards.length === 1 ? 5 : 2) : 0)) : 0;
+    const synergy = roles.has('baron') && roles.has('executor') && me.coins < 7 ? 1.5 : 0;
+    return cards.reduce((sum, card, index) => sum + roleValue(card.roleSlug) * (cards.slice(0, index).some(c => c.roleSlug === card.roleSlug) ? 0.3 : 1), 0)
+      + profile.planningWeight * (defense + synergy);
+  };
+  return { me, hand, rivals, own, remaining, probability, threat, attackValue, lossValue, challengeRisk, roleValue, handValue, coinPosition, denialValue };
 }

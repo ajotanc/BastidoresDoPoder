@@ -19,6 +19,8 @@ Nas trocas, compara todas as combinações possíveis de cartas a manter. O valo
 
 ## Ajustes em `game.config.json`
 
+O nível difícil acrescenta avaliação dos limiares de moedas (ataques e defesa do Intocável), extorsão para desarmar rivais, penalidade por financiar ataques adversários e prioridade absoluta a vitórias imediatas sem risco de bloqueio. Nas perdas e trocas, considera defesa contra Executores prováveis e a combinação Barão/Executor. Ao contestar, considera a perda adicional pelo ataque pendente; ao blefar, considera contradições com seus cargos alegados. Essas heurísticas ficam restritas ao difícil e não constituem busca completa nem garantem maior taxa de vitória em toda mesa.
+
 - `bots.decisionDelaySeconds`: tempo máximo de espera. Cada decisão sorteia uma pausa entre 20% e 100% desse valor (5 segundos permitem pausas de 1 a 5 segundos). Se a fase estiver perto de vencer, a pausa é encurtada para no máximo 80% do tempo restante.
 - `bots.bluffWillingness`: chance de considerar blefes (não é a frequência final de blefes). Uma defesa contra eliminação iminente pode ignorar esse limite.
 - `bots.riskTolerance`: valores maiores reduzem a penalidade de arriscar um apoio; deve ser maior que zero.

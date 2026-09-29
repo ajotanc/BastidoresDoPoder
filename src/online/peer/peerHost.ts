@@ -1,3 +1,4 @@
+import { DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from '@/game/bots/botDifficulty';
 import { RECONNECT_GRACE_MS, HEARTBEAT_INTERVAL_MS, HEARTBEAT_TIMEOUT_MS } from '@/constants/gameConfig';
 import { sendPeerMessage, createPeerMessageReader } from './jsonTransport';
 import dayjs from 'dayjs';
@@ -40,7 +41,7 @@ export class PeerHost {
       this.handleTimeoutExpiry();
       return;
     }
-    const command = chooseBotCommand(state.publicState, { playerId: id, supports: state.privateHands[id] ?? [] });
+    const command = chooseBotCommand(state.publicState, { playerId: id, supports: state.privateHands[id] ?? [] }, Math.random, this.botDifficulty);
     if (command) this.applyResult(executeCommand(state, command, id, crypto.randomUUID()));
   });
 
@@ -53,6 +54,7 @@ export class PeerHost {
     private callbacks: HostCallbacks,
     hostAvatarImage?: string,
     botCount = 0,
+    private readonly botDifficulty: BotDifficulty = DEFAULT_BOT_DIFFICULTY,
   ) {
     this.authoritativeState = createInitialAuthoritativeState(roomCode, hostPlayerId, hostName, hostAvatarSlug, hostReconnectToken, undefined, hostAvatarImage);
     this.authoritativeState = addBots(this.authoritativeState, botCount);

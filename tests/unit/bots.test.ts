@@ -1,3 +1,4 @@
+import { BOT_DIFFICULTIES } from '@/game/bots/botDifficulty';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import dayjs from 'dayjs';
 import { addBots, validateBotCount } from '@/game/bots/createBots';
@@ -69,7 +70,7 @@ describe('Bots: regras e decisões sem acesso às mãos rivais', () => {
     ] };
     expect(chooseBotCommand({ ...state, phase: 'WAITING_EXCHANGE_CHOICE', cardChoicePlayerId: 'host' }, view)).toEqual({ type: 'CHOOSE_EXCHANGE', payload: { returnedCardIds: ['c', 'd'] } });
   });
-  it.each([1, 2, MAX_BOTS_PER_ROOM].flatMap(count => [11, 29, 67, 101, 307].map(seed => ({ count, seed }))))('conclui partida com $count bots e semente $seed sem comando inválido nem perder cartas', ({ count, seed: initialSeed }) => {
+  it.each(BOT_DIFFICULTIES.flatMap(({ value: difficulty }) => [1, 2, MAX_BOTS_PER_ROOM].flatMap(count => [11, 29, 67, 101, 307].map(seed => ({ count, seed, difficulty })))))('conclui partida $difficulty com $count bots e semente $seed sem comando inválido nem perder cartas', ({ count, seed: initialSeed, difficulty }) => {
     let seed = initialSeed;
     const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
     vi.spyOn(Math, 'random').mockImplementation(random);
@@ -77,7 +78,7 @@ describe('Bots: regras e decisões sem acesso às mãos rivais', () => {
       let state = setup(count);
       for (let step = 0; step < 2000 && state.publicState.phase !== 'FINISHED'; step++) {
         const id = decisionPlayerId(state.publicState)!;
-        const command = chooseBotCommand(state.publicState, { playerId: id, supports: state.privateHands[id]! }, random);
+        const command = chooseBotCommand(state.publicState, { playerId: id, supports: state.privateHands[id]! }, random, difficulty);
         expect(command, state.publicState.phase).not.toBeNull();
         const result = executeCommand(state, command!, id, `step-${step}`);
         expect(result.rejection).toBeUndefined();

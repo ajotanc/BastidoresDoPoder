@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import Slider from '@/components/ui/slider/Slider.vue';
+import { BOT_DIFFICULTIES } from '@/game/bots/botDifficulty';
+import { loadBotDifficulty, saveBotDifficulty } from '@/utils/botPreferences';
 import { createPlayerName, characterGender, type PlayerGender } from '@/utils/playerName';
 import { loadProfile, saveProfile, prepareAvatar } from "@/utils/playerProfile";
 import { ref, computed, watch, onMounted } from 'vue';
@@ -78,6 +81,14 @@ const uploadPhoto = async (event: Event) => {
 const activeTab = ref<'create' | 'join'>('create');
 const isSubmitting = ref(false);
 const playAgainstBots = ref(false);
+const difficultyStep = ref([BOT_DIFFICULTIES.findIndex(level => level.value === loadBotDifficulty())]);
+const selectedDifficulty = computed(() => BOT_DIFFICULTIES[difficultyStep.value[0] ?? 1]!);
+watch(selectedDifficulty, level => saveBotDifficulty(level.value));
+const difficultyTagClass = computed(() => ({
+  easy: 'border-status-green/30 bg-status-green/10 text-status-green',
+  intermediate: 'border-gold/25 bg-gold/10 text-gold',
+  hard: 'border-status-red/30 bg-status-red/10 text-status-red',
+})[selectedDifficulty.value.value]);
 const botCount = ref<number | string>(DEFAULT_BOT_COUNT);
 const validBotCount = computed(() => Number.isInteger(botCount.value) && Number(botCount.value) >= 1 && Number(botCount.value) <= MAX_BOTS_PER_ROOM);
 
@@ -130,7 +141,7 @@ const handleCreate = async (): Promise<void> => {
   if (!inputName.value.trim() || (playAgainstBots.value && !validBotCount.value)) return;
   try {
     isSubmitting.value = true;
-    await createRoom(inputName.value.trim(), selectedAvatar.value, avatarImage.value, playAgainstBots.value ? Number(botCount.value) : 0);
+    await createRoom(inputName.value.trim(), selectedAvatar.value, avatarImage.value, playAgainstBots.value ? Number(botCount.value) : 0, selectedDifficulty.value.value);
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.warn('Falha na criação da sala:', err.message);
@@ -236,12 +247,23 @@ const handleJoin = async (): Promise<void> => {
           <div v-if="activeTab === 'create'" class="space-y-3 rounded border border-line bg-paper-deep/50 p-3 sm:p-4">
             <div class="flex items-center gap-3">
               <Checkbox id="play-against-bots" v-model:checked="playAgainstBots" :disabled="isSubmitting" />
-              <label for="play-against-bots" class="flex flex-1 cursor-pointer items-center font-semibold text-ink">Jogar contra bot</label>
+              <label for="play-against-bots" class="flex flex-1 cursor-pointer items-center font-semibold text-ink">Adicionar bots à mesa</label>
             </div>
             <div v-if="playAgainstBots" class="space-y-2">
               <label for="bot-count" class="block font-serif font-bold text-ink">Quantidade de bots</label>
               <input id="bot-count" v-model.number="botCount" type="number" min="1" :max="MAX_BOTS_PER_ROOM" step="1" required inputmode="numeric" :disabled="isSubmitting" :aria-invalid="!validBotCount" aria-describedby="bot-count-help" class="online-input" />
               <p id="bot-count-help" class="text-xs text-ink-muted">De 1 a {{ MAX_BOTS_PER_ROOM }} bots. Você também pode convidar amigos para as vagas livres.</p>
+              <div class="!mt-5 rounded border border-gold/25 bg-gradient-to-br from-gold/5 to-paper-deep p-4">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="font-serif font-bold text-gold-light">Nível dos bots</span>
+                  <span class="rounded border px-2.5 py-1 text-xs font-semibold" :class="difficultyTagClass" aria-live="polite">{{ selectedDifficulty.label }}</span>
+                </div>
+                <Slider v-model="difficultyStep" :min="0" :max="2" :step="1" :disabled="isSubmitting" label="Nível dos bots" :value-text="selectedDifficulty.label" class="mt-3" />
+                <div class="flex justify-between gap-2 text-xs" aria-hidden="true">
+                  <span v-for="level in BOT_DIFFICULTIES" :key="level.value" :class="level.value === selectedDifficulty.value ? 'font-semibold text-gold' : 'text-ink-subtle'">{{ level.label }}</span>
+                </div>
+                <p class="mt-3 min-h-10 text-xs leading-relaxed text-ink-muted">{{ selectedDifficulty.description }}</p>
+              </div>
             </div>
           </div>
           <button type="submit" :disabled="!inputName.trim() || (activeTab === 'create' && playAgainstBots && !validBotCount) || (activeTab === 'join' && !inputRoomCode.trim()) || isSubmitting || isPreparingPhoto" class="online-primary w-full" :aria-label="activeTab === 'create' ? 'Criar Nova Partida Online' : 'Entrar na Sala P2P'">

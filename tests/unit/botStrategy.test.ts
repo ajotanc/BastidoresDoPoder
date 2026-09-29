@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createInitialAuthoritativeState } from '@/game/engine/gameEngine';
 import { chooseBotCommand } from '@/game/bots/botStrategy';
 import { evaluateTable } from '@/game/bots/botEvaluation';
+import { BOT_DIFFICULTY_PROFILES } from '@/game/bots/botDifficulty';
 import type { GameState, PrivatePlayerView, GameEvent } from '@/game/models/gameState';
 import type { RoleSlug } from '@/types/game';
 
@@ -16,6 +17,36 @@ function table(roles: RoleSlug[] = ['executor', 'colonel'], coins = 2, opponents
 }
 const event = (type: string, playerId: string, role?: RoleSlug): GameEvent => ({ id: `${type}-${playerId}`, timestamp: 0, importance: 'normal', message: '', type, playerId, role });
 const steady = () => 0.99;
+
+describe('Táticas do nível difícil', () => {
+  it('garante a vitória com impeachment em vez de arriscar execução bloqueável', () => {
+    const { state, view } = table(['executor', 'baron'], 7);
+    state.players.r0 = { ...state.players.r0!, activeSupportCount: 1, coins: 2 };
+    expect(chooseBotCommand(state, view, steady, 'hard')).toMatchObject({ payload: { actionType: 'commonImpeachment', targetPlayerId: 'r0' } });
+  });
+  it('preserva a Advogada contra um Executor declarado ao perder um apoio', () => {
+    const { state, view } = table(['lawyer', 'baron'], 2);
+    state.players.r0 = { ...state.players.r0!, coins: 3 };
+    expect(chooseBotCommand({ ...state, history: [event('ACTION_DECLARED', 'r0', 'executor')], phase: 'WAITING_CARD_CHOICE', cardChoicePlayerId: 'me' }, view, steady, 'hard')).toMatchObject({ payload: { cardId: 'card-1' } });
+  });
+  it('prefere tirar moedas que habilitam um ataque a roubar um rival mais rico', () => {
+    const { state, view } = table(['colonel', 'lawyer'], 0, 2);
+    state.players.r0 = { ...state.players.r0!, coins: 10 };
+    state.players.r1 = { ...state.players.r1!, coins: 12 };
+    expect(chooseBotCommand(state, view, steady, 'hard')).toMatchObject({ payload: { actionType: 'extortion', targetPlayerId: 'r0' } });
+  });
+  it('considera o risco extra de blefar um novo cargo incompatível com suas alegações', () => {
+    const { state, view } = table(['executor']);
+    const before = evaluateTable(state, view, BOT_DIFFICULTY_PROFILES.hard).challengeRisk('baron');
+    expect(evaluateTable({ ...state, history: [event('ACTION_DECLARED', 'me', 'colonel')] }, view, BOT_DIFFICULTY_PROFILES.hard).challengeRisk('baron')).toBeGreaterThan(before);
+  });
+  it('evita uma contestação que pode perder os dois apoios contra execução', () => {
+    const { state, view } = table(['baron', 'coordinator']);
+    const reaction: GameState = { ...state, history: [event('BLUFF_EXPOSED', 'r0')], phase: 'WAITING_CHALLENGE_ACTION', responsePlayerIds: ['me'], pendingAction: { actionType: 'execution', sourcePlayerId: 'r0', targetPlayerId: 'me', claimedRole: 'executor', costPaid: 3 } };
+    expect(chooseBotCommand(reaction, view, steady, 'intermediate')).toMatchObject({ type: 'DECLARE_CHALLENGE' });
+    expect(chooseBotCommand(reaction, view, steady, 'hard')).toMatchObject({ type: 'PASS_RESPONSE' });
+  });
+});
 
 describe('Decisões estratégicas', () => {
   it('prefere execução barata quando poupar moedas tem maior benefício', () => {
@@ -77,6 +108,17 @@ describe('Decisões estratégicas', () => {
 });
 
 describe('Inferências apenas com informação pública', () => {
+  it('diferencia a leitura de histórico entre os três níveis', () => {
+    const { state, view } = table();
+    const history = [...Array.from({ length: 15 }, () => event('TURN_CHANGED', 'me')), event('ACTION_DECLARED', 'r0', 'baron')];
+    const easy = evaluateTable({ ...state, history }, view, BOT_DIFFICULTY_PROFILES.easy);
+    const intermediate = evaluateTable({ ...state, history }, view, BOT_DIFFICULTY_PROFILES.intermediate);
+    const hard = evaluateTable({ ...state, history }, view, BOT_DIFFICULTY_PROFILES.hard);
+    expect(hard.probability('r0', 'baron')).toBeGreaterThan(intermediate.probability('r0', 'baron'));
+    expect(easy.probability('r0', 'baron')).toBe(intermediate.probability('r0', 'baron'));
+    const recentClaim = { ...state, history: [event('ACTION_DECLARED', 'r0', 'baron')] };
+    expect(evaluateTable(recentClaim, view, BOT_DIFFICULTY_PROFILES.intermediate).probability('r0', 'baron')).toBeGreaterThan(evaluateTable(recentClaim, view, BOT_DIFFICULTY_PROFILES.easy).probability('r0', 'baron'));
+  });
   it('não aumenta o risco de blefe por um terceiro que não pode contestar', () => {
     const { state, view } = table(['executor', 'colonel'], 2, 2);
     const base = evaluateTable(state, view).challengeRisk('baron', ['r0']);
