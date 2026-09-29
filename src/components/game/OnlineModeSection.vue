@@ -3,6 +3,7 @@ import { RouterLink } from 'vue-router';
 import { Users, Bot, ArrowRight, EyeOff } from 'lucide-vue-next';
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
 import { BOT_DIFFICULTIES } from '@/game/bots/botDifficulty';
+import { ACTION_TIMEOUT_SECONDS, RESPONSE_TIMEOUT_SECONDS, MIN_PLAYERS_TO_START } from '@/constants/gameConfig';
 
 const levelDetails = {
   easy: { example: 'Decisões menos precisas abrem espaço para você experimentar ações e aprender quando contestar.' },
@@ -58,6 +59,15 @@ const levelDetails = {
       </div>
       <p class="mt-3 text-xs leading-relaxed text-ink-subtle">Escolha em “Nível dos bots” ao criar a sala. A dificuldade vale para todos os bots, e sua preferência fica salva neste navegador.</p>
     </div>
+    <details class="mb-6 rounded border border-line bg-surface px-4">
+      <summary class="min-h-11 cursor-pointer py-3 text-sm font-semibold text-gold-light">Como a mesa online funciona</summary>
+      <div class="space-y-3 pb-4 text-sm leading-relaxed text-ink-muted">
+        <p><strong class="text-ink">Início:</strong> reúna ao menos {{ MIN_PLAYERS_TO_START }} participantes, contando amigos e bots. Todos devem estar conectados e prontos para o anfitrião iniciar. O anfitrião joga primeiro.</p>
+        <p><strong class="text-ink">Tempo para decidir:</strong> cada turno permite até {{ ACTION_TIMEOUT_SECONDS }} segundos para declarar a ação. Cada jogador chamado a responder tem até {{ RESPONSE_TIMEOUT_SECONDS }} segundos. Sem resposta, o jogo passa a oportunidade; sem ação no prazo, aplica Salário Oficial ou, com C$ 10 ou mais, Impeachment definitivo contra o próximo adversário vivo.</p>
+        <p><strong class="text-ink">Escolha de cartas:</strong> se o prazo terminar, o jogo escolhe o primeiro apoio ativo para a perda. Na troca, devolve as duas cartas recém-compradas, mantendo a mão anterior.</p>
+        <p><strong class="text-ink">Fim da partida:</strong> a mesa permanece aberta com o resultado, as cartas reveladas e os acontecimentos recentes. Toque nas cartas restantes do vencedor para virá-las. “Jogar novamente” leva à tela de criar ou entrar em uma sala.</p>
+      </div>
+    </details>
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-sm leading-relaxed text-ink-muted">Comece com bots para aprender o ritmo da mesa e depois desafie seus amigos.</p>
       <RouterLink to="/online" class="online-primary w-full justify-between shrink-0 sm:w-40">Jogar online<ArrowRight class="h-4 w-4" aria-hidden="true" /></RouterLink>

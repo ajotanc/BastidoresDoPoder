@@ -130,7 +130,7 @@ const actionOptions: ActionOption[] = [
     costLabel: '+C$ 2',
     costType: 'positive',
     description: 'Arrecade C$ 2 do cofre.',
-    defenseInfo: 'Bloqueável por qualquer jogador alegando possuir o Barão.',
+    defenseInfo: 'Qualquer adversário vivo pode alegar Barão para bloquear. A ação não pode ser contestada; o bloqueio pode.',
   },
   {
     type: 'slushFund',
@@ -155,7 +155,7 @@ const actionOptions: ActionOption[] = [
   {
     type: 'execution',
     category: 'roles',
-    name: 'Execução Sumária',
+    name: 'Execução',
     roleClaim: 'Executor',
     costLabel: '-C$ 3',
     costType: 'negative',
@@ -180,7 +180,7 @@ const actionOptions: ActionOption[] = [
     costLabel: '-C$ 5',
     costType: 'negative',
     description: 'Pague C$ 5, aponte um rival e nomeie um cargo para apreensão.',
-    defenseInfo: 'Pode ser contestado e bloqueado por Advogada ou Coronel. Se aprovado, revela e elimina uma cópia do cargo nomeado.',
+    defenseInfo: 'Qualquer adversário vivo pode contestar. Só o alvo pode bloquear, alegando Advogada ou Coronel. Se o personagem procurado estiver na mão, perde uma cópia; caso contrário, não perde apoio.',
   },
   {
     type: 'backroomDeal',
@@ -190,7 +190,7 @@ const actionOptions: ActionOption[] = [
     costLabel: '+C$ 2 / +C$ 1',
     costType: 'positive',
     description: 'Ganhe C$ 2 e conceda C$ 1 para um aliado (ambos do cofre).',
-    defenseInfo: 'Articulação diplomática sem bloqueio de defesa.',
+    defenseInfo: 'Qualquer adversário vivo pode contestar a alegação de Articuladora. Não pode ser bloqueado.',
   },
   {
     type: 'commonImpeachment',
@@ -199,7 +199,7 @@ const actionOptions: ActionOption[] = [
     costLabel: '-C$ 7',
     costType: 'negative',
     description: 'Pague C$ 7 para cassar 1 Apoio político de um adversário.',
-    defenseInfo: 'Bloqueável pelo Intocável mediante pagamento de propina C$ 3.',
+    defenseInfo: 'Só o alvo pode alegar Intocável e pagar C$ 3 para bloquear. A ação não pode ser contestada; a alegação de Intocável pode.',
   },
   {
     type: 'definitiveImpeachment',

@@ -28,7 +28,7 @@ const emit = defineEmits<{
     <div
       v-if="props.isOpen"
       :class="[
-        'relative w-full max-h-[92vh] flex flex-col rounded-lg overflow-hidden bg-[#0a121b] border border-gold shadow-modal',
+        'relative w-full min-w-0 max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] flex flex-col rounded-lg overflow-hidden bg-[#0a121b] border border-gold shadow-modal',
         props.maxWidthClass
       ]"
       @click.stop
@@ -56,7 +56,7 @@ const emit = defineEmits<{
       </div>
 
       <!-- Conteúdo com Rolagem Exclusiva (o scroll fica restrito apenas aqui) -->
-      <div class="relative z-10 flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin min-h-0">
+      <div class="relative z-10 min-w-0 flex-1 overflow-y-auto [scrollbar-gutter:stable] p-4 sm:p-6 scrollbar-thin min-h-0">
         <slot />
       </div>
 

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM } from "@/constants/gameConfig";
 import { GAME_NAME } from "@/constants/gameConfig";
-import { Shield } from 'lucide-vue-next';
+import dayjs from 'dayjs';
 import { scrollToSection } from '@/utils/navigation';
 import { APP_VERSION } from '@/constants/appVersion';
+const currentYear = dayjs().year();
 
 /**
  * Rola suavemente até o topo sem expor #manual na URL
@@ -30,12 +31,8 @@ const handleBackToTop = (event: MouseEvent): void => {
         </p>
       </div>
 
-      <div class="flex items-center gap-4 text-xs">
-        <span
-          class="inline-flex items-center gap-1.5 text-gold-muted border border-line px-2.5 py-1 rounded bg-surface">
-          <Shield class="w-3.5 h-3.5 text-gold" aria-hidden="true" />
-          Protótipo Ativo
-        </span>
+      <div class="flex shrink-0 flex-wrap items-center justify-center gap-4 text-xs">
+        <span class="whitespace-nowrap">© {{ currentYear }} <a href="https://www.instagram.com/ajotanc/" target="_blank" rel="noopener noreferrer" class="font-semibold text-gold hover:text-gold-light hover:underline transition-colors" aria-label="AJOTA no Instagram (abre em nova aba)">AJOTA</a></span>
         <a href="#home" @click="handleBackToTop"
           class="text-gold hover:text-gold-light hover:underline transition-colors">
           Voltar ao topo ↑

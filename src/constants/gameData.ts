@@ -1,4 +1,4 @@
-import { GAME_NAME, MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM } from '@/constants/gameConfig';
+import { GAME_NAME, MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM, INITIAL_COINS } from '@/constants/gameConfig';
 import { ROLE_THEME_COLORS } from '@/constants/themeColors';
 import type {
   RoleCard,
@@ -518,7 +518,7 @@ export const TURN_STEPS: readonly TurnStep[] = [
  */
 export const RESOLUTION_RULES: readonly string[] = [
   'Cada carta secreta de um jogador representa um apoio ativo. Ao perder um apoio, revele a carta escolhida e mantenha-a aberta e fora de jogo. Apoios perdidos não são usados para comprovar alegações nem voltam ao baralho. Quem perde todos os apoios é eliminado.',
-  'Preparação padrão: use três cópias de cada um dos oito personagens, totalizando 24 cartas. Cada jogador recebe dois apoios secretos, C$ 2 e uma ajuda separada do baralho. Cartas repetidas na mão são permitidas.',
+  `Preparação padrão: use ${SUPPORT_CARDS_PER_ROLE} cópias de cada um dos ${CARDS_LENGTH} personagens, totalizando ${SUPPORT_CARDS_LENGTH} cartas. Cada jogador recebe dois apoios secretos e C$ ${INITIAL_COINS}. Na mesa física, recebe também uma ajuda separada do baralho. Cartas repetidas na mão são permitidas.`,
   'Blefe: é permitido alegar um personagem sem possuí-lo. Uma defesa exige declaração; possuir a carta não gera proteção automática. A alegação pode ser contestada conforme a ordem de resolução.',
   'Custos: é preciso ter saldo para declarar a ação ou a defesa. Pague ao cofre no momento da declaração; custos nunca são devolvidos.',
   'Beneficiário eliminado em desafio: o Acordo de Bastidor é cancelado para ambos, sem novo beneficiário e sem distribuição de Contos.',
@@ -548,7 +548,7 @@ export const GAME_EXAMPLES: readonly GameExample[] = [
   },
   {
     id: 'ex-3',
-    title: 'O Advogada era um blefe',
+    title: 'A Advogada era um blefe',
     description: 'Ana usa Execução contra Bruno, que tem dois apoios. Ele alega Advogada sem comprovar quando Ana contesta. Bruno perde um apoio no desafio; como continua vivo, a Execução prossegue e ele perde o segundo. Se tivesse apenas um apoio, seria eliminado no desafio e o ataque terminaria sem outra perda.',
     highlight: 'Uma defesa desmascarada não cancela o ataque original.'
   },
@@ -731,14 +731,10 @@ export const ICON_LEGEND_ITEMS: readonly IconLegendItem[] = [
 /**
  * Tabela de preparação por número de jogadores
  */
-export const SETUP_PLAYERS_TABLE: readonly PlayerSetupCount[] = [
-  { players: 3, cardsPerRole: SUPPORT_CARDS_PER_ROLE, totalDeckCards: SUPPORT_CARDS_LENGTH, initialCoins: 2 },
-  { players: 4, cardsPerRole: SUPPORT_CARDS_PER_ROLE, totalDeckCards: SUPPORT_CARDS_LENGTH, initialCoins: 2 },
-  { players: 5, cardsPerRole: SUPPORT_CARDS_PER_ROLE, totalDeckCards: SUPPORT_CARDS_LENGTH, initialCoins: 2 },
-  { players: 6, cardsPerRole: SUPPORT_CARDS_PER_ROLE, totalDeckCards: SUPPORT_CARDS_LENGTH, initialCoins: 2 },
-  { players: 7, cardsPerRole: SUPPORT_CARDS_PER_ROLE, totalDeckCards: SUPPORT_CARDS_LENGTH, initialCoins: 2 },
-  { players: 8, cardsPerRole: SUPPORT_CARDS_PER_ROLE, totalDeckCards: SUPPORT_CARDS_LENGTH, initialCoins: 2 },
-] as const;
+export const SETUP_PLAYERS_TABLE: readonly PlayerSetupCount[] = Array.from(
+  { length: MAX_PLAYERS_PER_ROOM - MIN_PLAYERS_TO_START + 1 },
+  (_, index) => ({ players: MIN_PLAYERS_TO_START + index, cardsPerRole: SUPPORT_CARDS_PER_ROLE, totalDeckCards: SUPPORT_CARDS_LENGTH, initialCoins: INITIAL_COINS }),
+);
 
 /**
  * Moedas oficiais do jogo (Contos)

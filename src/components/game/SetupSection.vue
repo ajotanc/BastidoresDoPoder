@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { GAME_NAME, MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM } from "@/constants/gameConfig";
+import { GAME_NAME, MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM, INITIAL_COINS } from "@/constants/gameConfig";
 import {
   SETUP_PLAYERS_TABLE,
   SUPPORT_CARDS_LENGTH,
@@ -51,7 +51,7 @@ import CoinsShowcase from '@/components/game/CoinsShowcase.vue';
         <tfoot>
           <tr class="bg-[#2e2a21] text-gold-light border-t border-gold-dark/60 font-semibold text-xs">
             <td class="py-2.5 px-4" colspan="5">
-              Cada jogador recebe 2 apoios secretos + 1 carta de ajuda + C$ 2 no início da partida.
+              Cada jogador recebe 2 apoios secretos + C$ {{ INITIAL_COINS }}; na mesa física, recebe também 1 carta de ajuda no início da partida.
             </td>
           </tr>
         </tfoot>
@@ -60,11 +60,7 @@ import CoinsShowcase from '@/components/game/CoinsShowcase.vue';
 
     <AppCallout variant="gold" title="Carta de ajuda de mesa:">
       <p class="text-sm leading-relaxed mb-0">
-        Prepare uma cópia da carta de ajuda por jogador, separada dos {{ SUPPORT_CARDS_LENGTH }} apoios. Assim, mesas de
-        3, 4, 5, 6, 7 e 8 jogadores usam respectivamente <strong>{{ SUPPORT_CARDS_LENGTH + 3 }}, {{ SUPPORT_CARDS_LENGTH
-          + 4 }}, {{ SUPPORT_CARDS_LENGTH + 5 }}, {{ SUPPORT_CARDS_LENGTH + 6 }}, {{ SUPPORT_CARDS_LENGTH + 7 }} e {{
-            SUPPORT_CARDS_LENGTH + 8 }} cartas físicas</strong>, contando as ajudas. A distribuição de apoios continua
-        sendo dois por pessoa.
+        Na mesa física, prepare uma carta de ajuda por jogador, além dos {{ SUPPORT_CARDS_LENGTH }} apoios. O total de cartas físicas é {{ SUPPORT_CARDS_LENGTH }} mais o número de participantes. No online, consulte o manual pelo botão “Ver regras”; a ajuda não ocupa um apoio no gabinete.
       </p>
     </AppCallout>
 
@@ -91,7 +87,7 @@ import CoinsShowcase from '@/components/game/CoinsShowcase.vue';
           </span>
           <p class="text-ink-muted leading-relaxed mb-0 pt-0.5">
             Deixe o restante virado para baixo como <strong class="text-ink">baralho central</strong>. Todos podem
-            consultar os próprios apoios vivos em segredo, mas não mostrá-las livremente.
+            consultar os próprios apoios vivos em segredo, mas não mostrá-los livremente.
           </p>
         </li>
         <li class="flex items-start gap-4 p-4 rounded-md bg-surface-elevated/70 border border-line text-sm leading-relaxed">
@@ -100,7 +96,7 @@ import CoinsShowcase from '@/components/game/CoinsShowcase.vue';
             3
           </span>
           <p class="text-ink-muted leading-relaxed mb-0 pt-0.5">
-            Entregue <strong class="text-ink">C$ 2 por jogador</strong>. Os saldos ficam públicos e visíveis na mesa. O
+            Entregue <strong class="text-ink">C$ {{ INITIAL_COINS }} por jogador</strong>. Os saldos ficam públicos e visíveis na mesa. O
             restante do dinheiro forma o cofre central.
           </p>
         </li>
@@ -110,7 +106,7 @@ import CoinsShowcase from '@/components/game/CoinsShowcase.vue';
             4
           </span>
           <p class="text-ink-muted leading-relaxed mb-0 pt-0.5">
-            Sorteie quem começa. Os turnos seguem em sentido horário, pulando jogadores já eliminados.
+            Na mesa física, sorteie quem começa e siga em sentido horário. No online, o anfitrião começa e os turnos seguem a ordem de entrada na sala. Jogadores eliminados são pulados.
           </p>
         </li>
         <li class="flex items-start gap-4 p-4 rounded-md bg-surface-elevated/70 border border-line text-sm leading-relaxed">
@@ -143,7 +139,7 @@ import CoinsShowcase from '@/components/game/CoinsShowcase.vue';
 
       <AppPanel title="Apoio não se recupera">
         <p class="text-sm text-ink-muted leading-relaxed mb-2">
-          Cartas perdidas permanecem abertas e fora do jogo até o final. As trocas do Marqueteira e cartas comprovadas
+          Cartas perdidas permanecem abertas e fora do jogo até o final. As trocas da Marqueteira e cartas comprovadas
           em desafios mantêm a contagem de cartas vivas.
         </p>
         <p class="text-sm text-ink-muted leading-relaxed mb-0">
@@ -154,9 +150,9 @@ import CoinsShowcase from '@/components/game/CoinsShowcase.vue';
     </div>
 
     <p class="text-sm text-ink-muted leading-relaxed italic border-l-2 border-line pl-3 py-1">
-      <strong>Variante para 2 jogadores (duelo):</strong> use as mesmas {{ SUPPORT_CARDS_LENGTH }} cartas e dois apoios
+      <strong>Variante física para 2 jogadores (duelo):</strong> use as mesmas {{ SUPPORT_CARDS_LENGTH }} cartas e dois apoios
       por pessoa. Quem começa recebe C$ 1; o segundo jogador recebe C$ 2. Sobram {{ SUPPORT_CARDS_LENGTH - 4 }} cartas
-      no baralho. O restante das regras segue inalterado.
+      no baralho. O restante das regras segue inalterado. No online, o mínimo é de {{ MIN_PLAYERS_TO_START }} participantes, contando pessoas e bots.
     </p>
   </section>
 </template>

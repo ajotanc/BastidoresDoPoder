@@ -45,7 +45,7 @@ import { UserCheck, UserX } from 'lucide-vue-next';
     <AppCallout variant="green" title="Versão Digital vs Cartas Físicas:">
       <div class="space-y-3 text-sm leading-relaxed">
         <p>
-          <strong class="text-ink">No jogo digital:</strong> a verificação deve ser feita automaticamente e em segredo
+          <strong class="text-ink">No jogo digital:</strong> a verificação é feita automaticamente e em segredo
           pelo sistema, revelando apenas o veredito final permitido. O alvo não pode mentir sobre a presença da carta.
           “Nada encontrado” não abre um novo desafio.
         </p>

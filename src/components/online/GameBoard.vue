@@ -11,6 +11,7 @@ import type { ActionIntent, BlockIntent } from '@/game/models/commands';
 import { useGameTimer } from '@/composables/useGameTimer';
 import { useLightbox } from '@/composables/useLightbox';
 import { useDragScroll } from '@/composables/useDragScroll';
+import { useCabinetFollow } from '@/composables/useCabinetFollow';
 import { ROLE_CARDS } from '@/constants/gameData';
 import { getRoleDisplayName, getActionDisplayName } from '@/game/engine/gameEngine';
 import { getEligibleBlockRoles, getEligibleChallengers } from '@/game/engine/rules';
@@ -45,6 +46,9 @@ interface Props {
 
 const props = defineProps<Props>();
 const rivalDrag = useDragScroll();
+const rivalsContainer = ref<HTMLElement | null>(null);
+const touchingRivals = ref(false);
+useCabinetFollow(rivalsContainer, computed(() => props.gameState), computed(() => props.myPlayerId), computed(() => rivalDrag.isDragging.value || touchingRivals.value));
 const revealedDrag = useDragScroll();
 const recentRevealedCards = computed(() => [...props.gameState.discard].reverse());
 const revealedWinnerCards = ref(new Set<string>());
@@ -316,20 +320,20 @@ const copyGameLink = async (): Promise<void> => {
           <p class="text-xs text-ink font-semibold">
             Você tem direito a declarar bloqueio em sua defesa:
           </p>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap">
             <button
               v-for="role in possibleBlockRoles"
               :key="role"
               type="button"
               @click="handleDeclareBlock(role)"
-              class="px-4 py-2.5 rounded bg-gold hover:bg-gold-light text-paper-deep font-sans font-bold text-xs tracking-normal transition-all shadow-xs"
+              class="w-full min-h-11 px-4 py-2.5 rounded bg-gold hover:bg-gold-light text-paper-deep font-sans font-bold text-xs tracking-normal transition-all shadow-xs sm:w-auto"
             >
               Bloquear como {{ getRoleDisplayName(role) }}
             </button>
             <button
               type="button"
               @click="emit('pass-response')"
-              class="px-4 py-2.5 rounded bg-surface-elevated hover:bg-surface-hover border border-line text-xs font-semibold text-ink-muted hover:text-ink transition-colors"
+              class="w-full min-h-11 px-4 py-2.5 rounded bg-surface-elevated hover:bg-surface-hover border border-line text-xs font-semibold text-ink-muted hover:text-ink transition-colors sm:w-auto"
             >
               Não Bloquear
             </button>
@@ -480,7 +484,11 @@ const copyGameLink = async (): Promise<void> => {
 
       <!-- Container adaptativo: carrossel horizontal suave no mobile, grid no tablet/desktop -->
       <div
+        ref="rivalsContainer"
         class="rivals-carousel drag-scroll grid grid-flow-col gap-3 overflow-x-auto pb-3 snap-x snap-mandatory"
+        @touchstart.passive="touchingRivals = true"
+        @touchend.passive="touchingRivals = false"
+        @touchcancel.passive="touchingRivals = false"
         @pointerdown="rivalDrag.onPointerDown"
         @pointermove="rivalDrag.onPointerMove"
         @pointerup="rivalDrag.onPointerEnd"
@@ -493,6 +501,7 @@ const copyGameLink = async (): Promise<void> => {
         <article
           v-for="opp in opponents"
           :key="opp.id"
+          :data-cabinet-id="opp.id"
           class="min-w-0 snap-start p-2 sm:p-4 rounded sm:rounded border transition-all flex flex-col gap-3 relative overflow-hidden bg-surface"
           :class="[
             isFinished && gameState.winnerPlayerId === opp.id

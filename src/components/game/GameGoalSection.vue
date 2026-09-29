@@ -16,7 +16,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
       <AppPanel title="Apoio e Eliminação">
         <p class="text-sm text-ink-muted leading-relaxed mb-3">
           Cada carta virada para baixo representa um <strong class="text-ink">apoio vivo</strong>.
-          Você começa com dois apoios secretos. Quando for forçado a perder um apoio por ataque ou desafio perdido, você escolhe qual das suas cartas vivas revelará.
+          Você começa com dois apoios secretos. Ao perder um apoio por ataque ou contestação, escolha qual carta ativa revelar. A exceção é o Mandado de Busca: se encontrar o personagem procurado, é uma carta desse personagem que será perdida.
         </p>
         <p class="text-sm text-ink-muted leading-relaxed mb-0">
           Cartas perdidas permanecem abertas na mesa até o fim da partida. Se perder ambas as cartas, você é <strong class="text-status-red">imediatamente eliminado</strong> e devolve todo o seu dinheiro ao cofre central.
@@ -35,7 +35,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
 
     <AppCallout variant="gold" title="Atenção à Regra de Ouro:">
       <p class="text-sm leading-relaxed mb-0">
-        Nunca revele suas cartas voluntariamente fora de um desafio oficial. A única forma legítima de mostrar uma carta é ao ser contestado para comprovar sua alegação, ou ao ser eliminado.
+        Durante a partida, mantenha seus apoios em segredo. Revele uma carta somente para comprovar uma alegação contestada ou ao perder esse apoio. No online, depois do encerramento, os apoios restantes do vencedor podem ser virados para consulta.
       </p>
     </AppCallout>
   </section>

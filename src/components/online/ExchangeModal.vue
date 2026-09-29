@@ -54,7 +54,7 @@ watch(() => props.isOpen, () => { selectedToReturn.value = []; });
         <div class="w-10 h-10 rounded-xl bg-gold/15 border border-gold/40 flex items-center justify-center shrink-0">
           <RefreshCw class="w-5 h-5 text-gold" aria-hidden="true" />
         </div>
-        <div>
+        <div class="min-w-0 break-words">
           <h2 class="font-serif font-bold text-base sm:text-lg text-gold-light tracking-wide">
             Troca de Cartas — Marqueteira
           </h2>
@@ -71,7 +71,7 @@ watch(() => props.isOpen, () => { selectedToReturn.value = []; });
         Cartas selecionadas para devolução: <span class="font-bold text-gold">{{ selectedToReturn.length }} / 2</span>
       </p>
 
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="grid grid-cols-2 sm:grid-cols-4 items-start gap-3">
         <button
           v-for="card in activeSupports"
           :key="card.id"
@@ -79,7 +79,7 @@ watch(() => props.isOpen, () => { selectedToReturn.value = []; });
           @click="toggleSelect(card.id)"
           :aria-pressed="selectedToReturn.includes(card.id)"
           :aria-label="`Selecionar ${getRoleDisplayName(card.roleSlug)} para devolver`"
-          class="relative block w-full min-w-0 rounded border-0 bg-transparent p-0 cursor-pointer transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-paper-deep"
+          class="relative block aspect-[2/3] w-full min-w-0 rounded border-0 bg-transparent p-0 cursor-pointer transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-paper-deep"
           :class="[
             selectedToReturn.includes(card.id)
               ? 'ring-2 ring-gold'
@@ -98,7 +98,7 @@ watch(() => props.isOpen, () => { selectedToReturn.value = []; });
           type="button"
           :disabled="selectedToReturn.length !== 2"
           @click="handleConfirm"
-          class="online-primary border border-gold hover:border-gold-light px-6 cursor-pointer"
+          class="online-primary w-full sm:w-auto border border-gold hover:border-gold-light px-6 cursor-pointer"
         >
           Confirmar Devolução ao Baralho
         </button>
