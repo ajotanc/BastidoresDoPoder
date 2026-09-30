@@ -6,8 +6,9 @@ import auth from '../../netlify/functions/discord-auth';
 import { signSession, authenticatedUser } from '../../netlify/lib/discordAuth';
 import { channelName, sessionMarker, CHANNEL_TTL_MS, ownedChannel } from '../../netlify/lib/discord';
 const sessionId='a24da0b6-8701-4dc0-a117-9ca922589e65';
-const userId='1554705904413446154';
-const botId='1554706881035898992';
+// Synthetic Discord IDs: fixtures must never reuse production environment values.
+const userId='100000000000000001';
+const botId='100000000000000002';
 const snowflake=(time:number)=>((BigInt(time)-1420070400000n)<<22n).toString();
 const authCookie=()=>`bdp_discord_session=${signSession({kind:'user',userId,expiresAt:Date.now()+3600000})}`;
 const request=(body:object, origin='https://game.test', authenticated=true)=>new Request('https://game.test/.netlify/functions/discord-room',{method:'POST',headers:{origin,'Content-Type':'application/json',...(authenticated?{cookie:authCookie()}:{})},body:JSON.stringify(body)});
