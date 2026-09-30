@@ -1,6 +1,5 @@
 import { createHash } from 'node:crypto';
-import { authenticatedUser } from '../lib/discordAuth';
-import { channels, creationRecords, discord, expiresAt, ownedChannel, sessionMarker } from '../lib/discord';
+import { channels, discord } from '../lib/discord';
 import { resultText, type ResultSummary } from '../../src/game/resultSummary';
 
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
@@ -19,26 +18,21 @@ export default async function handler(request: Request): Promise<Response> {
   if (request.method !== 'POST') return json({ error: 'Método não permitido.' }, 405);
   if (request.headers.get('origin') !== new URL(request.url).origin) return json({ error: 'Origem não permitida.' }, 403);
   if (!request.headers.get('content-type')?.startsWith('application/json')) return json({ error: 'Formato inválido.' }, 415);
-  const userId = authenticatedUser(request);
-  if (!userId) return json({ error: 'Conecte seu Discord para publicar o resultado.' }, 401);
   const body = await request.text();
   if (body.length > 4096) return json({ error: 'Solicitação inválida.' }, 413);
   let payload;
   try { payload = JSON.parse(body); } catch { return json({ error: 'Solicitação inválida.' }, 400); }
-  if (!payload || typeof payload.sessionId !== 'string' || !uuid.test(payload.sessionId) || !validSummary(payload.summary)) return json({ error: 'Resultado inválido.' }, 400);
+  if (!payload || !validSummary(payload.summary)) return json({ error: 'Resultado inválido.' }, 400);
   const summary: ResultSummary = payload.summary;
+  if (summary.finishedAt < Date.now() - 86400000 || summary.finishedAt > Date.now() + 60000) return json({ error: 'Resultado expirado ou com horário inválido.' }, 400);
   try {
     const destinationId = process.env.DISCORD_RESULTS_CHANNEL_ID;
     if (!destinationId || !/^[0-9]{17,20}$/.test(destinationId)) throw new Error('RESULTS_CHANNEL_NOT_CONFIGURED');
-    const records = await creationRecords();
-    const marker = sessionMarker(summary.roomCode, `${userId}:${payload.sessionId}`);
     const list = await channels();
-    const channel = list.find(item => records.get(item.id) === marker && ownedChannel(item, records) && expiresAt(item.id) > Date.now());
-    if (!channel) return json({ error: 'Conversa indisponível.' }, 404);
     // The guild channel list verifies the fixed destination belongs to this server.
     const destination = list.find(item => item.id === destinationId && item.type === 0);
     if (!destination) throw new Error('INVALID_RESULTS_CHANNEL');
-    const nonce = createHash('sha256').update(`${marker}:${summary.gameId}`).digest('hex').slice(0, 24);
+    const nonce = createHash('sha256').update(`${summary.roomCode}:${summary.gameId}`).digest('hex').slice(0, 24);
     const url = `${new URL(request.url).origin}/game/${summary.roomCode}#resultado-${nonce}`;
     const bot = await discord('/users/@me') as { id: string };
     let before = '';
@@ -48,8 +42,8 @@ export default async function handler(request: Request): Promise<Response> {
       if (!Array.isArray(messages)) throw new Error('INVALID_HISTORY');
       if (messages.some(message => message.author.id === bot.id && message.embeds?.some(embed => embed.url?.endsWith(`#resultado-${nonce}`)))) return json({ sent: true });
       const last = messages.at(-1);
-      // Results for this session cannot predate its verified voice channel.
-      if (messages.length < 100 || (last && /^[0-9]{17,20}$/.test(last.id) && BigInt(last.id) < BigInt(channel.id))) break;
+      // Only accept recent results, so older channel history is irrelevant.
+      if (messages.length < 100 || (last && /^[0-9]{17,20}$/.test(last.id) && Number(BigInt(last.id) >> 22n) + 1420070400000 < Date.now() - 86400000)) break;
       if (page === 4) throw new Error('HISTORY_SCAN_INCOMPLETE');
       before = messages.at(-1)!.id;
     }
@@ -59,6 +53,11 @@ export default async function handler(request: Request): Promise<Response> {
       allowed_mentions: { parse: [] }, nonce, enforce_nonce: true,
     });
     return json({ sent: true });
-  } catch { return json({ error: 'Não foi possível publicar o resultado. A partida foi preservada.' }, 503); }
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : '';
+    const code = /^(RESULTS_CHANNEL_NOT_CONFIGURED|INVALID_RESULTS_CHANNEL|HISTORY_SCAN_INCOMPLETE|INVALID_HISTORY|Discord HTTP [0-9]{3})$/.test(reason) ? reason : 'UPSTREAM_FAILURE';
+    console.error('Discord result failure', code);
+    return json({ error: 'Não foi possível publicar o resultado. A partida foi preservada.', code }, 503);
+  }
 }
 export const config = { rateLimit: { windowLimit: 6, windowSize: 180, aggregateBy: ['ip', 'domain'] } };

@@ -77,14 +77,14 @@ describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
   afterEach(() => { host.destroy(); vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 
-  it.each([false, true])('Discord anuncia vitória uma vez e não anuncia saída do host: saída=%s', async hostLeaves => {
+  it.each([[false, false], [false, true], [true, false]])('Discord anuncia vitória uma vez: saída=%s, voz=%s', async (hostLeaves, voiceEnabled) => {
     host.destroy();
     host = new PeerHost('ROOM', 'a', 'Ana', 'executor', 'token-a', {
       onStateChange: value => { state = value; }, onPrivateViewChange: vi.fn(), onError: vi.fn(), onReady: vi.fn(),
-    }, undefined, 0, 'pro', {}, true);
+    }, undefined, 0, 'pro', {}, voiceEnabled);
     const ready = host.init(); transport.peers.at(-1)!.emit('open', 'bdp-room'); await ready;
     const { b, c } = start();
-    Object.assign(state, { discordConversation: { status: 'ready', url: 'https://discord.gg/test', expiresAt: Date.now() + 100000 } });
+    if (voiceEnabled) Object.assign(state, { discordConversation: { status: 'ready', url: 'https://discord.gg/test', expiresAt: Date.now() + 100000 } });
     const fetch = vi.fn().mockResolvedValue(Response.json({ sent: true })); vi.stubGlobal('fetch', fetch);
     send(b, 'b', { type: 'LEAVE_ROOM', payload: {} });
     if (hostLeaves) host.leaveRoom();

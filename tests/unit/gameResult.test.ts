@@ -41,21 +41,26 @@ describe('Resultado visível na mesa', () => {
   });
   it('identifica vencedor e explica a jogada final em ordem, sem modal nem saída automática', async () => {
     const wrapper = mount(GameResultBanner, { props: { gameState: finished(), isHost: true } });
-    expect(wrapper.get('h3').text()).toBe('Ana conquistou o poder.');
+    expect(wrapper.get('h3').text()).toBe('Ana');
+    const sequence = wrapper.get('button[aria-expanded]');
+    expect(sequence.attributes('aria-expanded')).toBe('false');
+    await sequence.trigger('click');
+    expect(sequence.attributes('aria-expanded')).toBe('true');
     expect(wrapper.findAll('li').map(li => li.text())).toEqual([
       'Ana declarou Impeachment Definitivo contra Bruno.', 'Bruno perdeu Barão.', 'Bruno perdeu todos os apoios.',
     ]);
     expect(wrapper.text()).not.toContain('Jogada do turno anterior');
     expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
-    await wrapper.get('button').trigger('click');
-    expect(wrapper.get('button').text()).toBe('Preparar revanche');
+    const rematch = wrapper.findAll('button').find(button => button.text() === 'Preparar revanche')!;
+    await rematch.trigger('click');
     expect(wrapper.emitted('play-again')).toHaveLength(1);
     expect(wrapper.emitted('leave')).toBeUndefined();
     wrapper.unmount();
   });
-  it('mostra abandono e encerramento sem vencedor sem inventar uma vitória', () => {
+  it('mostra abandono e encerramento sem vencedor sem inventar uma vitória', async () => {
     const wrapper = mount(GameResultBanner, { props: { gameState: { ...finished(), winnerPlayerId: null, history: [event('left', 'PLAYER_LEFT', 'O anfitrião abandonou a partida.')] } } });
     expect(wrapper.text()).toContain('Sessão encerrada sem vencedor');
+    await wrapper.get('button[aria-expanded]').trigger('click');
     expect(wrapper.get('li').text()).toContain('abandonou');
     expect(wrapper.text()).not.toContain('Ana venceu');
     wrapper.unmount();

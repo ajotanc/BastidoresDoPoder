@@ -3,12 +3,16 @@ import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 
 export const CHANNEL_TTL_MS = 24 * 60 * 60 * 1000;
 interface DiscordChannel { id: string; name: string; type: number; parent_id?: string }
-export function settings() {
+function apiSettings() {
   const token = process.env.DISCORD_BOT_TOKEN;
   const guild = process.env.DISCORD_GUILD_ID;
+  if (!token || !guild) throw new Error('Discord não configurado.');
+  return { token, guild };
+}
+export function settings() {
   const category = process.env.DISCORD_CATEGORY_ID;
-  if (!token || !guild || !category) throw new Error('Discord não configurado.');
-  return { token, guild, category };
+  if (!category) throw new Error('Categoria de voz não configurada.');
+  return { ...apiSettings(), category };
 }
 function sign(value: string): string {
   return createHmac('sha256', settings().token).update(value).digest('hex').slice(0, 12);
@@ -55,14 +59,14 @@ export function expiresAt(id: string): number {
 }
 export async function discord(path: string, method = 'GET', body?: object, reason?: string, timeoutMs = 5000): Promise<unknown> {
   const response = await fetch(`https://discord.com/api/v10${path}`, {
-    method, headers: { Authorization: `Bot ${settings().token}`, 'Content-Type': 'application/json', ...(reason ? { 'X-Audit-Log-Reason': encodeURIComponent(reason) } : {}) },
+    method, headers: { Authorization: `Bot ${apiSettings().token}`, 'Content-Type': 'application/json', ...(reason ? { 'X-Audit-Log-Reason': encodeURIComponent(reason) } : {}) },
     body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(Math.max(1, timeoutMs)),
   });
   if (!response.ok) throw new Error(`Discord HTTP ${response.status}`);
   return response.status === 204 ? null : response.json();
 }
 export async function channels(): Promise<DiscordChannel[]> {
-  const data = await discord(`/guilds/${settings().guild}/channels`);
+  const data = await discord(`/guilds/${apiSettings().guild}/channels`);
   if (!Array.isArray(data)) throw new Error('Resposta inválida do Discord.');
   return data as DiscordChannel[];
 }

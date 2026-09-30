@@ -104,13 +104,13 @@ export class PeerHost {
   public async publishResult(): Promise<void> {
     const state = this.authoritativeState.publicState;
     const summary = buildResultSummary(state);
-    if (!summary || this.closing || this.destroyed || !this.discordEnabled || state.discordConversation?.status !== 'ready' || this.announcedGames.has(state.gameId)) return;
+    if (!summary || this.closing || this.destroyed || this.announcedGames.has(state.gameId)) return;
     this.announcedGames.add(state.gameId);
     this.authoritativeState.publicState = { ...state, discordResultStatus: 'sending' };
     this.broadcastPublicState();
     let sent = false;
     try {
-      const response = await fetch('/.netlify/functions/discord-result', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: this.conversationSessionId, summary }), signal: AbortSignal.timeout(30000) });
+      const response = await fetch('/.netlify/functions/discord-result', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ summary }), signal: AbortSignal.timeout(30000) });
       sent = response.ok && (await response.json()).sent === true;
     } catch { /* The result remains available locally when Discord is unavailable. */ }
     if (this.destroyed || this.authoritativeState.publicState.gameId !== state.gameId) return;

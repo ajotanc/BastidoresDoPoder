@@ -86,68 +86,63 @@ it('OAuth successful callback sets a signed user cookie without exposing tokens'
  expect(response.status).toBe(200);expect(response.headers.get('set-cookie')).toContain('bdp_discord_session=');expect(await response.text()).not.toContain('private-access-token');
 });
 
-it('resultado exige autenticação e canal da própria sessão', async () => {
- const fetch = upstream();
- const summary = { gameId: sessionId, roomCode: 'ABCD', winnerName: 'Ana', turns: 15, durationSeconds: 60, decisivePlay: 'Bruno perdeu o último apoio.', supports: 1, coins: 4, finishedAt: Date.now() };
- expect((await resultHandler(request({ sessionId, summary }, 'https://game.test', false))).status).toBe(401);
- expect((await resultHandler(request({ sessionId, summary }))).status).toBe(404);
- expect(fetch.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
-});
-it('anuncia o mesmo resumo sem menções, com nonce, e reconhece resultado já publicado', async () => {
- const id = snowflake(Date.now());
- const summary = { gameId: sessionId, roomCode: 'ABCD', winnerName: '@everyone', turns: 15, durationSeconds: 60, decisivePlay: 'Bruno perdeu o último apoio.', supports: 1, coins: 4, finishedAt: Date.now() };
- let posted: { embeds: { url: string; description: string }[]; allowed_mentions: object; enforce_nonce: boolean; nonce: string } | undefined;
- const fetch = vi.fn(async (url: string, init?: RequestInit) => {
+const summary = () => ({ gameId: sessionId, roomCode: 'ABCD', winnerName: '@everyone', turns: 15, durationSeconds: 60, decisivePlay: 'Bruno perdeu o último apoio.', supports: 1, coins: 4, finishedAt: Date.now() });
+function resultUpstream(messages: object[] = [], destination: object[] = [resultsChannel]) {
+ return vi.fn(async (url: string, init?: RequestInit) => {
    if (url.endsWith('/users/@me')) return Response.json({ id: botId });
-   if (url.includes('/audit-logs')) return Response.json({ audit_log_entries: [{ id, target_id: id, user_id: botId, action_type: 10, reason: `bdp:${marker()}` }] });
-   if (url.endsWith('/channels')) return Response.json([{ id, name: channelName('ABCD'), type: 2, parent_id: 'category' }, resultsChannel]);
-   if (init?.method === 'POST') { posted = JSON.parse(init.body as string); return Response.json({ id: 'result' }); }
-   return Response.json(posted ? [{ id: 'result', author: { id: botId }, embeds: posted.embeds }] : []);
- });
- vi.stubGlobal('fetch', fetch);
- expect((await resultHandler(request({ sessionId, summary }))).status).toBe(200);
- expect(posted).toMatchObject({ allowed_mentions: { parse: [] }, enforce_nonce: true });
- expect(posted!.nonce).toHaveLength(24);
- expect(posted!.embeds[0]!.description).toContain('Mesa ABCD · 15 turnos · 1 min');
- expect((await resultHandler(request({ sessionId, summary }))).status).toBe(200);
- expect(fetch.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
- expect(fetch.mock.calls.find(([, init]) => init?.method === 'POST')![0]).toBe(`https://discord.com/api/v10/channels/${resultsId}/messages`);
- expect(fetch.mock.calls.filter(([url]) => url.includes('/messages?')).every(([url]) => url.includes(`/channels/${resultsId}/`))).toBe(true);
-});
-
-it('não publica quando não consegue concluir a busca de duplicatas', async () => {
- const id = snowflake(Date.now());
- const summary = { gameId: sessionId, roomCode: 'ABCD', winnerName: 'Ana', turns: 15, durationSeconds: 60, decisivePlay: 'Fim da partida.', supports: 1, coins: 4, finishedAt: Date.now() };
- const fetch = vi.fn(async (url: string) => {
-   if (url.endsWith('/users/@me')) return Response.json({ id: botId });
-   if (url.includes('/audit-logs')) return Response.json({ audit_log_entries: [{ id, target_id: id, user_id: botId, action_type: 10, reason: `bdp:${marker()}` }] });
-   if (url.endsWith('/channels')) return Response.json([{ id, name: channelName('ABCD'), type: 2, parent_id: 'category' }, resultsChannel]);
-   return Response.json(Array.from({ length: 100 }, (_, index) => ({ id: String(index), author: { id: 'someone' } })));
- });
- vi.stubGlobal('fetch', fetch);
- expect((await resultHandler(request({ sessionId, summary }))).status).toBe(503);
- expect(fetch.mock.calls.filter(([url]) => url.includes('/messages?'))).toHaveLength(5);
-});
-
-it.each(['', 'invalid', '100000000000000004'])('não usa a sala de voz como fallback para destino inválido: %s', async destination => {
- vi.stubEnv('DISCORD_RESULTS_CHANNEL_ID', destination);
- const id = snowflake(Date.now());
- const fetch = upstream([{ id, name: channelName('ABCD'), type: 2, parent_id: 'category' }, resultsChannel], [{ id, target_id: id, user_id: botId, action_type: 10, reason: `bdp:${marker()}` }]);
- const summary = { gameId: sessionId, roomCode: 'ABCD', winnerName: 'Ana', turns: 15, durationSeconds: 60, decisivePlay: 'Fim da partida.', supports: 1, coins: 4, finishedAt: Date.now() };
- expect((await resultHandler(request({ sessionId, summary, channelId: resultsId }))).status).toBe(503);
- expect(fetch.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
-});
-it('para de ler o histórico do canal fixo ao alcançar mensagens anteriores à mesa', async () => {
- const id = snowflake(Date.now());
- const summary = { gameId: sessionId, roomCode: 'ABCD', winnerName: 'Ana', turns: 15, durationSeconds: 60, decisivePlay: 'Fim da partida.', supports: 1, coins: 4, finishedAt: Date.now() };
- const fetch = vi.fn(async (url: string, init?: RequestInit) => {
-   if (url.endsWith('/users/@me')) return Response.json({ id: botId });
-   if (url.includes('/audit-logs')) return Response.json({ audit_log_entries: [{ id, target_id: id, user_id: botId, action_type: 10, reason: `bdp:${marker()}` }] });
-   if (url.endsWith('/channels')) return Response.json([{ id, name: channelName('ABCD'), type: 2, parent_id: 'category' }, resultsChannel]);
+   if (url.endsWith('/channels')) return Response.json(destination);
    if (init?.method === 'POST') return Response.json({ id: 'result' });
-   return Response.json(Array.from({ length: 100 }, (_, index) => ({ id: snowflake(Date.now() - 1000 - index), author: { id: botId } })));
+   return Response.json(messages);
  });
- vi.stubGlobal('fetch', fetch);
- expect((await resultHandler(request({ sessionId, summary }))).status).toBe(200);
+}
+it('publica sem login nem sala de voz e usa apenas o destino configurado', async () => {
+ vi.stubEnv('DISCORD_CATEGORY_ID', ''); vi.stubEnv('DISCORD_CLIENT_SECRET', '');
+ const fetch = resultUpstream(); vi.stubGlobal('fetch', fetch);
+ expect((await resultHandler(request({ summary: summary(), channelId: 'ignored' }, 'https://game.test', false))).status).toBe(200);
+ const post = fetch.mock.calls.find(([, init]) => init?.method === 'POST')!;
+ expect(post[0]).toBe(`https://discord.com/api/v10/channels/${resultsId}/messages`);
+ const body = JSON.parse(post[1]!.body as string);
+ expect(body).toMatchObject({ allowed_mentions: { parse: [] }, enforce_nonce: true });
+ expect(body.nonce).toHaveLength(24);
+ expect(body.embeds[0].description).toContain('Mesa ABCD · 15 turnos · 1 min');
+ expect(fetch.mock.calls.some(([url]) => url.includes('audit-logs') || url.includes('invites'))).toBe(false);
+ const dedup = resultUpstream([{ id: snowflake(Date.now()), author: { id: botId }, embeds: body.embeds }]); vi.stubGlobal('fetch', dedup);
+ expect((await resultHandler(request({ summary: summary() }, 'https://game.test', false))).status).toBe(200);
+ expect(dedup.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
+});
+it('rejeita origem diferente, resultado inválido e resultado expirado', async () => {
+ const fetch = resultUpstream(); vi.stubGlobal('fetch', fetch);
+ expect((await resultHandler(request({ summary: summary() }, 'https://foreign.test', false))).status).toBe(403);
+ expect((await resultHandler(request({ summary: { ...summary(), supports: 99 } }))).status).toBe(400);
+ expect((await resultHandler(request({ summary: { ...summary(), finishedAt: Date.now() - 86400001 } }))).status).toBe(400);
+ expect(fetch).not.toHaveBeenCalled();
+});
+it.each(['', 'invalid', '100000000000000004'])('falha com código diagnóstico para destino inválido: %s', async destination => {
+ vi.spyOn(console, 'error').mockImplementation(() => {});
+ vi.stubEnv('DISCORD_RESULTS_CHANNEL_ID', destination);
+ const fetch = resultUpstream(); vi.stubGlobal('fetch', fetch);
+ const response = await resultHandler(request({ summary: summary() }));
+ expect(response.status).toBe(503);
+ expect((await response.json()).code).toBe(destination.length === 18 ? 'INVALID_RESULTS_CHANNEL' : 'RESULTS_CHANNEL_NOT_CONFIGURED');
+ expect(fetch.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
+});
+it('falha fechada quando não consegue concluir a busca de duplicatas', async () => {
+ vi.spyOn(console, 'error').mockImplementation(() => {});
+ const fetch = resultUpstream(Array.from({ length: 100 }, (_, index) => ({ id: snowflake(Date.now() - index), author: { id: botId } }))); vi.stubGlobal('fetch', fetch);
+ expect((await resultHandler(request({ summary: summary() }))).status).toBe(503);
+ expect(fetch.mock.calls.filter(([url]) => url.includes('/messages?'))).toHaveLength(5);
+ expect(fetch.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
+});
+it('ignora histórico anterior à janela de resultados aceitos', async () => {
+ const fetch = resultUpstream(Array.from({ length: 100 }, (_, index) => ({ id: snowflake(Date.now() - 86400001 - index), author: { id: botId } }))); vi.stubGlobal('fetch', fetch);
+ expect((await resultHandler(request({ summary: summary() }))).status).toBe(200);
  expect(fetch.mock.calls.filter(([url]) => url.includes('/messages?'))).toHaveLength(1);
+});
+it('registra falta de permissão sem expor token', async () => {
+ const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+ vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 403 })));
+ const response = await resultHandler(request({ summary: summary() }));
+ expect((await response.json()).code).toBe('Discord HTTP 403');
+ expect(log).toHaveBeenCalledWith('Discord result failure', 'Discord HTTP 403');
+ expect(JSON.stringify(log.mock.calls)).not.toContain('test-token');
 });
