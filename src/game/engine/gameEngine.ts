@@ -88,7 +88,7 @@ export const createInitialAuthoritativeState = (
 
   const publicState: GameState = {
     settings: { ...settings },
-    gameId: `game-${roomCode}-${dayjs().valueOf()}`,
+    gameId: crypto.randomUUID(),
     roomCode: roomCode.toUpperCase(),
     revision: 1,
     phase: 'LOBBY',
@@ -425,6 +425,8 @@ export const executeCommand = (
       state.publicState = {
         ...state.publicState,
         phase: 'WAITING_ACTION',
+        startedAt: dayjs().valueOf(),
+        recoveryPausedMs: 0,
         turn: 1,
         activePlayerId: firstPlayerId,
         deckCount: deck.length,
@@ -753,6 +755,7 @@ export const executeCommand = (
         state.publicState = {
           ...state.publicState,
           phase: 'FINISHED',
+      finishedAt: dayjs().valueOf(),
           pendingAction: null,
           deadlineAt: null,
           responsePlayerIds: [],
@@ -1119,6 +1122,7 @@ export const finishTurn = (state: AuthoritativeGameState): EngineExecutionResult
     state.publicState = {
       ...state.publicState,
       phase: 'FINISHED',
+      finishedAt: dayjs().valueOf(),
       winnerPlayerId: winnerId,
       winnerSupports: winnerId ? (state.privateHands[winnerId] || []).filter(card => !card.isLost).map(({ id, roleSlug }) => ({ id, roleSlug })) : [],
       pendingAction: null,

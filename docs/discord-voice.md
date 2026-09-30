@@ -6,6 +6,7 @@ Variáveis do Netlify disponíveis para Functions:
 - DISCORD_BOT_TOKEN
 - DISCORD_GUILD_ID
 - DISCORD_CATEGORY_ID
+- DISCORD_RESULTS_CHANNEL_ID (canal de texto fixo para os resultados das partidas)
 - DISCORD_CLIENT_ID (ID do cliente na página OAuth2)
 - DISCORD_CLIENT_SECRET (segredo OAuth2, nunca expor com prefixo VITE_)
 

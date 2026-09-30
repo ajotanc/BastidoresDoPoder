@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { useGameSounds } from '@/composables/useGameSounds';
+import { Volume2, VolumeX } from 'lucide-vue-next';
 import DiscordConversation from './DiscordConversation.vue';
 import { playerAvatar } from "@/utils/playerProfile";
 import GameResultBanner from './GameResultBanner.vue';
-import AppDialog from '@/components/ui/AppDialog.vue';
 import Card from '@/components/game/Card.vue';
 import { ref, computed, watch } from 'vue';
 import type { RoleCard, RoleSlug } from '@/types/game';
@@ -28,7 +29,6 @@ import {
   LogOut,
   Coins,
   Radio,
-  AlertTriangle,
   Landmark,
   Users,
   Clock,
@@ -46,6 +46,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const sounds = useGameSounds(computed(() => props.gameState), computed(() => props.myPlayerId));
 const rivalDrag = useDragScroll();
 const rivalsContainer = ref<HTMLElement | null>(null);
 const touchingRivals = ref(false);
@@ -85,15 +86,14 @@ const emit = defineEmits<{
   (e: 'choose-card', cardId: string): void;
   (e: 'choose-exchange', returnedCardIds: readonly [string, string]): void;
   (e: 'leave'): void;
+  (e: 'play-again'): void;
 }>();
 
 const { openCardLightbox } = useLightbox();
 
 const isActionModalOpen = ref(false);
-const showLeaveModal = ref(false);
 watch(() => props.gameState.phase, phase => {
   if (phase !== 'WAITING_ACTION') isActionModalOpen.value = false;
-  if (phase === 'FINISHED') showLeaveModal.value = false;
 });
 const isFinished = computed(() => props.gameState.phase === 'FINISHED');
 const winner = computed(() => props.gameState.players[props.gameState.winnerPlayerId ?? '']);
@@ -224,9 +224,10 @@ const copyGameLink = async (): Promise<void> => {
           <h2 class="game-section-title">Mesa {{ gameState.roomCode }}</h2>
         </div>
         <div class="flex items-center gap-1.5">
+          <button type="button" class="online-icon-button" :aria-pressed="sounds.enabled.value" :aria-label="sounds.enabled.value ? 'Desativar sons' : 'Ativar sons'" :title="sounds.enabled.value ? 'Desativar sons' : 'Ativar sons'" @click="sounds.toggle"><component :is="sounds.enabled.value ? Volume2 : VolumeX" class="h-4 w-4" aria-hidden="true" /></button>
           <DiscordConversation v-if="gameState.discordConversation" :conversation="gameState.discordConversation" :can-retry="isHost" @retry="emit('retry-conversation')" compact />
           <button type="button" @click="copyGameLink" class="online-icon-button" :title="copiedLinkNotice ? 'Link copiado' : 'Copiar link direto da partida'" :aria-label="copiedLinkNotice ? 'Link copiado' : 'Copiar link direto da partida'"><Check v-if="copiedLinkNotice" class="h-4 w-4 text-status-green" aria-hidden="true" /><Copy v-else class="h-4 w-4" aria-hidden="true" /></button>
-          <button type="button" @click="showLeaveModal = true" class="online-icon-button" title="Abandonar partida" aria-label="Sair"><LogOut class="h-4 w-4" aria-hidden="true" /></button>
+          <button type="button" @click="emit('leave')" class="online-icon-button" title="Abandonar partida" aria-label="Sair"><LogOut class="h-4 w-4" aria-hidden="true" /></button>
         </div>
       </div>
       <!-- Linhas de separação entre Turno e Jogador Ativo -->
@@ -262,7 +263,7 @@ const copyGameLink = async (): Promise<void> => {
 
     <!-- 2. PALCO PRINCIPAL DE DELIBERAÇÃO / SUA VEZ (Topo no mobile para máxima usabilidade!) -->
     <section aria-label="Deliberações e Ações da Mesa" class="space-y-3">
-      <GameResultBanner v-if="isFinished" :game-state="gameState" @play-again="emit('leave')" />
+      <GameResultBanner v-if="isFinished" :game-state="gameState" :is-host="isHost" @play-again="emit('play-again')" />
       <!-- Caso A: Quando há Ação Declarada em Aberto -->
       <div
         v-else-if="pending"
@@ -715,39 +716,6 @@ const copyGameLink = async (): Promise<void> => {
         </div>
       </div>
     </section>
-
-    <!-- Modal de Confirmação para Sair da Mesa -->
-    <AppDialog :is-open="showLeaveModal" aria-label="Sair da mesa" max-width-class="max-w-sm" @close="showLeaveModal = false">
-      <template #header>
-        <div class="flex items-center gap-3">
-          <div class="flex size-10 shrink-0 items-center justify-center rounded bg-status-red/15 border border-status-red/40 text-status-red">
-            <AlertTriangle class="size-5" aria-hidden="true" />
-          </div>
-          <h2 class="app-dialog-title">{{ isFinished ? 'Sair da mesa?' : 'Abandonar Partida?' }}</h2>
-        </div>
-      </template>
-      <p class="text-xs text-ink-muted leading-relaxed">
-        {{ isFinished ? 'A partida já terminou. Ao sair, você volta para a tela de salas.' : 'Se você sair agora, seu gabinete perderá a conexão e será eliminado da disputa.' }}
-      </p>
-      <template #footer>
-        <div class="flex items-center gap-3 w-full">
-          <button
-            type="button"
-            @click="showLeaveModal = false"
-            class="flex-1 min-h-10 py-2.5 rounded-lg bg-surface-elevated hover:bg-surface-hover border border-line text-xs font-semibold text-ink-muted hover:text-ink transition-colors cursor-pointer"
-          >
-            Permanecer
-          </button>
-          <button
-            type="button"
-            @click="showLeaveModal = false; emit('leave')"
-            class="flex-1 min-h-10 py-2.5 rounded-lg bg-status-red hover:bg-status-red/90 text-paper-deep font-sans font-bold text-xs tracking-normal transition-all border border-status-red shadow-md cursor-pointer"
-          >
-            Sair da Mesa
-          </button>
-        </div>
-      </template>
-    </AppDialog>
 
     <!-- Modais Auxiliares -->
     <ActionSelectorModal

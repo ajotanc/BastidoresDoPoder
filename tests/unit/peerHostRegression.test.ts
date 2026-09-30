@@ -74,13 +74,66 @@ describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
     transport.peers.at(-1)!.emit('open', 'bdp-room');
     await ready;
   });
-  afterEach(() => { host.destroy(); vi.useRealTimers(); });
+  afterEach(() => { host.destroy(); vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 
-  it('restaura mãos e baralho, preserva a decisão e aceita credenciais anteriores sem expor cartas', async () => {
+  it.each([false, true])('Discord anuncia vitória uma vez e não anuncia saída do host: saída=%s', async hostLeaves => {
+    host.destroy();
+    host = new PeerHost('ROOM', 'a', 'Ana', 'executor', 'token-a', {
+      onStateChange: value => { state = value; }, onPrivateViewChange: vi.fn(), onError: vi.fn(), onReady: vi.fn(),
+    }, undefined, 0, 'pro', {}, true);
+    const ready = host.init(); transport.peers.at(-1)!.emit('open', 'bdp-room'); await ready;
+    const { b, c } = start();
+    Object.assign(state, { discordConversation: { status: 'ready', url: 'https://discord.gg/test', expiresAt: Date.now() + 100000 } });
+    const fetch = vi.fn().mockResolvedValue(Response.json({ sent: true })); vi.stubGlobal('fetch', fetch);
+    send(b, 'b', { type: 'LEAVE_ROOM', payload: {} });
+    if (hostLeaves) host.leaveRoom();
+    else send(c, 'c', { type: 'LEAVE_ROOM', payload: {} });
+    await vi.waitFor(() => expect(state.phase).toBe('FINISHED'));
+    if (hostLeaves) {
+      expect(state.winnerPlayerId).toBeNull(); expect(fetch).not.toHaveBeenCalled();
+    } else {
+      await vi.waitFor(() => expect(state.discordResultStatus).toBe('sent'));
+      await host.publishResult();
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const payload = JSON.parse(fetch.mock.calls[0]![1].body);
+      expect(payload.summary.winnerName).toBe('Ana');
+      expect(payload).not.toHaveProperty('privateHands');
+    }
+  });
+
+  it('revanche preserva jogadores e regras, reinicia mãos e exige nova prontidão', () => {
+    const { b, c } = start();
+    const previousId = state.gameId;
+    const oldRevision = state.revision;
+    // Connected players may be eliminated but remain at the table for a rematch.
+    Object.assign(state, { phase: 'FINISHED', winnerPlayerId: 'a', deadlineAt: null });
+    Object.assign(state.players.b!, { isAlive: false, coins: 25, activeSupportCount: 0 });
+    host.startRematch();
+    expect(state.phase).toBe('LOBBY');
+    expect(state.gameId).not.toBe(previousId);
+    expect(state.revision).toBeGreaterThan(oldRevision);
+    expect(state.playerOrder).toEqual(['a', 'b', 'c']);
+    expect(state.players.b).toMatchObject({ name: 'b', isAlive: true, isReady: false, coins: DEFAULT_GAME_SETTINGS.initialCoins, activeSupportCount: 0, lostCards: [] });
+    expect(checkpoint.state.privateHands.b).toEqual([]);
+    expect(checkpoint.state.reconnectTokens.b).toBe('token-b');
+    expect(state.settings).toEqual(DEFAULT_GAME_SETTINGS);
+    expect(messages(b, 'PRIVATE_VIEW').at(-1)).toMatchObject({ view: { supports: [] } });
+    host.executeLocalHostCommand({ type: 'START_GAME', payload: {} });
+    expect(state.phase).toBe('LOBBY');
+    const id = state.gameId; host.startRematch(); expect(state.gameId).toBe(id);
+    send(b, 'b', { type: 'SET_READY', payload: { ready: true } });
+    send(c, 'c', { type: 'SET_READY', payload: { ready: true } });
+    host.executeLocalHostCommand({ type: 'START_GAME', payload: {} });
+    expect(state.phase).toBe('WAITING_ACTION');
+    expect(checkpoint.state.privateHands.b).toHaveLength(2);
+  });
+
+  it.each([false, true])('restaura mãos, prazos e credenciais, incluindo espectador eliminado: %s', async eliminated => {
     start();
     const saved = structuredClone(checkpoint);
     saved.state.playersPassedResponse.add('b');
+    if (eliminated) saved.state.publicState.players.c = { ...saved.state.publicState.players.c!, isAlive: false, activeSupportCount: 0 };
     const remaining = saved.state.publicState.deadlineAt! - saved.savedAt;
     host.destroy();
     vi.setSystemTime(Date.now() + 3600000);
@@ -98,6 +151,10 @@ describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
     const b = connect('recovered-b');
     send(b, 'b', { type: 'RECONNECT', payload: { playerId: 'b', reconnectToken: 'token-b' } });
     expect(state.players.b!.isConnected).toBe(true);
+    const c = connect('recovered-c');
+    send(c, 'c', { type: 'RECONNECT', payload: { playerId: 'c', reconnectToken: 'token-c' } });
+    expect(state.players.c!.isConnected).toBe(true);
+    expect(state.players.c!.isAlive).toBe(!eliminated);
     expect(messages(b, 'PRIVATE_VIEW')).toEqual([expect.objectContaining({ view: expect.objectContaining({ playerId: 'b', supports: saved.state.privateHands.b }) })]);
     expect(JSON.stringify(messages(b, 'ROOM_SNAPSHOT'))).not.toContain('reconnectTokens');
     expect(JSON.stringify(messages(b, 'ROOM_SNAPSHOT'))).not.toContain('privateHands');

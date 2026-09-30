@@ -35,6 +35,7 @@ export const useOnlineGame = () => {
 
     // Ações da store do Pinia
     retryConversation: store.retryConversation,
+    startRematch: store.startRematch,
     createRoom: store.createRoom,
     joinRoom: store.joinRoom,
     setReady: store.setReady,

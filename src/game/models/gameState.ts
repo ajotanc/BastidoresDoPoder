@@ -143,6 +143,10 @@ export interface GameState {
   readonly settings?: GameSettings;
   readonly botDifficulty?: import('../bots/botDifficulty').BotDifficulty;
   readonly gameId: string;
+  readonly startedAt?: number;
+  readonly finishedAt?: number;
+  readonly recoveryPausedMs?: number;
+  readonly discordResultStatus?: 'sending' | 'sent' | 'error';
   readonly roomCode: string;
   readonly revision: number;
   readonly phase: GamePhase;

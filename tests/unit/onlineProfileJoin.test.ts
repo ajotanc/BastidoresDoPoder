@@ -47,3 +47,27 @@ it('pede confirmação antes de o anfitrião abandonar a mesa e permite cancelar
     expect(leave).not.toHaveBeenCalled();
   } finally { wrapper.unmount(); }
 });
+
+it('o botão do tabuleiro abre uma única confirmação e confirmar sai diretamente', async () => {
+  const pinia = createPinia(); setActivePinia(pinia);
+  const store = useGameStore();
+  const initial = createInitialAuthoritativeState('ROOM', 'host', 'Ana', undefined, 'token').publicState;
+  store.gameState = { ...initial, phase: 'WAITING_ACTION' };
+  store.mode = 'playing'; store.isHost = true; store.myPlayerId = 'host';
+  const leave = vi.spyOn(store, 'leaveRoom');
+  const wrapper = shallowMount(OnlineGameView, { global: { plugins: [pinia], stubs: {
+    GameBoard: false, AppButton: false,
+    AppDialog: { props: ['isOpen', 'ariaLabel'], template: '<section v-if="isOpen" role="dialog" :aria-label="ariaLabel"><slot name="header"/><slot/><slot name="footer"/></section>' },
+  } } });
+  try {
+    await wrapper.get('button[aria-label="Sair"]').trigger('click');
+    expect(wrapper.findAll('[role="dialog"]')).toHaveLength(1);
+    expect(leave).not.toHaveBeenCalled();
+    const confirm = wrapper.findAll('button').find(button => button.text() === 'Encerrar mesa')!;
+    await confirm.trigger('click');
+    await flushPromises();
+    expect(leave).toHaveBeenCalledTimes(1);
+    expect(store.mode).toBe('idle');
+    expect(wrapper.findAll('[role="dialog"]')).toHaveLength(0);
+  } finally { wrapper.unmount(); }
+});

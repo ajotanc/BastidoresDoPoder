@@ -1,3 +1,4 @@
+import { buildResultSummary } from '@/game/resultSummary';
 import { validCheckpoint, type HostCheckpoint } from '../room/hostRecovery';
 import { createDiscordConversation } from '../room/discordConversation';
 import { resolveRoomSettings, type RoomTimingInput } from '@/game/models/roomSettings';
@@ -40,7 +41,10 @@ export class PeerHost {
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private destroyed = false;
   private restoring = false;
+  private closing = false;
+  private announcedGames = new Set<string>();
   private resumeNotBefore = 0;
+  private restoredSavedAt = 0;
   private resumeTimer: ReturnType<typeof setTimeout> | null = null;
   private bots = new BotController(id => {
     if (this.destroyed) return;
@@ -76,6 +80,7 @@ export class PeerHost {
       this.conversationSessionId = checkpoint.conversationSessionId;
       this.processed = new Map(checkpoint.processed.map(([id, ids]) => [id, new Set(ids)]));
       this.restoring = true;
+      this.restoredSavedAt = checkpoint.savedAt;
       const pub = this.authoritativeState.publicState;
       // Store remaining duration until the signaling connection is ready.
       this.authoritativeState.publicState = { ...pub, deadlineAt: pub.deadlineAt === null ? null : Math.max(1000, pub.deadlineAt - checkpoint.savedAt) };
@@ -93,6 +98,44 @@ export class PeerHost {
     if (this.destroyed) return;
     this.authoritativeState.publicState = { ...this.authoritativeState.publicState, discordConversation: conversation };
     this.broadcastPublicState();
+    void this.publishResult();
+  }
+
+  public async publishResult(): Promise<void> {
+    const state = this.authoritativeState.publicState;
+    const summary = buildResultSummary(state);
+    if (!summary || this.closing || this.destroyed || !this.discordEnabled || state.discordConversation?.status !== 'ready' || this.announcedGames.has(state.gameId)) return;
+    this.announcedGames.add(state.gameId);
+    this.authoritativeState.publicState = { ...state, discordResultStatus: 'sending' };
+    this.broadcastPublicState();
+    let sent = false;
+    try {
+      const response = await fetch('/.netlify/functions/discord-result', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: this.conversationSessionId, summary }), signal: AbortSignal.timeout(30000) });
+      sent = response.ok && (await response.json()).sent === true;
+    } catch { /* The result remains available locally when Discord is unavailable. */ }
+    if (this.destroyed || this.authoritativeState.publicState.gameId !== state.gameId) return;
+    this.authoritativeState.publicState = { ...this.authoritativeState.publicState, discordResultStatus: sent ? 'sent' : 'error' };
+    this.broadcastPublicState();
+  }
+
+  public startRematch(): void {
+    const previous = this.authoritativeState;
+    const pub = previous.publicState;
+    if (this.destroyed || pub.phase !== 'FINISHED' || !pub.winnerPlayerId) return;
+    const host = pub.players[this.hostPlayerId]!;
+    const next = createInitialAuthoritativeState(this.roomCode, host.id, host.name, host.avatarSlug, previous.reconnectTokens[host.id]!, previous.settings, host.avatarImage);
+    const ids = pub.playerOrder.filter(id => id === host.id || pub.players[id]?.isBot || pub.players[id]?.isConnected);
+    next.publicState = { ...next.publicState, revision: pub.revision + 1, botDifficulty: this.botDifficulty, discordConversation: pub.discordConversation,
+      playerOrder: ids, players: Object.fromEntries(ids.map(id => [id, { ...pub.players[id]!, coins: previous.settings.initialCoins, activeSupportCount: 0, lostCards: [], isAlive: true, isReady: id === host.id || !!pub.players[id]!.isBot }])) };
+    next.privateHands = Object.fromEntries(ids.map(id => [id, []]));
+    next.reconnectTokens = Object.fromEntries(ids.filter(id => previous.reconnectTokens[id]).map(id => [id, previous.reconnectTokens[id]!]));
+    this.processed.clear();
+    this.reconnectUntil.clear();
+    this.authoritativeState = next;
+    this.schedulePhaseTimeout();
+    this.bots.update(next.publicState);
+    this.broadcastPublicState();
+    for (const id of this.playerConnections.keys()) this.sendPrivateView(id);
   }
 
   public init(): Promise<string> {
@@ -275,6 +318,7 @@ export class PeerHost {
     if (Date.now() >= this.resumeNotBefore) this.bots.update(this.authoritativeState.publicState);
     this.broadcastPublicState();
     for (const id of this.playerConnections.keys()) this.sendPrivateView(id);
+    void this.publishResult();
   }
 
   private sendPrivateView(id: string): void {
@@ -323,10 +367,11 @@ export class PeerHost {
     this.resumeNotBefore = now + grace;
     const conversation = pub.discordConversation;
     this.authoritativeState.publicState = { ...pub, revision: pub.revision + 1,
+      recoveryPausedMs: (pub.recoveryPausedMs ?? 0) + Math.max(0, now - this.restoredSavedAt),
       players: Object.fromEntries(Object.entries(pub.players).map(([id, player]) => [id, { ...player, isConnected: id === this.hostPlayerId || !!player.isBot }])),
       deadlineAt: pub.deadlineAt === null ? null : now + grace + pub.deadlineAt,
       ...(conversation?.status === 'loading' ? { discordConversation: { status: 'error' as const } } : {}),
-      history: [...pub.history, { id: crypto.randomUUID(), timestamp: now, type: 'ROOM_RESTORED', importance: 'normal', message: humans.length ? 'Mesa retomada pelo anfitrião. Prazo de reconexão reaberto; o tempo restante da decisão foi preservado.' : 'Mesa retomada pelo anfitrião. O tempo restante da decisão foi preservado.' }],
+      history: [{ id: crypto.randomUUID(), timestamp: now, type: 'ROOM_RESTORED', importance: 'normal' as const, message: humans.length ? 'Mesa retomada pelo anfitrião. Prazo de reconexão reaberto; o tempo restante da decisão foi preservado.' : 'Mesa retomada pelo anfitrião. O tempo restante da decisão foi preservado.' }, ...pub.history].slice(0, 50),
     };
     this.schedulePhaseTimeout();
     this.resumeTimer = setTimeout(() => { if (!this.destroyed) this.bots.update(this.authoritativeState.publicState); }, grace);
@@ -347,11 +392,13 @@ export class PeerHost {
   }
 
   public leaveRoom(): void {
+    this.closing = true;
+    const alreadyFinished = this.authoritativeState.publicState.phase === 'FINISHED';
     const result = executeCommand(this.authoritativeState, { type: 'LEAVE_ROOM', payload: {} }, this.hostPlayerId, 'host-leave');
     const pub = result.nextAuthoritativeState.publicState;
     // Sem migração de host, os demais clientes precisam receber um encerramento explícito.
-    if (pub.phase !== 'FINISHED') {
-      result.nextAuthoritativeState.publicState = { ...pub, phase: 'FINISHED', winnerPlayerId: null,
+    if (!alreadyFinished) {
+      result.nextAuthoritativeState.publicState = { ...pub, phase: 'FINISHED', winnerPlayerId: null, winnerSupports: undefined,
         deadlineAt: null, pendingAction: null, responsePlayerIds: [], cardChoicePlayerId: null,
         cardChoiceReason: null, revision: pub.revision + 1 };
       result.nextAuthoritativeState.lossContinuation = undefined;

@@ -382,6 +382,8 @@ export const useGameStore = defineStore('game', () => {
     void refreshSavedGames();
   };
 
+  const startRematch = (): void => { if (isHost.value) hostInstance.value?.startRematch(); };
+
   const retryConversation = async (): Promise<void> => {
     const host = hostInstance.value;
     if (!isHost.value || !host) return;
@@ -397,6 +399,7 @@ export const useGameStore = defineStore('game', () => {
     reconnectAttempt,
     retryConnection,
     retryConversation,
+    startRematch,
     mode,
     isHost,
     myPlayerId,

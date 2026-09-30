@@ -45,6 +45,7 @@ const {
   gameState,
   privateView,
   retryConversation,
+  startRematch,
   createRoom,
   joinRoom,
   setReady,
@@ -475,7 +476,7 @@ const handleJoin = async (): Promise<void> => {
       :my-player-id="myPlayerId" :is-host="isHost" @set-ready="setReady" @start-game="startGame" @leave="requestLeave" />
 
     <!-- TELA 3: MESA DE JOGO ATIVA -->
-    <GameBoard @retry-conversation="retryConversation" v-else-if="mode === 'playing' && gameState" :game-state="gameState" :private-view="privateView"
+    <GameBoard @play-again="startRematch" @retry-conversation="retryConversation" v-else-if="mode === 'playing' && gameState" :game-state="gameState" :private-view="privateView"
       :my-player-id="myPlayerId" :is-host="isHost" @declare-action="declareAction" @declare-block="declareBlock"
       @declare-challenge="declareChallenge" @pass-response="passResponse" @choose-card="chooseCard"
       @choose-exchange="chooseExchange" @leave="requestLeave" />

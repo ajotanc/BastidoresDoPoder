@@ -1,4 +1,5 @@
 // @vitest-environment node
+import resultHandler from '../../netlify/functions/discord-result';
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
 import handler from '../../netlify/functions/discord-room';
 import cleanup from '../../netlify/functions/discord-cleanup';
@@ -9,6 +10,8 @@ const sessionId='a24da0b6-8701-4dc0-a117-9ca922589e65';
 // Synthetic Discord IDs: fixtures must never reuse production environment values.
 const userId='100000000000000001';
 const botId='100000000000000002';
+const resultsId='100000000000000003';
+const resultsChannel = { id: resultsId, name: 'resultados', type: 0 };
 const snowflake=(time:number)=>((BigInt(time)-1420070400000n)<<22n).toString();
 const authCookie=()=>`bdp_discord_session=${signSession({kind:'user',userId,expiresAt:Date.now()+3600000})}`;
 const request=(body:object, origin='https://game.test', authenticated=true)=>new Request('https://game.test/.netlify/functions/discord-room',{method:'POST',headers:{origin,'Content-Type':'application/json',...(authenticated?{cookie:authCookie()}:{})},body:JSON.stringify(body)});
@@ -23,7 +26,7 @@ function upstream(list:object[]=[], records:object[]=[]) {
   return Response.json(list);
  });vi.stubGlobal('fetch',fetch);return fetch;
 }
-beforeEach(()=>{vi.stubEnv('DISCORD_BOT_TOKEN','test-token');vi.stubEnv('DISCORD_CLIENT_SECRET','test-secret');vi.stubEnv('DISCORD_CLIENT_ID',botId);vi.stubEnv('DISCORD_GUILD_ID','guild');vi.stubEnv('DISCORD_CATEGORY_ID','category');});
+beforeEach(()=>{vi.stubEnv('DISCORD_BOT_TOKEN','test-token');vi.stubEnv('DISCORD_CLIENT_SECRET','test-secret');vi.stubEnv('DISCORD_CLIENT_ID',botId);vi.stubEnv('DISCORD_GUILD_ID','guild');vi.stubEnv('DISCORD_CATEGORY_ID','category');vi.stubEnv('DISCORD_RESULTS_CHANNEL_ID',resultsId);});
 afterEach(()=>{vi.unstubAllEnvs();vi.unstubAllGlobals();vi.restoreAllMocks();});
 it('rejects unauthenticated requests, foreign origins and invalid rooms',async()=>{
  const fetch=upstream();
@@ -81,4 +84,70 @@ it('OAuth successful callback sets a signed user cookie without exposing tokens'
  vi.stubGlobal('fetch',vi.fn().mockResolvedValueOnce(Response.json({access_token:'private-access-token'})).mockResolvedValueOnce(Response.json({id:userId})));
  const response=await auth(new Request(`https://game.test/.netlify/functions/discord-auth?code=code&state=${state}`,{headers:{cookie:start.headers.get('set-cookie')!.split(';')[0]!}}));
  expect(response.status).toBe(200);expect(response.headers.get('set-cookie')).toContain('bdp_discord_session=');expect(await response.text()).not.toContain('private-access-token');
+});
+
+it('resultado exige autenticação e canal da própria sessão', async () => {
+ const fetch = upstream();
+ const summary = { gameId: sessionId, roomCode: 'ABCD', winnerName: 'Ana', turns: 15, durationSeconds: 60, decisivePlay: 'Bruno perdeu o último apoio.', supports: 1, coins: 4, finishedAt: Date.now() };
+ expect((await resultHandler(request({ sessionId, summary }, 'https://game.test', false))).status).toBe(401);
+ expect((await resultHandler(request({ sessionId, summary }))).status).toBe(404);
+ expect(fetch.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
+});
+it('anuncia o mesmo resumo sem menções, com nonce, e reconhece resultado já publicado', async () => {
+ const id = snowflake(Date.now());
+ const summary = { gameId: sessionId, roomCode: 'ABCD', winnerName: '@everyone', turns: 15, durationSeconds: 60, decisivePlay: 'Bruno perdeu o último apoio.', supports: 1, coins: 4, finishedAt: Date.now() };
+ let posted: { embeds: { url: string; description: string }[]; allowed_mentions: object; enforce_nonce: boolean; nonce: string } | undefined;
+ const fetch = vi.fn(async (url: string, init?: RequestInit) => {
+   if (url.endsWith('/users/@me')) return Response.json({ id: botId });
+   if (url.includes('/audit-logs')) return Response.json({ audit_log_entries: [{ id, target_id: id, user_id: botId, action_type: 10, reason: `bdp:${marker()}` }] });
+   if (url.endsWith('/channels')) return Response.json([{ id, name: channelName('ABCD'), type: 2, parent_id: 'category' }, resultsChannel]);
+   if (init?.method === 'POST') { posted = JSON.parse(init.body as string); return Response.json({ id: 'result' }); }
+   return Response.json(posted ? [{ id: 'result', author: { id: botId }, embeds: posted.embeds }] : []);
+ });
+ vi.stubGlobal('fetch', fetch);
+ expect((await resultHandler(request({ sessionId, summary }))).status).toBe(200);
+ expect(posted).toMatchObject({ allowed_mentions: { parse: [] }, enforce_nonce: true });
+ expect(posted!.nonce).toHaveLength(24);
+ expect(posted!.embeds[0]!.description).toContain('Mesa ABCD · 15 turnos · 1 min');
+ expect((await resultHandler(request({ sessionId, summary }))).status).toBe(200);
+ expect(fetch.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
+ expect(fetch.mock.calls.find(([, init]) => init?.method === 'POST')![0]).toBe(`https://discord.com/api/v10/channels/${resultsId}/messages`);
+ expect(fetch.mock.calls.filter(([url]) => url.includes('/messages?')).every(([url]) => url.includes(`/channels/${resultsId}/`))).toBe(true);
+});
+
+it('não publica quando não consegue concluir a busca de duplicatas', async () => {
+ const id = snowflake(Date.now());
+ const summary = { gameId: sessionId, roomCode: 'ABCD', winnerName: 'Ana', turns: 15, durationSeconds: 60, decisivePlay: 'Fim da partida.', supports: 1, coins: 4, finishedAt: Date.now() };
+ const fetch = vi.fn(async (url: string) => {
+   if (url.endsWith('/users/@me')) return Response.json({ id: botId });
+   if (url.includes('/audit-logs')) return Response.json({ audit_log_entries: [{ id, target_id: id, user_id: botId, action_type: 10, reason: `bdp:${marker()}` }] });
+   if (url.endsWith('/channels')) return Response.json([{ id, name: channelName('ABCD'), type: 2, parent_id: 'category' }, resultsChannel]);
+   return Response.json(Array.from({ length: 100 }, (_, index) => ({ id: String(index), author: { id: 'someone' } })));
+ });
+ vi.stubGlobal('fetch', fetch);
+ expect((await resultHandler(request({ sessionId, summary }))).status).toBe(503);
+ expect(fetch.mock.calls.filter(([url]) => url.includes('/messages?'))).toHaveLength(5);
+});
+
+it.each(['', 'invalid', '100000000000000004'])('não usa a sala de voz como fallback para destino inválido: %s', async destination => {
+ vi.stubEnv('DISCORD_RESULTS_CHANNEL_ID', destination);
+ const id = snowflake(Date.now());
+ const fetch = upstream([{ id, name: channelName('ABCD'), type: 2, parent_id: 'category' }, resultsChannel], [{ id, target_id: id, user_id: botId, action_type: 10, reason: `bdp:${marker()}` }]);
+ const summary = { gameId: sessionId, roomCode: 'ABCD', winnerName: 'Ana', turns: 15, durationSeconds: 60, decisivePlay: 'Fim da partida.', supports: 1, coins: 4, finishedAt: Date.now() };
+ expect((await resultHandler(request({ sessionId, summary, channelId: resultsId }))).status).toBe(503);
+ expect(fetch.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
+});
+it('para de ler o histórico do canal fixo ao alcançar mensagens anteriores à mesa', async () => {
+ const id = snowflake(Date.now());
+ const summary = { gameId: sessionId, roomCode: 'ABCD', winnerName: 'Ana', turns: 15, durationSeconds: 60, decisivePlay: 'Fim da partida.', supports: 1, coins: 4, finishedAt: Date.now() };
+ const fetch = vi.fn(async (url: string, init?: RequestInit) => {
+   if (url.endsWith('/users/@me')) return Response.json({ id: botId });
+   if (url.includes('/audit-logs')) return Response.json({ audit_log_entries: [{ id, target_id: id, user_id: botId, action_type: 10, reason: `bdp:${marker()}` }] });
+   if (url.endsWith('/channels')) return Response.json([{ id, name: channelName('ABCD'), type: 2, parent_id: 'category' }, resultsChannel]);
+   if (init?.method === 'POST') return Response.json({ id: 'result' });
+   return Response.json(Array.from({ length: 100 }, (_, index) => ({ id: snowflake(Date.now() - 1000 - index), author: { id: botId } })));
+ });
+ vi.stubGlobal('fetch', fetch);
+ expect((await resultHandler(request({ sessionId, summary }))).status).toBe(200);
+ expect(fetch.mock.calls.filter(([url]) => url.includes('/messages?'))).toHaveLength(1);
 });
