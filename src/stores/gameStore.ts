@@ -1,3 +1,4 @@
+import { listCheckpoints, persistCheckpoint, deleteCheckpoint, acquireHostLock, type HostCheckpoint } from '@/online/room/hostRecovery';
 import { connectDiscordAccount } from '@/online/room/discordConversation';
 import type { RoomTimingInput } from '@/game/models/roomSettings';
 import { DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from '@/game/bots/botDifficulty';
@@ -24,6 +25,23 @@ export type GameConnectionMode = 'idle' | 'creating' | 'joining' | 'lobby' | 'pl
 export const useGameStore = defineStore('game', () => {
   // Estado reativo da sessão de jogo
   const mode = ref<GameConnectionMode>('idle');
+  const recoveryWarning = ref('');
+  const savedGames = ref<HostCheckpoint[]>([]);
+  let releaseHostLock: (() => void) | null = null;
+  const refreshSavedGames = async () => {
+    try { savedGames.value = await listCheckpoints(); }
+    catch { recoveryWarning.value = 'O navegador não permitiu acessar o salvamento local. A recuperação pode não estar disponível.'; }
+  };
+  const discardSavedGame = async (code: string) => {
+    try {
+      const release = await acquireHostLock(code);
+      try { await deleteCheckpoint(code); } finally { release(); }
+      await refreshSavedGames();
+    } catch (error) { recoveryWarning.value = error instanceof Error ? error.message : 'Não foi possível excluir o salvamento.'; }
+  };
+  const checkpointChanged = (checkpoint: HostCheckpoint) => {
+    void persistCheckpoint(checkpoint).then(() => { recoveryWarning.value = ''; }).catch(() => { recoveryWarning.value = 'Não foi possível salvar a última mudança. Mantenha esta aba aberta para não perder a partida.'; });
+  };
   const isHost = ref<boolean>(false);
   const myPlayerId = ref<string>('');
   const myPlayerName = ref<string>('');
@@ -37,16 +55,25 @@ export const useGameStore = defineStore('game', () => {
   const hostInstance = shallowRef<PeerHost | null>(null);
   const clientInstance = shallowRef<PeerClient | null>(null);
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  const reconnectAttempt = ref(0);
+  const connectionStatus = ref<'connected' | 'reconnecting' | 'disconnected'>('connected');
   let reconnectAttempts = 0;
+  let connectionGeneration = 0;
   const cancelReconnect = () => {
     if (reconnectTimer) clearTimeout(reconnectTimer);
     reconnectTimer = null;
   };
   const scheduleReconnect = (code: string, name: string, avatar: RoleSlug | undefined) => {
     cancelReconnect();
-    if (!loadPlayerSession(code) || reconnectAttempts++ >= MAX_RECONNECT_ATTEMPTS) return;
+    if (!loadPlayerSession(code) || reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+      connectionStatus.value = 'disconnected';
+      errorMessage.value = 'Não foi possível recuperar a conexão. O anfitrião pode ter saído da mesa.';
+      return;
+    }
+    connectionStatus.value = 'reconnecting';
+    reconnectAttempt.value = ++reconnectAttempts;
     reconnectTimer = setTimeout(() => {
-      void joinRoom(code, name, avatar).catch(() => scheduleReconnect(code, name, avatar));
+      void joinRoom(code, name, avatar, undefined, true).catch(() => { if (currentRoomCode.value === code && !isHost.value) scheduleReconnect(code, name, avatar); });
     }, RECONNECT_RETRY_MS);
   };
 
@@ -68,15 +95,18 @@ export const useGameStore = defineStore('game', () => {
   /**
    * Cria uma nova sala como Host P2P
    */
-  const createRoom = async (playerName: string, avatarSlug?: RoleSlug, avatarImage?: string, botCount = 0, botDifficulty: BotDifficulty = DEFAULT_BOT_DIFFICULTY, timing: RoomTimingInput = {}, attempt = 0): Promise<string> => {
+  const createRoom = async (playerName: string, avatarSlug?: RoleSlug, avatarImage?: string, botCount = 0, botDifficulty: BotDifficulty = DEFAULT_BOT_DIFFICULTY, timing: RoomTimingInput = {}, discordEnabled = false, attempt = 0, checkpoint?: HostCheckpoint): Promise<string> => {
     try {
       validateBotCount(botCount);
       clearError();
+      connectionGeneration++;
       mode.value = 'creating';
+      connectionStatus.value = 'connected';
 
-      const roomCode = generateRoomCode();
-      const playerId = `player-${crypto.randomUUID()}`;
-      const reconnectToken = `token-${crypto.randomUUID()}`;
+      const roomCode = checkpoint?.roomCode ?? generateRoomCode();
+      const playerId = checkpoint?.hostPlayerId ?? `player-${crypto.randomUUID()}`;
+      const reconnectToken = checkpoint?.state.reconnectTokens[playerId] ?? `token-${crypto.randomUUID()}`;
+      releaseHostLock = await acquireHostLock(roomCode);
 
       myPlayerId.value = playerId;
       myPlayerName.value = playerName;
@@ -85,6 +115,7 @@ export const useGameStore = defineStore('game', () => {
       isHost.value = true;
 
       const host = new PeerHost(roomCode, playerId, playerName, avatarSlug, reconnectToken, {
+        onCheckpoint: checkpointChanged,
         onStateChange: (state) => {
           gameState.value = state;
           if (state.phase === 'LOBBY') {
@@ -110,17 +141,18 @@ export const useGameStore = defineStore('game', () => {
             isHost: true,
           });
         },
-      }, avatarImage, botCount, botDifficulty, timing);
+      }, avatarImage, botCount, botDifficulty, timing, discordEnabled, checkpoint);
 
       hostInstance.value = host;
       await host.init();
-      void host.prepareConversation();
+      if (discordEnabled && !checkpoint) void host.prepareConversation();
       return roomCode;
     } catch (err) {
       hostInstance.value?.destroy();
       hostInstance.value = null;
-      if (err && typeof err === 'object' && 'type' in err && err.type === 'unavailable-id' && attempt < 4) {
-        return createRoom(playerName, avatarSlug, avatarImage, botCount, botDifficulty, timing, attempt + 1);
+      releaseHostLock?.(); releaseHostLock = null;
+      if (!checkpoint && err && typeof err === 'object' && 'type' in err && err.type === 'unavailable-id' && attempt < 4) {
+        return createRoom(playerName, avatarSlug, avatarImage, botCount, botDifficulty, timing, discordEnabled, attempt + 1);
       }
       mode.value = 'idle';
       if (err instanceof Error) {
@@ -132,13 +164,29 @@ export const useGameStore = defineStore('game', () => {
     }
   };
 
+  const resumeSavedGame = async (code: string): Promise<void> => {
+    try {
+      const checkpoint = (await listCheckpoints()).find(save => save.roomCode === code);
+      if (!checkpoint) throw new Error('O salvamento expirou ou não é compatível com esta versão.');
+      const player = checkpoint.state.publicState.players[checkpoint.hostPlayerId]!;
+      await createRoom(player.name, player.avatarSlug, player.avatarImage, 0, checkpoint.botDifficulty, {}, checkpoint.discordEnabled, 0, checkpoint);
+      savedGames.value = savedGames.value.filter(save => save.roomCode !== code);
+    } catch (error) { errorMessage.value = error instanceof Error ? error.message : 'Não foi possível retomar. Aguarde alguns segundos e tente novamente.'; }
+  };
+
   /**
    * Conecta a uma sala existente como Cliente P2P
    */
-  const joinRoom = async (roomCodeInput: string, playerName: string, avatarSlug?: RoleSlug, avatarImage?: string): Promise<void> => {
+  const joinRoom = async (roomCodeInput: string, playerName: string, avatarSlug?: RoleSlug, avatarImage?: string, reconnecting = false): Promise<void> => {
+    const generation = ++connectionGeneration;
     try {
       clearError();
-      mode.value = 'joining';
+      if (!reconnecting) {
+        mode.value = 'joining';
+        reconnectAttempts = 0;
+        reconnectAttempt.value = 0;
+        connectionStatus.value = 'connected';
+      }
 
       const roomCode = normalizeRoomCode(roomCodeInput);
       if (roomCode.length < 3) {
@@ -148,7 +196,7 @@ export const useGameStore = defineStore('game', () => {
       cancelReconnect();
       clientInstance.value?.destroy();
       const saved = loadPlayerSession(roomCode);
-      if (saved?.isHost) throw new Error('O estado do host foi perdido. Crie uma nova sala.');
+      if (saved?.isHost) throw new Error('Use Retomar partida para recuperar sua mesa salva neste navegador.');
       const playerId = saved?.playerId ?? `player-${crypto.randomUUID()}`;
       const reconnectToken = saved?.reconnectToken ?? `token-${crypto.randomUUID()}`;
 
@@ -160,7 +208,11 @@ export const useGameStore = defineStore('game', () => {
 
       const client = new PeerClient(roomCode, playerId, {
         onStateChange: (state) => {
+          if (generation !== connectionGeneration) return;
           reconnectAttempts = 0;
+          reconnectAttempt.value = 0;
+          connectionStatus.value = 'connected';
+          cancelReconnect();
           clearError();
           savePlayerSession({ playerId, reconnectToken, roomCode, playerName });
           gameState.value = state;
@@ -171,18 +223,22 @@ export const useGameStore = defineStore('game', () => {
           }
         },
         onPrivateViewChange: (view) => {
+          if (generation !== connectionGeneration) return;
           privateView.value = view;
         },
         onError: (err) => {
+          if (generation !== connectionGeneration) return;
           errorMessage.value = err;
           if (err.startsWith('UNAUTHORIZED') || mode.value === 'joining') {
             cancelReconnect();
             if (err.startsWith('UNAUTHORIZED')) clearPlayerSession(roomCode);
             client.destroy();
-            mode.value = 'idle';
+            if (!reconnecting) mode.value = 'idle';
+            else connectionStatus.value = 'disconnected';
           }
         },
         onConnected: () => {
+          if (generation !== connectionGeneration) return;
           client.sendCommand(saved ? {
             type: 'RECONNECT', payload: { playerId, reconnectToken },
           } : {
@@ -196,6 +252,7 @@ export const useGameStore = defineStore('game', () => {
           });
         },
         onDisconnected: () => {
+          if (generation !== connectionGeneration) return;
           if (gameState.value?.phase === 'FINISHED') return;
           errorMessage.value = 'Conexão interrompida. Tentando reconectar à sala…';
           scheduleReconnect(roomCode, playerName, avatarSlug);
@@ -205,7 +262,8 @@ export const useGameStore = defineStore('game', () => {
       clientInstance.value = client;
       await client.connect();
     } catch (err) {
-      mode.value = 'idle';
+      if (generation !== connectionGeneration) return;
+      if (!reconnecting) mode.value = 'idle';
       if (err instanceof Error) {
         errorMessage.value = `Falha ao entrar na sala: ${err.message}`;
       } else {
@@ -213,6 +271,12 @@ export const useGameStore = defineStore('game', () => {
       }
       throw err;
     }
+  };
+
+  const retryConnection = (): void => {
+    if (isHost.value || !currentRoomCode.value || connectionStatus.value !== 'disconnected') return;
+    reconnectAttempts = 0;
+    scheduleReconnect(currentRoomCode.value, myPlayerName.value, myAvatarSlug.value);
   };
 
   const setReady = (ready: boolean): void => {
@@ -295,11 +359,15 @@ export const useGameStore = defineStore('game', () => {
   };
 
   const leaveRoom = (): void => {
+    connectionGeneration++;
     cancelReconnect();
     reconnectAttempts = 0;
+    reconnectAttempt.value = 0;
+    connectionStatus.value = 'connected';
     if (hostInstance.value) {
       hostInstance.value.leaveRoom();
       hostInstance.value = null;
+      releaseHostLock?.(); releaseHostLock = null;
     }
     if (clientInstance.value) {
       clientInstance.value.leaveRoom();
@@ -311,6 +379,7 @@ export const useGameStore = defineStore('game', () => {
     privateView.value = null;
     currentRoomCode.value = '';
     clearError();
+    void refreshSavedGames();
   };
 
   const retryConversation = async (): Promise<void> => {
@@ -323,6 +392,10 @@ export const useGameStore = defineStore('game', () => {
   };
 
   return {
+    recoveryWarning, savedGames, refreshSavedGames, discardSavedGame, resumeSavedGame,
+    connectionStatus,
+    reconnectAttempt,
+    retryConnection,
     retryConversation,
     mode,
     isHost,

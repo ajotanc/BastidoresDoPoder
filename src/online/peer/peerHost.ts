@@ -1,7 +1,8 @@
+import { validCheckpoint, type HostCheckpoint } from '../room/hostRecovery';
 import { createDiscordConversation } from '../room/discordConversation';
 import { resolveRoomSettings, type RoomTimingInput } from '@/game/models/roomSettings';
 import { DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from '@/game/bots/botDifficulty';
-import { RECONNECT_GRACE_MS, HEARTBEAT_INTERVAL_MS, HEARTBEAT_TIMEOUT_MS } from '@/constants/gameConfig';
+import { RECONNECT_GRACE_MS, HEARTBEAT_INTERVAL_MS, HEARTBEAT_TIMEOUT_MS, CONNECTION_TIMEOUT_MS } from '@/constants/gameConfig';
 import { sendPeerMessage, createPeerMessageReader } from './jsonTransport';
 import dayjs from 'dayjs';
 import Peer, { type DataConnection } from 'peerjs';
@@ -23,6 +24,7 @@ export interface HostCallbacks {
   onPrivateViewChange: (view: PrivatePlayerView) => void;
   onError: (errorMessage: string) => void;
   onReady: (roomCode: string) => void;
+  onCheckpoint?: (checkpoint: HostCheckpoint) => void;
 }
 
 export class PeerHost {
@@ -34,8 +36,12 @@ export class PeerHost {
   private processed = new Map<string, Set<string>>();
   private authoritativeState: AuthoritativeGameState;
   private timeoutTimer: ReturnType<typeof setTimeout> | null = null;
+  private initTimer: ReturnType<typeof setTimeout> | null = null;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private destroyed = false;
+  private restoring = false;
+  private resumeNotBefore = 0;
+  private resumeTimer: ReturnType<typeof setTimeout> | null = null;
   private bots = new BotController(id => {
     if (this.destroyed) return;
     const state = this.authoritativeState;
@@ -58,17 +64,29 @@ export class PeerHost {
     botCount = 0,
     private readonly botDifficulty: BotDifficulty = DEFAULT_BOT_DIFFICULTY,
     timing: RoomTimingInput = {},
+    private readonly discordEnabled = false,
+    checkpoint?: HostCheckpoint,
   ) {
     this.authoritativeState = createInitialAuthoritativeState(roomCode, hostPlayerId, hostName, hostAvatarSlug, hostReconnectToken, resolveRoomSettings(timing), hostAvatarImage);
     this.authoritativeState = addBots(this.authoritativeState, botCount);
     this.authoritativeState.publicState = { ...this.authoritativeState.publicState, botDifficulty };
+    if (checkpoint) {
+      if (!validCheckpoint(checkpoint) || checkpoint.roomCode !== roomCode || checkpoint.hostPlayerId !== hostPlayerId) throw new Error('O salvamento está expirado ou é incompatível.');
+      this.authoritativeState = structuredClone(checkpoint.state);
+      this.conversationSessionId = checkpoint.conversationSessionId;
+      this.processed = new Map(checkpoint.processed.map(([id, ids]) => [id, new Set(ids)]));
+      this.restoring = true;
+      const pub = this.authoritativeState.publicState;
+      // Store remaining duration until the signaling connection is ready.
+      this.authoritativeState.publicState = { ...pub, deadlineAt: pub.deadlineAt === null ? null : Math.max(1000, pub.deadlineAt - checkpoint.savedAt) };
+    }
   }
 
-  private readonly conversationSessionId = crypto.randomUUID();
+  private conversationSessionId: string = crypto.randomUUID();
 
   public async prepareConversation(): Promise<void> {
     const conversationState = this.authoritativeState.publicState.discordConversation;
-    if (this.destroyed || conversationState?.status === 'loading' || (conversationState?.retryAt ?? 0) > Date.now() || (conversationState?.status === 'ready' && (conversationState.expiresAt ?? 0) > Date.now())) return;
+    if (!this.discordEnabled || this.destroyed || conversationState?.status === 'loading' || (conversationState?.retryAt ?? 0) > Date.now() || (conversationState?.status === 'ready' && (conversationState.expiresAt ?? 0) > Date.now())) return;
     this.authoritativeState.publicState = { ...this.authoritativeState.publicState, discordConversation: { status: 'loading' } };
     this.broadcastPublicState();
     const conversation = await createDiscordConversation(this.roomCode, this.conversationSessionId);
@@ -81,7 +99,11 @@ export class PeerHost {
     return new Promise((resolve, reject) => {
       const peer = new Peer(roomCodeToPeerId(this.roomCode), PEER_SERVER_CONFIG);
       this.peer = peer;
+      this.initTimer = setTimeout(() => { this.destroy(); reject(new Error('Não foi possível abrir a mesa. Aguarde alguns segundos e tente novamente.')); }, CONNECTION_TIMEOUT_MS);
       peer.on('open', id => {
+        if (this.destroyed) return;
+        if (this.initTimer) clearTimeout(this.initTimer);
+        if (this.restoring) this.resumeSavedState();
         this.callbacks.onReady(this.roomCode);
         this.emitLocalState();
         let lastHeartbeatCheck = dayjs().valueOf();
@@ -250,7 +272,7 @@ export class PeerHost {
   private applyResult(result: EngineExecutionResult): void {
     this.authoritativeState = result.nextAuthoritativeState;
     this.schedulePhaseTimeout();
-    this.bots.update(this.authoritativeState.publicState);
+    if (Date.now() >= this.resumeNotBefore) this.bots.update(this.authoritativeState.publicState);
     this.broadcastPublicState();
     for (const id of this.playerConnections.keys()) this.sendPrivateView(id);
   }
@@ -270,6 +292,10 @@ export class PeerHost {
   }
 
   private emitLocalState(): void {
+    this.callbacks.onCheckpoint?.({ version: 1, roomCode: this.roomCode, hostPlayerId: this.hostPlayerId,
+      savedAt: Date.now(), state: this.authoritativeState, botDifficulty: this.botDifficulty,
+      discordEnabled: this.discordEnabled, conversationSessionId: this.conversationSessionId,
+      processed: [...this.processed].map(([id, ids]) => [id, [...ids]]) });
     this.callbacks.onStateChange(this.authoritativeState.publicState);
     this.callbacks.onPrivateViewChange({ playerId: this.hostPlayerId, supports: this.authoritativeState.privateHands[this.hostPlayerId] || [],
       searchResultNotice: this.authoritativeState.privateNotices[this.hostPlayerId] });
@@ -287,8 +313,29 @@ export class PeerHost {
     if (!this.destroyed) this.applyResult(executeTimeout(this.authoritativeState));
   }
 
+  private resumeSavedState(): void {
+    this.restoring = false;
+    const now = Date.now();
+    const pub = this.authoritativeState.publicState;
+    const humans = Object.values(pub.players).filter(player => player.id !== this.hostPlayerId && !player.isBot && this.authoritativeState.reconnectTokens[player.id]);
+    const grace = humans.some(player => player.isAlive) ? RECONNECT_GRACE_MS : 0;
+    for (const player of humans) this.reconnectUntil.set(player.id, now + RECONNECT_GRACE_MS);
+    this.resumeNotBefore = now + grace;
+    const conversation = pub.discordConversation;
+    this.authoritativeState.publicState = { ...pub, revision: pub.revision + 1,
+      players: Object.fromEntries(Object.entries(pub.players).map(([id, player]) => [id, { ...player, isConnected: id === this.hostPlayerId || !!player.isBot }])),
+      deadlineAt: pub.deadlineAt === null ? null : now + grace + pub.deadlineAt,
+      ...(conversation?.status === 'loading' ? { discordConversation: { status: 'error' as const } } : {}),
+      history: [...pub.history, { id: crypto.randomUUID(), timestamp: now, type: 'ROOM_RESTORED', importance: 'normal', message: humans.length ? 'Mesa retomada pelo anfitrião. Prazo de reconexão reaberto; o tempo restante da decisão foi preservado.' : 'Mesa retomada pelo anfitrião. O tempo restante da decisão foi preservado.' }],
+    };
+    this.schedulePhaseTimeout();
+    this.resumeTimer = setTimeout(() => { if (!this.destroyed) this.bots.update(this.authoritativeState.publicState); }, grace);
+  }
+
   public destroy(): void {
     this.destroyed = true;
+    if (this.initTimer) clearTimeout(this.initTimer);
+    if (this.resumeTimer) clearTimeout(this.resumeTimer);
     this.bots.stop();
     if (this.timeoutTimer) clearTimeout(this.timeoutTimer);
     if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
@@ -311,6 +358,8 @@ export class PeerHost {
     }
     this.applyResult(result);
     this.destroyed = true;
+    if (this.initTimer) clearTimeout(this.initTimer);
+    if (this.resumeTimer) clearTimeout(this.resumeTimer);
     this.bots.stop();
     if (this.timeoutTimer) clearTimeout(this.timeoutTimer);
     if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);

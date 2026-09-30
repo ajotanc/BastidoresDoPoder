@@ -13,7 +13,15 @@ export const useOnlineGame = () => {
 
   return {
     // Estado reativo do Pinia via storeToRefs
+    recoveryWarning: refs.recoveryWarning,
+    savedGames: refs.savedGames,
+    refreshSavedGames: store.refreshSavedGames,
+    resumeSavedGame: store.resumeSavedGame,
+    discardSavedGame: store.discardSavedGame,
     mode: refs.mode,
+    connectionStatus: refs.connectionStatus,
+    reconnectAttempt: refs.reconnectAttempt,
+    retryConnection: store.retryConnection,
     isHost: refs.isHost,
     myPlayerId: refs.myPlayerId,
     myPlayerName: refs.myPlayerName,

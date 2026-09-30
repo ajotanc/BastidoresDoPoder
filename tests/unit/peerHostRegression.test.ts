@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ClientCommand } from '@/game/models/commands';
 import type { GameState } from '@/game/models/gameState';
 import { DEFAULT_GAME_SETTINGS } from '@/game/models/gameState';
+import { validCheckpoint, type HostCheckpoint } from '@/online/room/hostRecovery';
+import { RECONNECT_GRACE_MS, HOST_SAVE_TTL_MS } from '@/constants/gameConfig';
 import { PeerHost } from '@/online/peer/peerHost';
 import { isClientEnvelope } from '@/online/peer/protocol';
 import { BOT_DECISION_DELAY_MS } from '@/constants/gameConfig';
@@ -33,6 +35,7 @@ vi.mock('peerjs', () => ({ default: transport.MockPeer }));
 describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
   let host: PeerHost;
   let state: GameState;
+  let checkpoint: HostCheckpoint;
   let serial = 0;
   const send = (conn: InstanceType<typeof transport.Connection>, id: string, command: ClientCommand, revision = state.revision, messageId = `m-${++serial}`) => {
     conn.emit('data', { protocol: 1, roomCode: 'ROOM', playerId: id, messageId, revision, sentAt: Date.now(), data: command });
@@ -65,6 +68,7 @@ describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
     vi.setSystemTime(new Date('2026-09-26T01:00:00Z'));
     host = new PeerHost('ROOM', 'a', 'Ana', 'executor', 'token-a', {
       onStateChange: s => { state = s; }, onPrivateViewChange: vi.fn(), onError: vi.fn(), onReady: vi.fn(),
+      onCheckpoint: save => { checkpoint = structuredClone(save); },
     });
     const ready = host.init();
     transport.peers.at(-1)!.emit('open', 'bdp-room');
@@ -72,10 +76,45 @@ describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
   });
   afterEach(() => { host.destroy(); vi.useRealTimers(); });
 
+
+  it('restaura mãos e baralho, preserva a decisão e aceita credenciais anteriores sem expor cartas', async () => {
+    start();
+    const saved = structuredClone(checkpoint);
+    saved.state.playersPassedResponse.add('b');
+    const remaining = saved.state.publicState.deadlineAt! - saved.savedAt;
+    host.destroy();
+    vi.setSystemTime(Date.now() + 3600000);
+    host = new PeerHost('ROOM', 'a', 'Ana', 'executor', 'token-a', {
+      onStateChange: s => { state = s; }, onPrivateViewChange: vi.fn(), onError: vi.fn(), onReady: vi.fn(),
+      onCheckpoint: save => { checkpoint = structuredClone(save); },
+    }, undefined, 0, saved.botDifficulty, {}, saved.discordEnabled, saved);
+    const ready = host.init(); transport.peers.at(-1)!.emit('open', 'bdp-room'); await ready;
+    expect(checkpoint.state.deck).toEqual(saved.state.deck);
+    expect(checkpoint.state.privateHands).toEqual(saved.state.privateHands);
+    expect(checkpoint.state.playersPassedResponse.has('b')).toBe(true);
+    expect(checkpoint.conversationSessionId).toBe(saved.conversationSessionId);
+    expect(state.deadlineAt).toBe(Date.now() + RECONNECT_GRACE_MS + remaining);
+    expect(state.players.b!.isConnected).toBe(false);
+    const b = connect('recovered-b');
+    send(b, 'b', { type: 'RECONNECT', payload: { playerId: 'b', reconnectToken: 'token-b' } });
+    expect(state.players.b!.isConnected).toBe(true);
+    expect(messages(b, 'PRIVATE_VIEW')).toEqual([expect.objectContaining({ view: expect.objectContaining({ playerId: 'b', supports: saved.state.privateHands.b }) })]);
+    expect(JSON.stringify(messages(b, 'ROOM_SNAPSHOT'))).not.toContain('reconnectTokens');
+    expect(JSON.stringify(messages(b, 'ROOM_SNAPSHOT'))).not.toContain('privateHands');
+  });
+
+  it('recusa saves vencidos, versões incompatíveis e estados corrompidos', () => {
+    expect(validCheckpoint(checkpoint)).toBe(true);
+    expect(validCheckpoint({ ...checkpoint, version: 99 })).toBe(false);
+    expect(validCheckpoint({ ...checkpoint, savedAt: Date.now() - HOST_SAVE_TTL_MS })).toBe(false);
+    expect(validCheckpoint({ ...checkpoint, state: { ...checkpoint.state, privateHands: null } })).toBe(false);
+  });
+
   it.each(['hard', 'pro'] as const)('envia os tempos e o nível %s definidos pelo host para os convidados', async difficulty => {
     host.destroy();
     host = new PeerHost('ROOM', 'a', 'Ana', 'executor', 'token-a', {
       onStateChange: s => { state = s; }, onPrivateViewChange: vi.fn(), onError: vi.fn(), onReady: vi.fn(),
+      onCheckpoint: save => { checkpoint = structuredClone(save); },
     }, undefined, 2, difficulty, { actionSeconds: 45, responseSeconds: 12 });
     const ready = host.init();
     transport.peers.at(-1)!.emit('open', 'bdp-room');

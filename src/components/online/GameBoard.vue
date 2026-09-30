@@ -224,7 +224,7 @@ const copyGameLink = async (): Promise<void> => {
           <h2 class="game-section-title">Mesa {{ gameState.roomCode }}</h2>
         </div>
         <div class="flex items-center gap-1.5">
-          <DiscordConversation :conversation="gameState.discordConversation" :can-retry="isHost" @retry="emit('retry-conversation')" compact />
+          <DiscordConversation v-if="gameState.discordConversation" :conversation="gameState.discordConversation" :can-retry="isHost" @retry="emit('retry-conversation')" compact />
           <button type="button" @click="copyGameLink" class="online-icon-button" :title="copiedLinkNotice ? 'Link copiado' : 'Copiar link direto da partida'" :aria-label="copiedLinkNotice ? 'Link copiado' : 'Copiar link direto da partida'"><Check v-if="copiedLinkNotice" class="h-4 w-4 text-status-green" aria-hidden="true" /><Copy v-else class="h-4 w-4" aria-hidden="true" /></button>
           <button type="button" @click="showLeaveModal = true" class="online-icon-button" title="Abandonar partida" aria-label="Sair"><LogOut class="h-4 w-4" aria-hidden="true" /></button>
         </div>
@@ -538,6 +538,7 @@ const copyGameLink = async (): Promise<void> => {
               </div>
               <div class="min-w-0">
                 <h3 class="w-full font-semibold text-sm text-ink break-words leading-relaxed">{{ opp.name }}</h3>
+                <span v-if="!opp.isConnected && opp.isAlive && gameState.phase !== 'FINISHED'" class="block text-xs text-status-red">Reconectando…</span>
                 <span v-if="!opp.isAlive || (!opp.avatarImage && opp.avatarSlug)" class="text-[10px] text-ink-muted block truncate">
                   {{ opp.isAlive && opp.avatarSlug ? getRoleDisplayName(opp.avatarSlug) : 'CASSADO' }}
                 </span>

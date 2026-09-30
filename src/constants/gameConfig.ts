@@ -20,3 +20,5 @@ export const MAX_RECONNECT_ATTEMPTS = config.connection.maxReconnectAttempts;
 export const HEARTBEAT_INTERVAL_MS = config.connection.heartbeatIntervalSeconds * 1000;
 export const HEARTBEAT_TIMEOUT_MS = config.connection.heartbeatTimeoutSeconds * 1000;
 export const CONNECTION_TIMEOUT_MS = config.connection.connectionTimeoutSeconds * 1000;
+
+export const HOST_SAVE_TTL_MS = config.recovery.saveTtlHours * 60 * 60 * 1000;

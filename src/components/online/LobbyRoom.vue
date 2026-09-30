@@ -139,7 +139,7 @@ const handleShare = async (): Promise<void> => {
       </div>
     </div>
 
-    <DiscordConversation :conversation="gameState.discordConversation" :can-retry="isHost" @retry="emit('retry-conversation')" />
+    <DiscordConversation v-if="gameState.discordConversation" :conversation="gameState.discordConversation" :can-retry="isHost" @retry="emit('retry-conversation')" />
 
     <section class="rounded border border-line bg-surface p-4 shadow-card sm:p-6" aria-labelledby="lobby-settings-title">
       <div class="mb-4 space-y-2 gold-divider-bottom relative pb-3">

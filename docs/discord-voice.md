@@ -19,7 +19,7 @@ O Vite sozinho não executa Functions. Use `netlify dev` para testar o fluxo com
 
 ## Autorização e uso
 
-O anfitrião clica em Conectar Discord e autoriza apenas o escopo identify em uma janela separada, preservando a aba da partida. Os convidados não precisam autorizar o aplicativo para ver o convite. O servidor exige uma sessão OAuth assinada, com cookie HttpOnly/Secure/SameSite=Lax, válida por oito horas. A criação fica vinculada ao ID Discord autenticado e ao UUID da sessão da mesa.
+A conversa fica desligada por padrão nas configurações de criação. Desligada, nenhuma solicitação de criação ou autenticação é feita e a interface da conversa não aparece para a mesa. Quando ativada, o anfitrião clica em Conectar Discord e autoriza apenas o escopo identify em uma janela separada, preservando a aba da partida. Os convidados não precisam autorizar o aplicativo para ver o convite. O servidor exige uma sessão OAuth assinada, com cookie HttpOnly/Secure/SameSite=Lax, válida por oito horas. A criação fica vinculada ao ID Discord autenticado e ao UUID da sessão da mesa.
 
 Isso autentica a conta responsável pela solicitação; não prova ao servidor que a mesa P2P existe ou que essa conta é seu anfitrião. Um usuário autenticado ainda pode chamar a API diretamente. Há limite de três solicitações por IP/domínio em 180 segundos e limite preventivo de 40 itens na categoria; limites globais por usuário e coordenação entre instâncias exigem armazenamento compartilhado.
 

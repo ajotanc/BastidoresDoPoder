@@ -4,7 +4,7 @@ for (const width of [320, 390, 1280]) {
   test(`Pro aparece no seletor, persiste e consta no manual em ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/online');
-    await page.getByRole('checkbox', { name: 'Adicionar bots à mesa' }).check();
+    await page.getByRole('switch', { name: 'Adicionar bots à mesa' }).check();
     const slider = page.getByRole('slider', { name: 'Nível dos bots' });
     await slider.focus();
     await page.keyboard.press('End');

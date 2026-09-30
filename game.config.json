@@ -14,6 +14,9 @@
     "riskTolerance": 0.9,
     "decisionVariation": 0.18
   },
+  "recovery": {
+    "saveTtlHours": 24
+  },
   "connection": {
     "reconnectGraceSeconds": 60,
     "reconnectRetrySeconds": 2,

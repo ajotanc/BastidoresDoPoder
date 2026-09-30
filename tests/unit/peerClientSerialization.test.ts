@@ -1,4 +1,6 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
+import { createInitialAuthoritativeState } from '@/game/engine/gameEngine';
+import { CONNECTION_TIMEOUT_MS } from '@/constants/gameConfig';
 import { PeerClient } from '@/online/peer/peerClient';
 import { isClientEnvelope } from '@/online/peer/protocol';
 
@@ -29,6 +31,7 @@ describe('Contrato de serialização do cliente PeerJS', () => {
     const connecting = client.connect();
     mocks.peerEvents.get('open')!();
     mocks.connectionEvents.get('open')!();
+    mocks.connectionEvents.get('data')!({ type: 'ROOM_SNAPSHOT', state: createInitialAuthoritativeState('ROOM', 'host', 'Ana', undefined, 'token').publicState });
     await connecting;
     try {
       vi.setSystemTime(Date.now() + 120000);
@@ -49,11 +52,12 @@ describe('Contrato de serialização do cliente PeerJS', () => {
     mocks.peerEvents.get('open')!();
     expect(mocks.connect).toHaveBeenCalledWith('bdp-room', { reliable: true, serialization: 'json' });
     mocks.connectionEvents.get('open')!();
-    await connecting;
     try {
       client.sendCommand({ type: 'JOIN_ROOM', payload: { name: 'Bruno', avatarSlug: 'baron', reconnectToken: 'token-b' } });
       const join = mocks.connection.send.mock.calls.at(-1)![0];
       expect(join).not.toHaveProperty('revision');
+      mocks.connectionEvents.get('data')!({ type: 'ROOM_SNAPSHOT', state: createInitialAuthoritativeState('ROOM', 'host', 'Ana', undefined, 'token').publicState });
+      await connecting;
       expect(isClientEnvelope(JSON.parse(JSON.stringify(join)))).toBe(true);
       client.sendCommand({ type: 'DECLARE_ACTION', payload: { actionType: 'salary', targetPlayerId: undefined, namedRole: undefined, secondaryPlayerId: undefined } });
       const wire = JSON.parse(JSON.stringify(mocks.connection.send.mock.calls.at(-1)![0]));
@@ -61,4 +65,17 @@ describe('Contrato de serialização do cliente PeerJS', () => {
       expect(isClientEnvelope(wire)).toBe(true);
     } finally { client.destroy(); }
   });
+});
+
+it('não considera a conexão pronta antes do snapshot e expira se o host não confirmar', async () => {
+  vi.useFakeTimers();
+  const client = new PeerClient('ROOM', 'player-b', { onConnected: vi.fn(), onDisconnected: vi.fn(), onStateChange: vi.fn(), onPrivateViewChange: vi.fn(), onError: vi.fn() });
+  const connecting = client.connect();
+  const rejected = expect(connecting).rejects.toThrow();
+  mocks.peerEvents.get('open')!();
+  mocks.connectionEvents.get('open')!();
+  await vi.advanceTimersByTimeAsync(CONNECTION_TIMEOUT_MS);
+  await rejected;
+  client.destroy();
+  vi.useRealTimers();
 });

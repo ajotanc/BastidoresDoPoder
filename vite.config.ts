@@ -15,7 +15,7 @@ export default defineConfig({
     vue(),
     { name: 'game-metadata', transformIndexHtml: (html: string) => html.replaceAll('__GAME_NAME__', GAME_NAME).replaceAll('__MIN_PLAYERS__', String(MIN_PLAYERS_TO_START)).replaceAll('__MAX_PLAYERS__', String(MAX_PLAYERS_PER_ROOM)) },
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       devOptions: {
         enabled: true,
         type: 'module',
@@ -64,6 +64,8 @@ export default defineConfig({
         ]
       },
       workbox: {
+        skipWaiting: false,
+        clientsClaim: false,
         // OAuth navigations must reach Functions, never the cached app shell.
         navigateFallbackDenylist: [/^\/\.netlify(?:\/|$)/],
         globPatterns: ['**/*.{js,css,html,svg,ico,woff2}'],

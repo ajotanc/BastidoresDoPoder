@@ -107,8 +107,8 @@ button:focus-visible,
   .online-dialog { display: flex; flex-direction: column; max-height: calc(100dvh - 1.5rem); }
   .dialog-actions { padding-bottom: max(.75rem, env(safe-area-inset-bottom)); }
   .online-ui { overflow-wrap: break-word; }
-  .online-ui button:not(.app-checkbox) { min-height: 44px; }
-  .online-dialog button:not(.app-checkbox) { min-height: 44px; }
+  .online-ui button:not(.app-checkbox):not(.app-switch) { min-height: 44px; }
+  .online-dialog button:not(.app-checkbox):not(.app-switch) { min-height: 44px; }
   .online-ui button[title] { min-width: 44px; }
   .online-ui button svg { flex-shrink: 0; }
   .online-ui input { font-size: 16px; }
@@ -120,14 +120,14 @@ button[class], .app-button {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 14px;
 }
-button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-checkbox), .app-button {
+button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-checkbox):not(.app-switch), .app-button {
   min-height: 44px;
   padding: 10px 12px;
   border-width: 1px;
   font-weight: 600;
   line-height: 1.4;
 }
-button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-select-trigger):not(.rules-action):not(:has(.block)) {
+button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-select-trigger):not(.rules-action):not(:has(.block)):not(.app-switch) {
   align-items: center;
   justify-content: center;
   gap: 8px;

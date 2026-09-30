@@ -45,7 +45,7 @@ const levelDetails = {
         <span class="flex h-11 w-11 items-center justify-center rounded border border-gold/30 bg-gold/10 text-gold"><Discord class="h-5 w-5" /></span>
       </div>
       <h3 id="online-discord-title" class="mb-3 font-serif text-lg font-bold text-gold-light">Conversa da mesa no Discord</h3>
-      <p class="text-sm leading-relaxed text-ink-muted">A mesa também conta com uma sala de voz no Discord para quem quiser conversar durante a partida.</p>
+      <p class="text-sm leading-relaxed text-ink-muted">Ative a conversa no Discord nas configurações da partida para reunir os jogadores em uma sala de voz.</p>
     </article>
     <div class="mb-6">
       <h3 class="mb-2 font-serif text-xl font-bold text-gold-light">A mesma mesa. Quatro desafios.</h3>

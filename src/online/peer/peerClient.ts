@@ -24,6 +24,7 @@ export class PeerClient {
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private lastMessageAt = 0;
   private destroyed = false;
+  private cancelConnect: (() => void) | null = null;
   private leaveTimer: ReturnType<typeof setTimeout> | null = null;
   public readonly roomCode: string;
   public readonly playerId: string;
@@ -43,7 +44,10 @@ export class PeerClient {
         reject(new Error('O host não respondeu à conexão.'));
       }, CONNECTION_TIMEOUT_MS);
 
+      this.cancelConnect = () => { clearTimeout(connectionTimeout); reject(new Error('Conexão encerrada.')); };
+
       peer.on('open', () => {
+        if (this.destroyed) return;
         this.peer = peer;
         const hostPeerId = roomCodeToPeerId(this.roomCode);
         // BinaryPack transforma undefined em null, inclusive em campos opcionais
@@ -51,7 +55,7 @@ export class PeerClient {
         const conn = peer.connect(hostPeerId, { reliable: true, serialization: 'json' });
 
         conn.on('open', () => {
-          clearTimeout(connectionTimeout);
+          if (this.destroyed) { conn.close(); return; }
           this.connection = conn;
           this.lastMessageAt = dayjs().valueOf();
           let lastHeartbeatCheck = this.lastMessageAt;
@@ -65,7 +69,6 @@ export class PeerClient {
             if (conn.open) sendPeerMessage(conn, { type: 'HEARTBEAT' });
           }, HEARTBEAT_INTERVAL_MS);
           this.callbacks.onConnected();
-          resolve();
         });
 
         const readMessage = createPeerMessageReader();
@@ -79,13 +82,18 @@ export class PeerClient {
           if (isHostServerMessage(data)) {
             this.lastMessageAt = dayjs().valueOf();
             if (data.type === 'ROOM_SNAPSHOT') {
+              clearTimeout(connectionTimeout);
+              this.cancelConnect = null;
+              resolve();
               if (this.revision !== undefined && data.state.revision < this.revision) return;
               this.revision = data.state.revision;
               this.callbacks.onStateChange(data.state);
             } else if (data.type === 'PRIVATE_VIEW') {
               if (data.view.playerId === this.playerId) this.callbacks.onPrivateViewChange(data.view);
             } else if (data.type === 'COMMAND_REJECTED') {
-              this.callbacks.onError(`${data.reject.reason}: ${data.reject.description}`);
+              const message = `${data.reject.reason}: ${data.reject.description}`;
+              reject(new Error(message));
+              this.callbacks.onError(message);
             }
           }
         });
@@ -142,6 +150,8 @@ export class PeerClient {
 
   public destroy(): void {
     this.destroyed = true;
+    this.cancelConnect?.();
+    this.cancelConnect = null;
     if (this.leaveTimer) clearTimeout(this.leaveTimer);
     if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
     if (this.connection) {

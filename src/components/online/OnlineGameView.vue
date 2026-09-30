@@ -6,8 +6,9 @@ import { loadBotDifficulty, saveBotDifficulty, loadBotsEnabled, saveBotsEnabled 
 import { createPlayerName, characterGender, type PlayerGender } from '@/utils/playerName';
 import { loadProfile, saveProfile, prepareAvatar } from "@/utils/playerProfile";
 import { ref, computed, watch, onMounted } from 'vue';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ACTION_TIMEOUT_SECONDS, RESPONSE_TIMEOUT_SECONDS, DEFAULT_BOT_COUNT, MAX_BOTS_PER_ROOM } from '@/constants/gameConfig';
+import { Switch } from '@/components/ui/switch';
+import DiscordIcon from '@/components/ui/icons/Discord.vue';
+import { ACTION_TIMEOUT_SECONDS, RESPONSE_TIMEOUT_SECONDS, DEFAULT_BOT_COUNT, MAX_BOTS_PER_ROOM, MAX_RECONNECT_ATTEMPTS } from '@/constants/gameConfig';
 import type { RoleSlug } from '@/types/game';
 import { useOnlineGame } from '@/composables/useOnlineGame';
 import { PLAYABLE_ROLES } from '@/game/engine/deck';
@@ -15,6 +16,8 @@ import { getRoleDisplayName } from '@/game/engine/gameEngine';
 import { AlertCircle, PlusCircle, LogIn, ArrowLeft, Camera, Upload, Shuffle, Trash2, Mars, Venus, Users, UserRound, SlidersHorizontal, Clock, Bot } from 'lucide-vue-next';
 import LobbyRoom from './LobbyRoom.vue';
 import GameBoard from './GameBoard.vue';
+import AppDialog from '@/components/ui/AppDialog.vue';
+import AppButton from '@/components/ui/AppButton.vue';
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
 
 interface Props {
@@ -31,6 +34,10 @@ const emit = defineEmits<{
 
 const {
   mode,
+  recoveryWarning, savedGames, refreshSavedGames, resumeSavedGame, discardSavedGame,
+  connectionStatus,
+  reconnectAttempt,
+  retryConnection,
   isHost,
   myPlayerId,
   currentRoomCode,
@@ -83,6 +90,7 @@ const uploadPhoto = async (event: Event) => {
 const activeTab = ref<'create' | 'join'>('create');
 const isSubmitting = ref(false);
 const playAgainstBots = ref(loadBotsEnabled());
+const discordEnabled = ref(false);
 watch(playAgainstBots, saveBotsEnabled);
 const actionSeconds = ref<number | string>('');
 const responseSeconds = ref<number | string>('');
@@ -114,6 +122,7 @@ watch(currentRoomCode, (newCode) => {
 });
 
 onMounted(() => {
+  void refreshSavedGames();
   if (!inputName.value.trim()) generatePlayerName();
   if (props.initialRoomId) {
     inputRoomCode.value = props.initialRoomId.toUpperCase();
@@ -133,7 +142,24 @@ onMounted(() => {
   }
 });
 
+const discardCode = ref('');
+const isResuming = ref(false);
+const resumeGame = async (code: string) => {
+  isResuming.value = true;
+  isSubmitting.value = true;
+  try { await resumeSavedGame(code); } finally { isResuming.value = false; isSubmitting.value = false; }
+};
+const confirmDiscard = async () => {
+  await discardSavedGame(discardCode.value);
+  discardCode.value = '';
+};
+const leaveConfirmation = ref(false);
+const requestLeave = (): void => {
+  if (gameState.value && gameState.value.phase !== 'FINISHED') leaveConfirmation.value = true;
+  else handleLeave();
+};
 const handleLeave = (): void => {
+  leaveConfirmation.value = false;
   inputRoomCode.value = ''; activeTab.value = 'create';
   leaveRoom();
   emit('room-left');
@@ -143,7 +169,7 @@ const handleCreate = async (): Promise<void> => {
   if (timingError.value || !inputName.value.trim() || (playAgainstBots.value && !validBotCount.value)) return;
   try {
     isSubmitting.value = true;
-    await createRoom(inputName.value.trim(), avatarImage.value ? undefined : selectedAvatar.value, avatarImage.value, playAgainstBots.value ? Number(botCount.value) : 0, selectedDifficulty.value.value, { actionSeconds: actionSeconds.value, responseSeconds: responseSeconds.value });
+    await createRoom(inputName.value.trim(), avatarImage.value ? undefined : selectedAvatar.value, avatarImage.value, playAgainstBots.value ? Number(botCount.value) : 0, selectedDifficulty.value.value, { actionSeconds: actionSeconds.value, responseSeconds: responseSeconds.value }, discordEnabled.value);
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.warn('Falha na criação da sala:', err.message);
@@ -170,6 +196,12 @@ const handleJoin = async (): Promise<void> => {
 
 <template>
   <div class="online-ui w-full min-w-0 space-y-6">
+    <div v-if="connectionStatus !== 'connected'" role="status" class="rounded border border-gold/40 bg-surface p-4 text-sm text-ink-muted">
+      <p class="font-serif font-bold text-gold-light">{{ connectionStatus === 'reconnecting' ? 'Reconectando à mesa' : 'Conexão interrompida' }}</p>
+      <AppButton v-if="connectionStatus === 'disconnected'" class="mt-3" @click="retryConnection">Tentar reconectar</AppButton>
+      <p class="mt-1">{{ connectionStatus === 'reconnecting' ? `Tentativa ${reconnectAttempt} de ${MAX_RECONNECT_ATTEMPTS}. Aguarde a confirmação do anfitrião.` : 'Aguarde o anfitrião retomar a mesa e tente conectar novamente.' }}</p>
+    </div>
+    <p v-if="recoveryWarning" role="status" class="rounded border border-gold/40 bg-surface p-4 text-sm text-gold-light">{{ recoveryWarning }}</p>
     <!-- Notificação de Erro Flutuante -->
     <div v-if="errorMessage"
       class="p-4 bg-status-red-bg border border-status-red/50 rounded text-status-red flex items-center justify-between gap-3 shadow-lg animate-fadeIn"
@@ -187,6 +219,18 @@ const handleJoin = async (): Promise<void> => {
       class="online-entry pt-12 mx-auto max-w-xl space-y-6 sm:space-y-8">
       <AppSectionHeader label="O poder está à mesa" title="Seu gabinete. Suas alianças."
         description="Reúna seus amigos, guarde seus segredos e dispute o poder." />
+      <section v-if="savedGames.length" class="space-y-3 rounded border border-gold/40 bg-surface p-4 sm:p-6" aria-label="Partidas salvas">
+        <h2 class="font-serif font-bold text-gold-light">Sua mesa está salva</h2>
+        <p class="text-xs leading-relaxed text-ink-muted">Retome neste navegador. Os convidados podem voltar pelo mesmo código.</p>
+        <article v-for="save in savedGames" :key="save.roomCode" class="space-y-3 border-t border-line pt-3">
+          <p class="text-sm text-ink">Mesa {{ save.roomCode }} · {{ save.state.publicState.players[save.hostPlayerId]?.name }}</p>
+          <p class="text-xs text-ink-muted">{{ save.state.publicState.phase === 'LOBBY' ? 'Aguardando jogadores' : `Turno ${save.state.publicState.turn}` }} · {{ new Date(save.savedAt).toLocaleString('pt-BR') }}</p>
+          <div class="flex flex-wrap gap-2">
+            <AppButton :disabled="mode !== 'idle' || isResuming" @click="resumeGame(save.roomCode)">Retomar partida</AppButton>
+            <AppButton variant="ghost" :disabled="mode !== 'idle' || isResuming" @click="discardCode = save.roomCode">Descartar</AppButton>
+          </div>
+        </article>
+      </section>
       <div class="entry-settings overflow-hidden rounded border border-line shadow-card">
 
         <div class="mx-4 mt-4 grid grid-cols-2 gap-1 rounded border border-line bg-paper-deep p-1 sm:mx-7 sm:mt-7" role="group"
@@ -289,7 +333,7 @@ const handleJoin = async (): Promise<void> => {
               </span>
               <div class="min-w-0">
                 <h3 class="font-serif text-base font-bold text-gold-light">Configurações da partida</h3>
-                <p class="mt-1 text-xs leading-relaxed text-ink-muted">Tempos e nível dos bots valem para toda a mesa.</p>
+                <p class="mt-1 text-xs leading-relaxed text-ink-muted">Defina os tempos, os bots e a conversa da mesa.</p>
               </div>
             </div>
             <div class="space-y-4 py-4">
@@ -347,7 +391,7 @@ const handleJoin = async (): Promise<void> => {
                   <span id="bots-help" class="mt-1 block text-xs leading-relaxed text-ink-muted">Treine sozinho ou jogue
                     com amigos e bots.</span>
                 </label>
-                <Checkbox id="play-against-bots" v-model:checked="playAgainstBots" :disabled="isSubmitting"
+                <Switch id="play-against-bots" v-model:checked="playAgainstBots" :disabled="isSubmitting"
                   aria-labelledby="bots-label" aria-describedby="bots-help" />
               </div>
               <div v-if="playAgainstBots" class="space-y-4">
@@ -379,6 +423,20 @@ const handleJoin = async (): Promise<void> => {
                   <p class="mt-3 min-h-10 text-xs leading-relaxed text-ink-muted">{{ selectedDifficulty.description }}
                   </p>
                 </div>
+              </div>
+            </div>
+
+            <div class="space-y-4 border-t border-line/70 py-4">
+              <h4 class="flex items-center gap-2 font-serif text-sm font-bold text-gold-light">
+                <DiscordIcon class="size-4 shrink-0 text-gold-muted" aria-hidden="true" />Conversa da mesa
+              </h4>
+              <div class="flex min-h-11 items-center gap-3">
+                <label for="enable-discord" class="min-w-0 flex-1 cursor-pointer">
+                  <span id="discord-label" class="form-label">Ativar conversa no Discord</span>
+                  <span id="discord-help" class="mt-1 block text-xs leading-relaxed text-ink-muted">Crie uma sala de voz para conversar durante a partida. O anfitrião conecta sua conta Discord.</span>
+                </label>
+                <Switch id="enable-discord" v-model:checked="discordEnabled" :disabled="isSubmitting"
+                  aria-labelledby="discord-label" aria-describedby="discord-help" />
               </div>
             </div>
 
@@ -414,13 +472,28 @@ const handleJoin = async (): Promise<void> => {
 
     <!-- TELA 2: LOBBY DA SALA -->
     <LobbyRoom @retry-conversation="retryConversation" v-else-if="mode === 'lobby' && gameState" :room-code="currentRoomCode" :game-state="gameState"
-      :my-player-id="myPlayerId" :is-host="isHost" @set-ready="setReady" @start-game="startGame" @leave="handleLeave" />
+      :my-player-id="myPlayerId" :is-host="isHost" @set-ready="setReady" @start-game="startGame" @leave="requestLeave" />
 
     <!-- TELA 3: MESA DE JOGO ATIVA -->
     <GameBoard @retry-conversation="retryConversation" v-else-if="mode === 'playing' && gameState" :game-state="gameState" :private-view="privateView"
       :my-player-id="myPlayerId" :is-host="isHost" @declare-action="declareAction" @declare-block="declareBlock"
       @declare-challenge="declareChallenge" @pass-response="passResponse" @choose-card="chooseCard"
-      @choose-exchange="chooseExchange" @leave="handleLeave" />
+      @choose-exchange="chooseExchange" @leave="requestLeave" />
+    <AppDialog :is-open="!!discardCode" aria-label="Descartar partida salva" @close="discardCode = ''">
+      <template #header><h2 class="app-dialog-title">Descartar partida?</h2></template>
+      <p class="text-sm text-ink-muted">O salvamento da mesa {{ discardCode }} será removido deste navegador.</p>
+      <template #footer><div class="flex flex-wrap justify-end gap-2"><AppButton variant="outline" @click="discardCode = ''">Cancelar</AppButton><AppButton @click="confirmDiscard">Descartar partida</AppButton></div></template>
+    </AppDialog>
+    <AppDialog :is-open="leaveConfirmation" aria-label="Sair da mesa" @close="leaveConfirmation = false">
+      <template #header><h2 class="app-dialog-title">Sair da mesa?</h2></template>
+      <p class="text-sm leading-relaxed text-ink-muted">{{ isHost ? 'Você é o anfitrião. Sair encerra a conexão da mesa para todos e o salvamento será excluído.' : 'Ao sair, você abandona seu lugar nesta mesa.' }}</p>
+      <template #footer>
+        <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <AppButton @click="leaveConfirmation = false">Continuar na mesa</AppButton>
+          <AppButton variant="outline" @click="handleLeave">{{ isHost ? 'Encerrar mesa' : 'Sair da mesa' }}</AppButton>
+        </div>
+      </template>
+    </AppDialog>
   </div>
 </template>
 

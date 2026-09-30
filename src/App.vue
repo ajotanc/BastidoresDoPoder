@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import { registerSW } from 'virtual:pwa-register';
+import { useGameStore } from '@/stores/gameStore';
+import { useSessionProtection } from '@/composables/useSessionProtection';
 import { useRoute, useRouter } from 'vue-router';
 import { NAVIGATION_SECTIONS } from '@/constants/gameData';
 import { useActiveSection } from '@/composables/useActiveSection';
@@ -9,6 +12,12 @@ import AppFooter from '@/components/layout/AppFooter.vue';
 import CardLightboxModal from '@/components/game/CardLightboxModal.vue';
 import CoinLightboxModal from '@/components/game/CoinLightboxModal.vue';
 
+const game = useGameStore();
+const sessionActive = computed(() => ['creating', 'joining', 'lobby', 'playing'].includes(game.mode) && game.gameState?.phase !== 'FINISHED');
+useSessionProtection(sessionActive);
+const updateAvailable = ref(false);
+// Never activate a waiting worker from an open tab: other tabs may host a match.
+registerSW({ immediate: true, onNeedRefresh: () => { updateAvailable.value = true; } });
 const route = useRoute();
 const router = useRouter();
 
@@ -67,6 +76,13 @@ const handleNavbarNavigate = (sectionId: string): void => {
         isOnlineActive ? 'px-3 sm:px-6 py-3 sm:py-6' : 'px-4 sm:px-8 py-8 sm:py-12'
       ]"
     >
+      <div v-if="updateAvailable && !sessionActive" role="status" class="mb-4 rounded border border-gold/30 bg-surface p-4 text-sm text-ink-muted">
+        Uma nova versão está pronta. Ela será aplicada quando todas as abas do jogo forem fechadas e você abrir novamente.
+      </div>
+      <div v-if="sessionActive && !isOnlineActive && game.currentRoomCode" class="mb-4 rounded border border-gold/30 bg-surface p-4 text-sm text-ink-muted">
+        Sua mesa continua aberta.
+        <RouterLink :to="`/game/${game.currentRoomCode}`" class="ml-2 inline-flex min-h-11 items-center font-semibold text-gold">Voltar à mesa</RouterLink>
+      </div>
       <RouterView />
     </main>
 
