@@ -87,6 +87,7 @@ export const createInitialAuthoritativeState = (
   };
 
   const publicState: GameState = {
+    settings: { ...settings },
     gameId: `game-${roomCode}-${dayjs().valueOf()}`,
     roomCode: roomCode.toUpperCase(),
     revision: 1,
@@ -500,6 +501,8 @@ export const executeCommand = (
         targetPlayerId: needsTarget ? intent.targetPlayerId : undefined,
         claimedRole,
         namedRole: intent.actionType === 'searchWarrant' ? intent.namedRole : undefined,
+        targetLostCardCountAtDeclaration: intent.actionType === 'searchWarrant' && intent.targetPlayerId
+          ? state.publicState.players[intent.targetPlayerId]?.lostCards.length : undefined,
         costPaid: cost,
       };
 
@@ -512,7 +515,8 @@ export const executeCommand = (
       const actionLabel = getActionDisplayName(intent.actionType);
       const targetName = intent.targetPlayerId ? state.publicState.players[intent.targetPlayerId]?.name : '';
       const targetTxt = targetName ? ` contra ${targetName}` : '';
-      addEvent(`${player.name} declarou ${actionLabel}${targetTxt}.`, 'alert', 'ACTION_DECLARED', { playerId: senderPlayerId, role: claimedRole, actionType: intent.actionType });
+      const searchTxt = intent.actionType === 'searchWarrant' && intent.namedRole ? `, procurando ${getRoleDisplayName(intent.namedRole)}` : '';
+      addEvent(`${player.name} declarou ${actionLabel}${targetTxt}${searchTxt}.`, 'alert', 'ACTION_DECLARED', { playerId: senderPlayerId, role: claimedRole, actionType: intent.actionType });
 
       // Se a ação alega cargo de personagem (Caixa 2, Extorsão, Execução, Troca, Mandado, Acordo), abre contestação ("Fake News!")
       if (claimedRole) {
@@ -732,7 +736,7 @@ export const executeCommand = (
       };
 
       addEvent(
-        `APOIO PERDIDO! ${player?.name || 'Jogador'} perdeu o apoio de ${getRoleDisplayName(card.roleSlug)}.`,
+        `APOIO PERDIDO! ${player?.name || 'Jogador'} perdeu o apoio de ${getRoleDisplayName(card.roleSlug)}. Motivo: ${revealed.reason}.`,
         'breaking',
         'SUPPORT_LOST', { playerId: senderPlayerId, role: card.roleSlug }
       );
@@ -990,12 +994,18 @@ const resolveApprovedAction = (state: AuthoritativeGameState): EngineExecutionRe
         const target = state.publicState.players[pending.targetPlayerId];
         const targetHand = state.privateHands[pending.targetPlayerId] || [];
         const hasNamedRole = targetHand.some((c) => !c.isLost && c.roleSlug === pending.namedRole);
-        state.privateNotices[pending.sourcePlayerId] = hasNamedRole
-          ? `Mandado: encontrado ${getRoleDisplayName(pending.namedRole)} em ${target?.name}. Um apoio foi perdido.`
-          : `Mandado contra ${target?.name}: nada encontrado.`;
+        const roleName = getRoleDisplayName(pending.namedRole);
+        const priorLosses = pending.targetLostCardCountAtDeclaration === undefined ? []
+          : target?.lostCards.slice(pending.targetLostCardCountAtDeclaration) ?? [];
+        const lostNamedRole = priorLosses.some(card => card.roleSlug === pending.namedRole);
+        const resultMessage = hasNamedRole
+          ? `Mandado concluído: ${target?.name} perdeu 1 apoio de ${roleName}${priorLosses.length ? ', além do apoio perdido na contestação' : ''}.`
+          : lostNamedRole
+            ? `Mandado concluído: ${target?.name} já perdeu ${roleName} na contestação anterior. Nenhuma cópia ativa desse personagem restou para o Mandado; nenhum apoio adicional foi perdido.`
+            : `Mandado concluído: ${roleName} não foi encontrado entre os apoios ativos de ${target?.name}. Nenhum apoio foi perdido pelo Mandado.`;
+        state.privateNotices[pending.sourcePlayerId] = resultMessage;
 
         if (hasNamedRole) {
-          addEvent(`Mandado de Busca bem-sucedido! ${target?.name} possuía ${getRoleDisplayName(pending.namedRole)} e perderá o apoio.`, 'breaking', { type: 'SUPPORT_LOST', playerId: pending.targetPlayerId, role: pending.namedRole });
           const targetCard = targetHand.find((c) => !c.isLost && c.roleSlug === pending.namedRole);
           if (targetCard) {
             const updatedHand = targetHand.map((c) => (c.id === targetCard.id ? { ...c, isLost: true } : c));
@@ -1021,9 +1031,11 @@ const resolveApprovedAction = (state: AuthoritativeGameState): EngineExecutionRe
               ...state.publicState,
               discard: [revealed, ...state.publicState.discard],
             };
+            addEvent(resultMessage, 'breaking', { type: 'SUPPORT_LOST', playerId: pending.targetPlayerId, role: pending.namedRole });
+            if (remaining === 0) addEvent(`ELIMINAÇÃO! ${target?.name} perdeu o último apoio pelo Mandado de Busca e está fora do jogo.`, 'breaking', { type: 'PLAYER_ELIMINATED', playerId: pending.targetPlayerId });
           }
         } else {
-          addEvent(`Mandado de Busca infrutífero: ${target?.name} não possuía o apoio investigado.`, 'normal');
+          addEvent(resultMessage, 'normal');
         }
       }
       state.publicState = { ...state.publicState, pendingAction: null };

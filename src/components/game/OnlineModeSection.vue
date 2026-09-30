@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
-import { Users, Bot, ArrowRight, EyeOff } from 'lucide-vue-next';
+import { Users, Bot, ArrowRight, EyeOff, BookOpen } from 'lucide-vue-next';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
-import { BOT_DIFFICULTIES } from '@/game/bots/botDifficulty';
+import { BOT_DIFFICULTIES, BOT_DIFFICULTY_TAG_CLASSES } from '@/game/bots/botDifficulty';
 import { ACTION_TIMEOUT_SECONDS, RESPONSE_TIMEOUT_SECONDS, MIN_PLAYERS_TO_START } from '@/constants/gameConfig';
 
 const levelDetails = {
   easy: { example: 'Decisões menos precisas abrem espaço para você experimentar ações e aprender quando contestar.' },
   intermediate: { example: 'Os bots observam ameaças e alegações recentes. Um blefe vantajoso pode funcionar, mas o risco entra na conta.' },
   hard: { example: 'Podem extorquir para impedir um ataque, preservar uma defesa útil e preferir uma vitória garantida a uma jogada arriscada.' },
+  pro: { example: 'Comparam o risco de retaliação após cada ação, preservam moedas para defender e avaliam quando desarmar ou eliminar uma ameaça.' },
 };
 </script>
 
@@ -38,16 +40,12 @@ const levelDetails = {
       </article>
     </div>
     <div class="mb-6">
-      <h3 class="mb-2 font-serif text-xl font-bold text-gold-light">A mesma mesa. Três desafios.</h3>
+      <h3 class="mb-2 font-serif text-xl font-bold text-gold-light">A mesma mesa. Quatro desafios.</h3>
       <p class="mb-5 max-w-2xl text-sm leading-relaxed text-ink-muted">Comece no seu ritmo e aumente a dificuldade quando quiser. Todos os níveis blefam e contestam; o que muda é o cuidado com cada decisão.</p>
-      <div class="grid overflow-hidden rounded border border-line bg-surface divide-y divide-line md:grid-cols-3 md:divide-x md:divide-y-0">
-        <article v-for="level in BOT_DIFFICULTIES" :key="level.value" class="p-5">
+      <div class="grid gap-px overflow-hidden rounded border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+        <article v-for="level in BOT_DIFFICULTIES" :key="level.value" class="bg-surface p-5">
           <div class="mb-3 flex flex-wrap items-center gap-2">
-          <h4 class="inline-flex rounded border px-2.5 py-1 text-xs font-semibold" :class="{
-            'border-status-green/30 bg-status-green/10 text-status-green': level.value === 'easy',
-            'border-gold/25 bg-gold/10 text-gold': level.value === 'intermediate',
-            'border-status-red/30 bg-status-red/10 text-status-red': level.value === 'hard',
-          }">{{ level.label }}</h4>
+          <h4 class="inline-flex rounded border px-2.5 py-1 text-xs font-semibold" :class="BOT_DIFFICULTY_TAG_CLASSES[level.value]">{{ level.label }}</h4>
           <span v-if="level.value === 'intermediate'" class="text-xs text-ink-subtle">Nível inicial</span>
           </div>
           <p class="text-sm leading-relaxed text-ink-muted">{{ levelDetails[level.value].example }}</p>
@@ -55,19 +53,31 @@ const levelDetails = {
       </div>
       <div class="mt-4 flex items-start gap-3 rounded bg-surface px-4 py-3">
         <EyeOff class="mt-0.5 size-4 shrink-0 text-gold-muted" aria-hidden="true" />
-        <p class="text-xs leading-relaxed text-ink-muted"><strong class="font-semibold text-ink">Cartas escondidas continuam escondidas.</strong> Mesmo no difícil, os bots usam apenas a própria mão e o que aconteceu publicamente na mesa.</p>
+        <p class="text-xs leading-relaxed text-ink-muted"><strong class="font-semibold text-ink">Cartas escondidas continuam escondidas.</strong> Mesmo no Pro, os bots usam apenas a própria mão e o que aconteceu publicamente na mesa. Eles não aprendem entre partidas.</p>
       </div>
       <p class="mt-3 text-xs leading-relaxed text-ink-subtle">Escolha em “Nível dos bots” ao criar a sala. A dificuldade vale para todos os bots, e sua preferência fica salva neste navegador.</p>
     </div>
-    <details class="mb-6 rounded border border-line bg-surface px-4">
-      <summary class="min-h-11 cursor-pointer py-3 text-sm font-semibold text-gold-light">Como a mesa online funciona</summary>
-      <div class="space-y-3 pb-4 text-sm leading-relaxed text-ink-muted">
+    <Accordion type="single" collapsible class="mb-6">
+      <AccordionItem value="online-guide">
+        <AccordionTrigger aria-label="Como a mesa online funciona">
+          <span class="flex items-center gap-3">
+            <span class="flex size-8 shrink-0 items-center justify-center rounded border border-gold/25 bg-gold/10 text-gold sm:size-10"><BookOpen class="size-4 sm:size-5" aria-hidden="true" /></span>
+            <span class="min-w-0">
+              <span class="block font-serif text-base font-bold leading-snug sm:hidden" aria-hidden="true">Mesa online</span>
+              <span class="hidden font-serif text-base font-bold leading-snug sm:block" aria-hidden="true">Como a mesa online funciona</span>
+              <span class="mt-1 block text-xs font-normal leading-relaxed text-ink-muted"><span class="sm:hidden">Entenda como funciona</span><span class="hidden sm:inline">Do primeiro turno ao resultado da partida.</span></span>
+            </span>
+          </span>
+        </AccordionTrigger>
+      <AccordionContent class="space-y-4">
         <p><strong class="text-ink">Início:</strong> reúna ao menos {{ MIN_PLAYERS_TO_START }} participantes, contando amigos e bots. Todos devem estar conectados e prontos para o anfitrião iniciar. O anfitrião joga primeiro.</p>
-        <p><strong class="text-ink">Tempo para decidir:</strong> cada turno permite até {{ ACTION_TIMEOUT_SECONDS }} segundos para declarar a ação. Cada jogador chamado a responder tem até {{ RESPONSE_TIMEOUT_SECONDS }} segundos. Sem resposta, o jogo passa a oportunidade; sem ação no prazo, aplica Salário Oficial ou, com C$ 10 ou mais, Impeachment definitivo contra o próximo adversário vivo.</p>
+        <p><strong class="text-ink">Conexão:</strong> mantenha a aba da partida aberta. O navegador do anfitrião mantém a mesa funcionando; fechar ou atualizar essa aba interrompe a sala.</p>
+        <p><strong class="text-ink">Tempo para decidir:</strong> o anfitrião pode definir os tempos em “Configurações da partida”. Sem alterações, cada turno permite até {{ ACTION_TIMEOUT_SECONDS }} segundos para declarar a ação e cada resposta permite até {{ RESPONSE_TIMEOUT_SECONDS }} segundos. Os tempos escolhidos valem para todos e aparecem na sala de espera. Sem resposta, o jogo passa a oportunidade; sem ação no prazo, aplica Salário Oficial ou, com C$ 10 ou mais, Impeachment definitivo contra o próximo adversário vivo.</p>
         <p><strong class="text-ink">Escolha de cartas:</strong> se o prazo terminar, o jogo escolhe o primeiro apoio ativo para a perda. Na troca, devolve as duas cartas recém-compradas, mantendo a mão anterior.</p>
         <p><strong class="text-ink">Fim da partida:</strong> a mesa permanece aberta com o resultado, as cartas reveladas e os acontecimentos recentes. Toque nas cartas restantes do vencedor para virá-las. “Jogar novamente” leva à tela de criar ou entrar em uma sala.</p>
-      </div>
-    </details>
+      </AccordionContent>
+      </AccordionItem>
+    </Accordion>
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-sm leading-relaxed text-ink-muted">Comece com bots para aprender o ritmo da mesa e depois desafie seus amigos.</p>
       <RouterLink to="/online" class="online-primary w-full justify-between shrink-0 sm:w-40">Jogar online<ArrowRight class="h-4 w-4" aria-hidden="true" /></RouterLink>

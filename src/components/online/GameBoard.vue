@@ -6,7 +6,7 @@ import Card from '@/components/game/Card.vue';
 import { ref, computed, watch } from 'vue';
 import type { RoleCard, RoleSlug } from '@/types/game';
 import type { GameState, PrivatePlayerView, PublicPlayerState } from '@/game/models/gameState';
-import { ACTION_TIMEOUT_SECONDS, RESPONSE_TIMEOUT_SECONDS } from '@/game/models/gameState';
+import { DEFAULT_GAME_SETTINGS } from '@/game/models/gameState';
 import type { ActionIntent, BlockIntent } from '@/game/models/commands';
 import { useGameTimer } from '@/composables/useGameTimer';
 import { useLightbox } from '@/composables/useLightbox';
@@ -99,7 +99,13 @@ const phaseLabel = computed(() => ({ WAITING_CHALLENGE_ACTION: 'Contestar ação
 const secondaryMobileTab = ref<'plantao' | 'contabilidade'>('plantao');
 
 const deadlineRef = computed(() => props.gameState.deadlineAt);
-const durationRef = computed(() => (props.gameState.phase === 'WAITING_ACTION' ? ACTION_TIMEOUT_SECONDS : RESPONSE_TIMEOUT_SECONDS) * 1000);
+const durationRef = computed(() => {
+  const settings = props.gameState.settings ?? DEFAULT_GAME_SETTINGS;
+  if (props.gameState.phase === 'WAITING_ACTION') return settings.actionTimeoutMs;
+  if (props.gameState.phase === 'WAITING_BLOCK') return settings.reactionTimeoutMs;
+  if (['WAITING_CARD_CHOICE', 'WAITING_EXCHANGE_CHOICE'].includes(props.gameState.phase)) return settings.choiceTimeoutMs;
+  return settings.challengeTimeoutMs;
+});
 const { secondsRemaining, progressPercentage, isUrgent } = useGameTimer(deadlineRef, durationRef);
 
 const timerLabel = computed(() => [Math.floor(secondsRemaining.value / 60), secondsRemaining.value % 60].map(value => String(value).padStart(2, '0')).join(':'));
@@ -708,17 +714,17 @@ const copyGameLink = async (): Promise<void> => {
 
     <!-- Modal de Confirmação para Sair da Mesa -->
     <AppDialog :is-open="showLeaveModal" aria-label="Sair da mesa" max-width-class="max-w-sm" @close="showLeaveModal = false">
-      <div class="space-y-4 text-center py-2">
-        <div class="w-12 h-12 rounded-xl bg-status-red/15 border border-status-red/40 flex items-center justify-center mx-auto text-status-red">
-          <AlertTriangle class="w-6 h-6" aria-hidden="true" />
+      <template #header>
+        <div class="flex items-center gap-3">
+          <div class="flex size-10 shrink-0 items-center justify-center rounded bg-status-red/15 border border-status-red/40 text-status-red">
+            <AlertTriangle class="size-5" aria-hidden="true" />
+          </div>
+          <h2 class="app-dialog-title">{{ isFinished ? 'Sair da mesa?' : 'Abandonar Partida?' }}</h2>
         </div>
-        <div class="space-y-1">
-          <h3 class="font-serif font-bold text-base text-ink">{{ isFinished ? 'Sair da mesa?' : 'Abandonar Partida?' }}</h3>
-          <p class="text-xs text-ink-muted leading-relaxed">
-            {{ isFinished ? 'A partida já terminou. Ao sair, você volta para a tela de salas.' : 'Se você sair agora, seu gabinete perderá a conexão e será eliminado da disputa.' }}
-          </p>
-        </div>
-      </div>
+      </template>
+      <p class="text-xs text-ink-muted leading-relaxed">
+        {{ isFinished ? 'A partida já terminou. Ao sair, você volta para a tela de salas.' : 'Se você sair agora, seu gabinete perderá a conexão e será eliminado da disputa.' }}
+      </p>
       <template #footer>
         <div class="flex items-center gap-3 w-full">
           <button

@@ -72,6 +72,21 @@ describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
   });
   afterEach(() => { host.destroy(); vi.useRealTimers(); });
 
+  it.each(['hard', 'pro'] as const)('envia os tempos e o nível %s definidos pelo host para os convidados', async difficulty => {
+    host.destroy();
+    host = new PeerHost('ROOM', 'a', 'Ana', 'executor', 'token-a', {
+      onStateChange: s => { state = s; }, onPrivateViewChange: vi.fn(), onError: vi.fn(), onReady: vi.fn(),
+    }, undefined, 2, difficulty, { actionSeconds: 45, responseSeconds: 12 });
+    const ready = host.init();
+    transport.peers.at(-1)!.emit('open', 'bdp-room');
+    await ready;
+    const guest = join('b');
+    const snapshots = messages(guest, 'ROOM_SNAPSHOT') as { state: GameState }[];
+    expect(snapshots.at(-1)?.state.settings).toMatchObject({ actionTimeoutMs: 45000, reactionTimeoutMs: 12000, challengeTimeoutMs: 12000, choiceTimeoutMs: 12000 });
+    expect(snapshots.at(-1)?.state.botDifficulty).toBe(difficulty);
+    expect(state.settings).toEqual(snapshots.at(-1)?.state.settings);
+  });
+
   it('integra bots com humanos, protege suas identidades e cancela ações ao sair', async () => {
     host.destroy();
     const error = vi.fn();

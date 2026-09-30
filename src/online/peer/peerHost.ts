@@ -1,3 +1,4 @@
+import { resolveRoomSettings, type RoomTimingInput } from '@/game/models/roomSettings';
 import { DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from '@/game/bots/botDifficulty';
 import { RECONNECT_GRACE_MS, HEARTBEAT_INTERVAL_MS, HEARTBEAT_TIMEOUT_MS } from '@/constants/gameConfig';
 import { sendPeerMessage, createPeerMessageReader } from './jsonTransport';
@@ -55,9 +56,11 @@ export class PeerHost {
     hostAvatarImage?: string,
     botCount = 0,
     private readonly botDifficulty: BotDifficulty = DEFAULT_BOT_DIFFICULTY,
+    timing: RoomTimingInput = {},
   ) {
-    this.authoritativeState = createInitialAuthoritativeState(roomCode, hostPlayerId, hostName, hostAvatarSlug, hostReconnectToken, undefined, hostAvatarImage);
+    this.authoritativeState = createInitialAuthoritativeState(roomCode, hostPlayerId, hostName, hostAvatarSlug, hostReconnectToken, resolveRoomSettings(timing), hostAvatarImage);
     this.authoritativeState = addBots(this.authoritativeState, botCount);
+    this.authoritativeState.publicState = { ...this.authoritativeState.publicState, botDifficulty };
   }
 
   public init(): Promise<string> {

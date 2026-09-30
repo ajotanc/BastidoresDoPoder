@@ -48,12 +48,12 @@ const emit = defineEmits<{
       </div>
 
       <!-- Cabeçalho Fixo no Topo -->
-      <div
+      <header
         v-if="$slots.header"
-        class="relative z-10 flex-shrink-0 border-b border-line bg-gradient-to-r from-[#121c27]/90 via-[#0f1722]/90 to-[#121c27]/90 backdrop-blur-md px-4 sm:px-6 py-4"
+        class="gold-divider-bottom relative z-10 flex-shrink-0 bg-gradient-to-r from-[#121c27]/90 via-[#0f1722]/90 to-[#121c27]/90 backdrop-blur-md px-4 sm:px-6 py-4"
       >
         <slot name="header" />
-      </div>
+      </header>
 
       <!-- Conteúdo com Rolagem Exclusiva (o scroll fica restrito apenas aqui) -->
       <div class="relative z-10 min-w-0 flex-1 overflow-y-auto [scrollbar-gutter:stable] p-4 sm:p-6 scrollbar-thin min-h-0">
@@ -61,12 +61,26 @@ const emit = defineEmits<{
       </div>
 
       <!-- Rodapé Fixo na Base com Acabamento e Cores Alinhadas -->
-      <div
+      <footer
         v-if="$slots.footer"
-        class="relative z-10 flex-shrink-0 border-t border-line/70 px-4 sm:px-6 py-3.5 bg-[#0a121bf2] backdrop-blur-md"
+        class="gold-divider-top relative z-10 flex-shrink-0 px-4 sm:px-6 py-3.5 bg-[#0a121bf2] backdrop-blur-md"
       >
         <slot name="footer" />
-      </div>
+      </footer>
     </div>
   </AppModalOverlay>
 </template>
+
+<style>
+.app-dialog-title {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #f3d59a;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 640px) {
+  .app-dialog-title { font-size: 20px; }
+}
+</style>

@@ -18,6 +18,39 @@ function table(roles: RoleSlug[] = ['executor', 'colonel'], coins = 2, opponents
 const event = (type: string, playerId: string, role?: RoleSlug): GameEvent => ({ id: `${type}-${playerId}`, timestamp: 0, importance: 'normal', message: '', type, playerId, role });
 const steady = () => 0.99;
 
+describe('Antecipação do nível Pro', () => {
+  it('considera o saldo para manter a defesa do Intocável, sem supor defesa contra o definitivo', () => {
+    const { state, view } = table(['untouchable'], 3);
+    state.players.r0 = { ...state.players.r0!, coins: 7 };
+    const t = evaluateTable(state, view, BOT_DIFFICULTY_PROFILES.pro);
+    expect(t.retaliationRisk('r0', 7, 3)).toBeLessThan(t.retaliationRisk('r0', 7, 2));
+    expect(t.retaliationRisk('r0', 10, 3)).toBe(t.lossValue);
+  });
+
+  it('estima o risco eliminado ao tirar de um rival o saldo para executar', () => {
+    const { state, view } = table(['colonel'], 0);
+    const t = evaluateTable(state, view, BOT_DIFFICULTY_PROFILES.pro);
+    expect(t.retaliationRisk('r0', 3)).toBeGreaterThan(0);
+    expect(t.retaliationRisk('r0', 1)).toBe(0);
+  });
+
+  it('usa o histórico público disponível e descarta a inferência depois de uma troca', () => {
+    const { state, view } = table();
+    const history = [...Array.from({ length: 40 }, () => event('TURN_CHANGED', 'me')), event('ACTION_DECLARED', 'r0', 'baron')];
+    const pro = evaluateTable({ ...state, history }, view, BOT_DIFFICULTY_PROFILES.pro);
+    const baseline = evaluateTable(state, view, BOT_DIFFICULTY_PROFILES.pro);
+    expect(pro.probability('r0', 'baron')).toBeGreaterThan(baseline.probability('r0', 'baron'));
+    const exchanged = { ...state, history: [{ ...event('ACTION_RESOLVED', 'r0'), actionType: 'exchange' as const }, ...history] };
+    expect(evaluateTable(exchanged, view, BOT_DIFFICULTY_PROFILES.pro).probability('r0', 'baron')).toBe(baseline.probability('r0', 'baron'));
+  });
+
+  it('prioriza uma vitória garantida mesmo com o modelo de retaliação ativo', () => {
+    const { state, view } = table(['executor', 'baron'], 7);
+    state.players.r0 = { ...state.players.r0!, activeSupportCount: 1, coins: 2 };
+    expect(chooseBotCommand(state, view, steady, 'pro')).toMatchObject({ payload: { actionType: 'commonImpeachment', targetPlayerId: 'r0' } });
+  });
+});
+
 describe('Táticas do nível difícil', () => {
   it('garante a vitória com impeachment em vez de arriscar execução bloqueável', () => {
     const { state, view } = table(['executor', 'baron'], 7);

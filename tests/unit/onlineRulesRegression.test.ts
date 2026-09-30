@@ -344,6 +344,37 @@ describe('Regressões das regras online', () => {
     expect(s.publicState.responsePlayerIds).toEqual([]);
   });
 
+  it.each([
+    { blocked: false, discardRole: 'untouchable' as const, remaining: 1 },
+    { blocked: false, discardRole: 'colonel' as const, remaining: 0 },
+    { blocked: true, discardRole: 'untouchable' as const, remaining: 1 },
+    { blocked: true, discardRole: 'colonel' as const, remaining: 0 },
+  ])('Mandado após contestação: bloqueio=$blocked, descarte=$discardRole, restam=$remaining', ({ blocked, discardRole, remaining }) => {
+    let s = setup([['investigator', 'executor'], ['untouchable', 'colonel'], ['baron', 'marketer']]);
+    s = run(s, { type: 'DECLARE_ACTION', payload: { actionType: 'searchWarrant', targetPlayerId: 'b', namedRole: 'untouchable' } });
+    expect(s.publicState.history[0]!.message).toContain('procurando Intocável');
+    if (blocked) {
+      s = passWindow(s);
+      s = run(s, { type: 'DECLARE_BLOCK', payload: { claimedBlockRole: 'lawyer' } }, 'b');
+      while (s.publicState.responsePlayerIds[0] !== 'a') s = pass(s);
+      s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: true } }, 'a');
+    } else {
+      s = run(s, { type: 'DECLARE_CHALLENGE', payload: { isChallengeOnBlock: false } }, 'b');
+    }
+    expect(s.publicState.cardChoicePlayerId).toBe('b');
+    const cardId = s.privateHands.b!.find(card => card.roleSlug === discardRole)!.id;
+    s = run(s, { type: 'CHOOSE_CARD', payload: { cardId } }, 'b');
+    if (s.publicState.phase === 'WAITING_BLOCK') s = passWindow(s);
+    expect(s.publicState.players.b!.activeSupportCount).toBe(remaining);
+    expect(s.publicState.players.b!.lostCards).toHaveLength(2 - remaining);
+    expect(s.publicState.players.a!.coins).toBe(2);
+    const notice = s.privateNotices.a!;
+    expect(s.publicState.history.some(event => event.message === notice)).toBe(true);
+    expect(notice).toContain(discardRole === 'untouchable' ? 'já perdeu Intocável na contestação anterior' : 'além do apoio perdido na contestação');
+    expect(notice).not.toContain('infrutífero');
+    if (!remaining) expect(s.publicState.history.some(event => event.type === 'PLAYER_ELIMINATED' && event.playerId === 'b')).toBe(true);
+  });
+
   it('Mandado perde somente uma cópia do personagem e rejeita palpite ausente', () => {
     const base = setup([['investigator', 'executor'], ['baron', 'baron'], ['lawyer', 'marketer']]);
     const invalid = executeCommand(base, { type: 'DECLARE_ACTION', payload: { actionType: 'searchWarrant', targetPlayerId: 'b' } }, 'a', 'bad');

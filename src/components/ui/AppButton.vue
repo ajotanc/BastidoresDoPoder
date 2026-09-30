@@ -41,7 +41,7 @@ const handleClick = (event: MouseEvent): void => {
 
 const buttonClasses = computed(() => {
   const base =
-    'app-button font-sans inline-flex items-center justify-center text-center gap-2.5 rounded-md font-bold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none focus-visible:outline-none leading-none';
+    'app-button font-sans inline-flex items-center justify-center text-center gap-2.5 rounded-md font-bold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none leading-none';
 
   const variants: Record<NonNullable<Props['variant']>, string> = {
     gold: 'bg-gold text-surface-elevated hover:bg-gold-light border border-gold shadow-sm active:scale-[0.98]',

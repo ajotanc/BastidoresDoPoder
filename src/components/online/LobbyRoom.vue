@@ -2,9 +2,11 @@
 import { playerAvatar } from "@/utils/playerProfile";
 import { GAME_NAME } from "@/constants/gameConfig";
 import { ref, computed } from 'vue';
+import { DEFAULT_GAME_SETTINGS } from '@/game/models/gameState';
+import { BOT_DIFFICULTIES, DEFAULT_BOT_DIFFICULTY, BOT_DIFFICULTY_TAG_CLASSES } from '@/game/bots/botDifficulty';
 import { MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM, type GameState } from '@/game/models/gameState';
 import { getRoleDisplayName } from '@/game/engine/gameEngine';
-import { Copy, Check, CheckCircle2, LogOut, Users, Share2 } from 'lucide-vue-next';
+import { Copy, Check, CheckCircle2, LogOut, Users, Share2, SlidersHorizontal, Clock, Bot } from 'lucide-vue-next';
 
 interface Props {
   roomCode: string;
@@ -14,6 +16,10 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const roomSettings = computed(() => props.gameState.settings ?? DEFAULT_GAME_SETTINGS);
+const botLevel = computed(() => BOT_DIFFICULTIES.find(level => level.value === (props.gameState.botDifficulty ?? DEFAULT_BOT_DIFFICULTY))?.label);
+const botLevelClass = computed(() => BOT_DIFFICULTY_TAG_CLASSES[props.gameState.botDifficulty ?? DEFAULT_BOT_DIFFICULTY]);
+const botCount = computed(() => playerList.value.filter(player => player?.isBot).length);
 
 const emit = defineEmits<{
   (e: 'set-ready', ready: boolean): void;
@@ -131,28 +137,69 @@ const handleShare = async (): Promise<void> => {
       </div>
     </div>
 
+    <section class="rounded border border-line bg-surface p-4 shadow-card sm:p-6" aria-labelledby="lobby-settings-title">
+      <div class="mb-4 space-y-2 border-b border-line/40 pb-3">
+        <h2 id="lobby-settings-title" class="game-section-title flex min-h-8 items-center gap-2">
+          <SlidersHorizontal class="size-4 shrink-0 text-gold-light" aria-hidden="true" />Configurações da partida
+        </h2>
+        <p class="text-xs leading-relaxed text-ink-muted">Definidas pelo anfitrião. As mesmas regras para toda a mesa.</p>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
+        <div class="min-w-0">
+          <h3 class="mb-3 flex items-center gap-2 font-serif text-sm font-bold text-gold-light">
+            <Clock class="size-4 shrink-0 text-gold-muted" aria-hidden="true" />Ritmo da mesa
+          </h3>
+          <dl class="space-y-3 text-sm">
+            <div class="flex items-baseline justify-between gap-3">
+              <dt class="text-ink-muted">Tempo de ação</dt>
+              <dd class="shrink-0 font-semibold tabular-nums text-ink">{{ roomSettings.actionTimeoutMs / 1000 }} <span class="text-xs font-normal text-ink-subtle">seg</span></dd>
+            </div>
+            <div class="flex items-baseline justify-between gap-3">
+              <dt class="text-ink-muted">Tempo de resposta</dt>
+              <dd class="shrink-0 font-semibold tabular-nums text-ink">{{ roomSettings.reactionTimeoutMs / 1000 }} <span class="text-xs font-normal text-ink-subtle">seg</span></dd>
+            </div>
+          </dl>
+          <p class="mt-3 text-xs leading-relaxed text-ink-subtle">Respostas incluem bloqueios, contestações e escolhas de cartas.</p>
+        </div>
+        <div class="min-w-0 border-t border-line/50 pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+          <h3 class="mb-3 flex items-center gap-2 font-serif text-sm font-bold text-gold-light">
+            <Bot class="size-4 shrink-0 text-gold-muted" aria-hidden="true" />Bots na mesa
+          </h3>
+          <dl v-if="botCount" class="space-y-3 text-sm">
+            <div class="flex items-baseline justify-between gap-3">
+              <dt class="text-ink-muted">Quantidade</dt>
+              <dd class="font-semibold tabular-nums text-ink">{{ botCount }}</dd>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <dt class="text-ink-muted">Dificuldade</dt>
+              <dd class="rounded border px-2 py-1 text-xs font-semibold" :class="botLevelClass">{{ botLevel }}</dd>
+            </div>
+          </dl>
+          <p v-else class="text-sm text-ink-muted">Sem bots nesta partida.</p>
+        </div>
+      </div>
+    </section>
     <!-- Lista de Jogadores Conectados -->
     <div class="bg-surface border border-line/60 rounded p-4 sm:p-6 shadow-card space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-line/40 pb-3">
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
-          <Users class="w-4 h-4 text-gold-light" aria-hidden="true" />
-          <h2 class="min-w-0 flex-1 font-serif font-bold text-base text-ink">
-            Mesa de negociação
+      <div class="space-y-2 border-b border-line/40 pb-3">
+        <div class="flex min-h-8 min-w-0 flex-wrap items-center gap-2">
+          <h2 class="game-section-title flex min-w-0 flex-1 items-center gap-2">
+            <Users class="size-4 shrink-0 text-gold-light" aria-hidden="true" />Mesa de negociação
           </h2>
           <span class="shrink-0 whitespace-nowrap text-sm px-2 py-1 rounded bg-surface-elevated text-gold font-semibold">
             {{ playerList.length }} / {{ MAX_PLAYERS_PER_ROOM }}
           </span>
         </div>
-        <span class="text-xs text-ink-muted">
+        <p class="text-xs leading-relaxed text-ink-muted">
           Mínimo de {{ MIN_PLAYERS_TO_START }} participantes para iniciar
-        </span>
+        </p>
       </div>
 
       <!-- Alerta de Quórum Mínimo Atingido -->
       <div v-if="canStart"
         class="p-3 bg-status-green-bg/80 border border-status-green/50 rounded flex items-center gap-2 text-xs text-status-green font-medium">
         <CheckCircle2 class="w-4 h-4 shrink-0" aria-hidden="true" />
-        <span>Quórum mínimo atingido ({{ playerList.length }} participantes na mesa). O Host já pode dar início à partida!</span>
+        <span>Quórum mínimo atingido ({{ playerList.length }} participantes na mesa). O anfitrião já pode dar início à partida!</span>
       </div>
 
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">

@@ -232,7 +232,7 @@ const filteredActions = computed(() => {
     <template #header>
       <div class="flex items-center justify-between gap-4">
         <div class="min-w-0">
-          <h2 class="font-serif text-lg sm:text-xl font-bold text-gold-light tracking-wide">
+          <h2 class="app-dialog-title">
             Sua Próxima Jogada
           </h2>
           <p class="text-xs text-ink-muted mt-0.5">

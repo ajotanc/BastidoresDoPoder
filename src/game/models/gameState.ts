@@ -85,6 +85,8 @@ export interface PendingAction {
   readonly targetPlayerId?: string;
   readonly claimedRole?: RoleSlug;
   readonly namedRole?: RoleSlug;
+  /** Public loss count when the warrant was declared, to explain intervening losses. */
+  readonly targetLostCardCountAtDeclaration?: number;
   readonly secondaryPlayerId?: string;
   readonly costPaid: number;
   readonly blockedByPlayerId?: string;
@@ -136,6 +138,9 @@ export const DEFAULT_GAME_SETTINGS: GameSettings = {
  * Estado público autoritativo do jogo compartilhado pelo Host.
  */
 export interface GameState {
+  /** Shared room settings; optional for older rooms. */
+  readonly settings?: GameSettings;
+  readonly botDifficulty?: import('../bots/botDifficulty').BotDifficulty;
   readonly gameId: string;
   readonly roomCode: string;
   readonly revision: number;

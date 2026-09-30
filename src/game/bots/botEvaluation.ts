@@ -45,6 +45,15 @@ export function evaluateTable(state: GameState, view: PrivatePlayerView, profile
   };
   const attackValue = (id: string) => 5 + threat(id) * 0.7 + (state.players[id]!.activeSupportCount === 1 ? (rivals.length === 1 ? 22 : 7) : 0);
   const lossValue = me.activeSupportCount <= 1 ? 16 : 6;
+  // Estimate the strongest immediate reply using public coins, beliefs and our
+  // own defenses. No opponent hand or future draw is available to this model.
+  const retaliationRisk = (id: string, rivalCoins = state.players[id]!.coins, myCoins = me.coins) => {
+    const execution = rivalCoins >= 3 && !own('lawyer') ? probability(id, 'executor') : 0;
+    const impeachment = rivalCoins >= 10 ? 1 : rivalCoins >= 7 && !(own('untouchable') && myCoins >= 3) ? 1 : 0;
+    const investigation = rivalCoins >= 5 && !own('lawyer') && !own('colonel')
+      ? probability(id, 'investigator') * Math.min(1, new Set(hand.map(card => card.roleSlug)).size / PLAYABLE_ROLES.length) : 0;
+    return Math.max(execution, impeachment, investigation) * lossValue / Math.max(1, rivals.length);
+  };
   // Value of crossing an actionable threshold, rather than hoarding coins forever.
   const coinPosition = (coins: number) =>
     (coins >= 3 && own('executor') ? 1.8 : 0)
@@ -93,5 +102,5 @@ export function evaluateTable(state: GameState, view: PrivatePlayerView, profile
     return cards.reduce((sum, card, index) => sum + roleValue(card.roleSlug) * (cards.slice(0, index).some(c => c.roleSlug === card.roleSlug) ? 0.3 : 1), 0)
       + profile.planningWeight * (defense + synergy);
   };
-  return { me, hand, rivals, own, remaining, probability, threat, attackValue, lossValue, challengeRisk, roleValue, handValue, coinPosition, denialValue };
+  return { me, hand, rivals, own, remaining, probability, threat, attackValue, lossValue, challengeRisk, roleValue, handValue, coinPosition, denialValue, retaliationRisk };
 }

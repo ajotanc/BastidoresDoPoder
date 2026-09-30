@@ -1,7 +1,7 @@
 import { GAME_NAME } from '@/constants/gameConfig';
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
-import ManualView from '@/views/ManualView.vue';
-import OnlineView from '@/views/OnlineView.vue';
+const ManualView = () => import('@/views/ManualView.vue');
+const OnlineView = () => import('@/views/OnlineView.vue');
 
 const routes: RouteRecordRaw[] = [
   {

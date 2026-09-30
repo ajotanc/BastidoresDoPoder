@@ -1,6 +1,23 @@
 import { BOT_DIFFICULTIES, DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from '@/game/bots/botDifficulty';
 
 const STORAGE_KEY = 'bdp-bot-difficulty';
+const ENABLED_STORAGE_KEY = 'bdp-bots-enabled';
+
+export function loadBotsEnabled(): boolean {
+  try {
+    return localStorage.getItem(ENABLED_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function saveBotsEnabled(enabled: boolean): void {
+  try {
+    localStorage.setItem(ENABLED_STORAGE_KEY, String(enabled));
+  } catch {
+    // A preferência continua válida nesta tela quando o armazenamento está indisponível.
+  }
+}
 
 export function loadBotDifficulty(): BotDifficulty {
   try {

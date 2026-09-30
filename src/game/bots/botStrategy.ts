@@ -51,6 +51,7 @@ export function chooseBotCommand(state: GameState, view: PrivatePlayerView, rand
     if (!t.rivals.length) return null;
     const candidates: { intent: ActionIntent; score: number }[] = [];
     const allowBluff = random() < profile.bluffWillingness;
+    const currentExposure = profile.retaliationWeight ? t.rivals.reduce((sum, rival) => sum + t.retaliationRisk(rival.id), 0) : 0;
     const coinGain = (amount: number) => amount + (t.me.coins < 7 && t.me.coins + amount >= 7 ? 1.2 : 0) + (t.own('executor') && t.me.coins < 3 && t.me.coins + amount >= 3 ? 0.8 : 0)
       + profile.planningWeight * (t.coinPosition(t.me.coins + amount) - t.coinPosition(t.me.coins));
     const add = (actionType: ActionType, benefit: number, targetPlayerId?: string, namedRole?: RoleSlug) => {
@@ -68,7 +69,25 @@ export function chooseBotCommand(state: GameState, view: PrivatePlayerView, rand
         && ['execution', 'commonImpeachment', 'definitiveImpeachment'].includes(actionType);
       // A certain immediate win must outrank saving money for a turn that won't happen.
       const certainWin = profile.planningWeight && lethal && t.rivals.length === 1 && success === 1;
-      const score = certainWin ? 1000 - cost : preparation + benefit * success - cost * 0.8 - caught * riskCost + variation();
+      let safety = 0;
+      if (profile.retaliationWeight) {
+        const stolen = targetPlayerId ? Math.min(2, state.players[targetPlayerId]!.coins) : 0;
+        const income = actionType === 'salary' ? 1 : actionType === 'crowdfunding' || actionType === 'backroomDeal' ? 2
+          : actionType === 'slushFund' ? 3 : actionType === 'extortion' ? stolen : 0;
+        let exposure = 0;
+        for (const rival of t.rivals) {
+          const target = rival.id === targetPlayerId;
+          const coinsAfter = rival.coins + (target && actionType === 'backroomDeal' ? 1 : 0) - (target && actionType === 'extortion' ? stolen : 0);
+          const removed = target && rival.activeSupportCount === 1
+            ? lethal ? 1 : actionType === 'searchWarrant' && namedRole ? t.probability(rival.id, namedRole) : 0 : 0;
+          // Failed or blocked actions still spend their cost; successful actions
+          // may remove a threat, disarm it or replenish the bot's defense budget.
+          exposure += success * (1 - removed) * t.retaliationRisk(rival.id, coinsAfter, reserve + income)
+            + (1 - success) * t.retaliationRisk(rival.id, rival.coins, reserve);
+        }
+        safety = profile.retaliationWeight * (currentExposure - exposure);
+      }
+      const score = certainWin ? 1000 - cost : preparation + safety + benefit * success - cost * 0.8 - caught * riskCost + variation();
       candidates.push({ intent: { actionType, ...(targetPlayerId ? { targetPlayerId } : {}), ...(namedRole ? { namedRole } : {}) }, score });
     };
     add('salary', coinGain(1));

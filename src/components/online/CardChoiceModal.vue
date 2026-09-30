@@ -45,7 +45,7 @@ watch(() => props.isOpen, () => { selectedCardId.value = ''; });
           <AlertTriangle class="w-5 h-5" aria-hidden="true" />
         </div>
         <div class="min-w-0 break-words">
-          <h2 class="font-serif font-bold text-base sm:text-lg text-gold-light tracking-wide">
+          <h2 class="app-dialog-title">
             Escolha o Apoio Perdido
           </h2>
           <p class="text-xs text-status-red">

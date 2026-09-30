@@ -170,6 +170,20 @@ button.remove-photo-button { border-color: var(--red); }
 @media (min-width: 1024px) {
   .rivals-carousel { grid-auto-columns: calc((100% - 2.25rem) / 4); }
 }
+
+/* Shared gold hairline. The host supplies its own positioned layout. */
+.gold-divider-top::before,
+.gold-divider-bottom::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 20%, var(--gold) 50%, transparent 80%), rgb(230 191 115 / 22%);
+}
+
+.gold-divider-top::before { top: 0; }
+.gold-divider-bottom::after { bottom: 0; }
 .rival-support { min-width: 0; }
 .cabinet-winner {
   border-color: var(--gold);

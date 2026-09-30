@@ -61,5 +61,11 @@ import { UserCheck, UserX } from 'lucide-vue-next';
       contestação já não está na mão do alvo. Uma prova seguida de reposição também pode ter alterado os personagens
       disponíveis.
     </p>
+    <p class="mt-3 text-sm leading-relaxed text-ink-muted">
+      <strong class="text-ink">Exemplo:</strong> você procura Intocável e o alvo perde uma contestação.
+      Se ele descartar o próprio Intocável, o Mandado não encontra essa carta e não causa outra perda.
+      Se descartar outro personagem e ainda tiver Intocável, perde esse apoio também.
+      A mesma sequência vale quando um bloqueio falso é desmascarado.
+    </p>
   </section>
 </template>

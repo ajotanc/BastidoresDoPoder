@@ -101,8 +101,8 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         cost: 'C$ 3'
       },
       defense: {
-        title: 'Sem bloqueio',
-        description: 'Pode ser bloqueada pela Advogada.',
+        title: 'Não bloqueia ações',
+        description: 'Sua Execução pode ser bloqueada pela Advogada.',
         cost: null
       }
     },
@@ -133,8 +133,8 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     gender: 'male',
     cardText: {
       action: {
-        title: 'Sem ação',
-        description: 'Atua somente como defesa.',
+        title: 'Sem ação própria',
+        description: 'Você ainda pode usar as ações gerais no seu turno.',
         cost: null
       },
       defense: {
@@ -169,8 +169,8 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     gender: 'female',
     cardText: {
       action: {
-        title: 'Sem ação',
-        description: 'Atua somente como defesa.',
+        title: 'Sem ação própria',
+        description: 'Você ainda pode usar as ações gerais no seu turno.',
         cost: null
       },
       defense: {
@@ -301,8 +301,8 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         cost: 'C$ 5'
       },
       defense: {
-        title: 'Sem bloqueio',
-        description: 'Pode ser bloqueado por Advogada ou Coronel.',
+        title: 'Não bloqueia ações',
+        description: 'Seu Mandado pode ser bloqueado por Advogada ou Coronel.',
         cost: null
       }
     },
@@ -337,8 +337,8 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         cost: 'GRÁTIS'
       },
       defense: {
-        title: 'Sem bloqueio',
-        description: 'A ação pode ser contestada, mas não bloqueada.',
+        title: 'Não bloqueia ações',
+        description: 'Seu Acordo pode ser contestado, mas não bloqueado.',
         cost: null
       }
     },
@@ -350,7 +350,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
         type: 'action'
       },
       {
-        title: 'Sem bloqueio',
+        title: 'Não bloqueia ações',
         description:
           'A Articuladora não bloqueia ações. O Acordo de Bastidor não pode ser bloqueado e pode ser contestado por qualquer outro jogador vivo.',
         type: 'passive'
