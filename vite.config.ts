@@ -18,7 +18,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       devOptions: {
         enabled: true,
-        type: 'module'
+        type: 'module',
+        navigateFallbackAllowlist: [/^\/(?!\.netlify(?:\/|$))/]
       },
       includeAssets: [
         'favicon.ico',
@@ -63,6 +64,8 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // OAuth navigations must reach Functions, never the cached app shell.
+        navigateFallbackDenylist: [/^\/\.netlify(?:\/|$)/],
         globPatterns: ['**/*.{js,css,html,svg,ico,woff2}'],
         runtimeCaching: [{
           urlPattern: ({ url }) => url.pathname.startsWith('/images/cards/'),

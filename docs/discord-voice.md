@@ -11,6 +11,7 @@ Variáveis do Netlify disponíveis para Functions:
 
 Em OAuth2 > Redirecionamentos no Discord Developer Portal, cadastre:
 - https://bastidoresdopoder.netlify.app/.netlify/functions/discord-auth
+- https://bastidoresdopoder.ajotanc.com.br/.netlify/functions/discord-auth
 - http://localhost:8888/.netlify/functions/discord-auth para desenvolvimento com Netlify Dev, caso aceito na configuração do aplicativo. O cookie é Secure: use HTTPS local se o navegador não aceitar cookies Secure no localhost.
 - Para outro domínio ou uma prévia, cadastre a URL exata correspondente antes de testar login.
 
