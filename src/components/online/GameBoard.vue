@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DiscordConversation from './DiscordConversation.vue';
 import { playerAvatar } from "@/utils/playerProfile";
 import GameResultBanner from './GameResultBanner.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
@@ -76,6 +77,7 @@ const inspectRivalSupport = (player: PublicPlayerState, slot: number) => {
 };
 
 const emit = defineEmits<{
+  (e: 'retry-conversation'): void;
   (e: 'declare-action', intent: ActionIntent): void;
   (e: 'declare-block', blockIntent: BlockIntent): void;
   (e: 'declare-challenge', isBlockChallenge: boolean): void;
@@ -216,12 +218,13 @@ const copyGameLink = async (): Promise<void> => {
   <div class="max-w-6xl mx-auto space-y-4 sm:space-y-6 animate-fadeIn pb-12">
     <!-- 1. Barra de Status da Mesa (Compacta e Sticky-Friendly) -->
     <header class="game-status overflow-hidden rounded-lg border border-line-gold/50 bg-surface shadow-card">
-      <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-2.5 sm:px-5">
+      <div class="flex items-center justify-between gap-3 gold-divider-bottom relative px-4 py-2.5 sm:px-5">
         <div class="flex items-center gap-2 min-w-0">
           <Landmark class="w-4 h-4 text-gold-light shrink-0" aria-hidden="true" />
           <h2 class="game-section-title">Mesa {{ gameState.roomCode }}</h2>
         </div>
         <div class="flex items-center gap-1.5">
+          <DiscordConversation :conversation="gameState.discordConversation" :can-retry="isHost" @retry="emit('retry-conversation')" compact />
           <button type="button" @click="copyGameLink" class="online-icon-button" :title="copiedLinkNotice ? 'Link copiado' : 'Copiar link direto da partida'" :aria-label="copiedLinkNotice ? 'Link copiado' : 'Copiar link direto da partida'"><Check v-if="copiedLinkNotice" class="h-4 w-4 text-status-green" aria-hidden="true" /><Copy v-else class="h-4 w-4" aria-hidden="true" /></button>
           <button type="button" @click="showLeaveModal = true" class="online-icon-button" title="Abandonar partida" aria-label="Sair"><LogOut class="h-4 w-4" aria-hidden="true" /></button>
         </div>
@@ -265,7 +268,7 @@ const copyGameLink = async (): Promise<void> => {
         v-else-if="pending"
         class="bg-surface border border-line border-l-4 border-l-gold rounded p-4 sm:p-5 shadow-card space-y-3.5 relative overflow-hidden"
       >
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-line/40 pb-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-2 gold-divider-bottom relative pb-2.5">
           <h3 class="game-section-title flex items-center gap-2">
             <Radio class="h-4 w-4 shrink-0 text-gold-light" aria-hidden="true" />
             <span>Jogada em análise</span>
@@ -419,7 +422,7 @@ const copyGameLink = async (): Promise<void> => {
       class="bg-surface border border-line-gold/50 rounded p-4 sm:p-6 shadow-card space-y-3.5 relative overflow-hidden"
       :class="{ 'cabinet-winner': isFinished && gameState.winnerPlayerId === myPlayerId }"
     >
-      <div class="flex items-center justify-between gap-3 border-b border-line-gold/30 pb-3">
+      <div class="flex items-center justify-between gap-3 gold-divider-bottom relative pb-3">
         <div class="flex items-center gap-2.5 min-w-0">
           <FolderLock class="w-4 h-4 text-gold-light shrink-0" aria-hidden="true" />
           <div class="min-w-0">
@@ -535,8 +538,8 @@ const copyGameLink = async (): Promise<void> => {
               </div>
               <div class="min-w-0">
                 <h3 class="w-full font-semibold text-sm text-ink break-words leading-relaxed">{{ opp.name }}</h3>
-                <span class="text-[10px] text-ink-muted block truncate">
-                  {{ opp.isAlive ? getRoleDisplayName(opp.avatarSlug) : 'CASSADO' }}
+                <span v-if="!opp.isAlive || (!opp.avatarImage && opp.avatarSlug)" class="text-[10px] text-ink-muted block truncate">
+                  {{ opp.isAlive && opp.avatarSlug ? getRoleDisplayName(opp.avatarSlug) : 'CASSADO' }}
                 </span>
               </div>
             </div>
@@ -618,7 +621,7 @@ const copyGameLink = async (): Promise<void> => {
           class="lg:col-span-6 w-full bg-surface/90 border border-line-gold/40 rounded sm:rounded p-4 sm:p-5 shadow-card space-y-3"
           :class="{ 'hidden lg:block': secondaryMobileTab !== 'contabilidade' }"
         >
-          <header class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-line/40 pb-2.5">
+          <header class="mb-4 flex flex-wrap items-center justify-between gap-2 gold-divider-bottom relative pb-2.5">
             <div class="flex items-center gap-2">
               <BookOpen class="w-4 h-4 text-gold-light shrink-0" aria-hidden="true" />
               <h2 class="game-section-title">

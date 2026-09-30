@@ -1,3 +1,4 @@
+import { connectDiscordAccount } from '@/online/room/discordConversation';
 import type { RoomTimingInput } from '@/game/models/roomSettings';
 import { DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from '@/game/bots/botDifficulty';
 import { MAX_RECONNECT_ATTEMPTS, RECONNECT_RETRY_MS } from '@/constants/gameConfig';
@@ -26,7 +27,7 @@ export const useGameStore = defineStore('game', () => {
   const isHost = ref<boolean>(false);
   const myPlayerId = ref<string>('');
   const myPlayerName = ref<string>('');
-  const myAvatarSlug = ref<RoleSlug>('colonel');
+  const myAvatarSlug = ref<RoleSlug | undefined>('colonel');
   const currentRoomCode = ref<string>('');
   const errorMessage = ref<string | null>(null);
 
@@ -41,7 +42,7 @@ export const useGameStore = defineStore('game', () => {
     if (reconnectTimer) clearTimeout(reconnectTimer);
     reconnectTimer = null;
   };
-  const scheduleReconnect = (code: string, name: string, avatar: RoleSlug) => {
+  const scheduleReconnect = (code: string, name: string, avatar: RoleSlug | undefined) => {
     cancelReconnect();
     if (!loadPlayerSession(code) || reconnectAttempts++ >= MAX_RECONNECT_ATTEMPTS) return;
     reconnectTimer = setTimeout(() => {
@@ -67,7 +68,7 @@ export const useGameStore = defineStore('game', () => {
   /**
    * Cria uma nova sala como Host P2P
    */
-  const createRoom = async (playerName: string, avatarSlug: RoleSlug = 'colonel', avatarImage?: string, botCount = 0, botDifficulty: BotDifficulty = DEFAULT_BOT_DIFFICULTY, timing: RoomTimingInput = {}, attempt = 0): Promise<string> => {
+  const createRoom = async (playerName: string, avatarSlug?: RoleSlug, avatarImage?: string, botCount = 0, botDifficulty: BotDifficulty = DEFAULT_BOT_DIFFICULTY, timing: RoomTimingInput = {}, attempt = 0): Promise<string> => {
     try {
       validateBotCount(botCount);
       clearError();
@@ -79,7 +80,7 @@ export const useGameStore = defineStore('game', () => {
 
       myPlayerId.value = playerId;
       myPlayerName.value = playerName;
-      myAvatarSlug.value = avatarSlug;
+      myAvatarSlug.value = avatarImage ? undefined : (avatarSlug ?? 'colonel');
       currentRoomCode.value = roomCode;
       isHost.value = true;
 
@@ -113,6 +114,7 @@ export const useGameStore = defineStore('game', () => {
 
       hostInstance.value = host;
       await host.init();
+      void host.prepareConversation();
       return roomCode;
     } catch (err) {
       hostInstance.value?.destroy();
@@ -133,7 +135,7 @@ export const useGameStore = defineStore('game', () => {
   /**
    * Conecta a uma sala existente como Cliente P2P
    */
-  const joinRoom = async (roomCodeInput: string, playerName: string, avatarSlug: RoleSlug = 'baron', avatarImage?: string): Promise<void> => {
+  const joinRoom = async (roomCodeInput: string, playerName: string, avatarSlug?: RoleSlug, avatarImage?: string): Promise<void> => {
     try {
       clearError();
       mode.value = 'joining';
@@ -152,7 +154,7 @@ export const useGameStore = defineStore('game', () => {
 
       myPlayerId.value = playerId;
       myPlayerName.value = playerName;
-      myAvatarSlug.value = avatarSlug;
+      myAvatarSlug.value = avatarImage ? undefined : (avatarSlug ?? 'colonel');
       currentRoomCode.value = roomCode;
       isHost.value = false;
 
@@ -187,7 +189,7 @@ export const useGameStore = defineStore('game', () => {
             type: 'JOIN_ROOM',
             payload: {
               name: playerName,
-              avatarSlug,
+              ...(avatarImage ? {} : { avatarSlug: avatarSlug ?? 'colonel' }),
               ...(avatarImage ? { avatarImage } : {}),
               reconnectToken,
             },
@@ -311,7 +313,17 @@ export const useGameStore = defineStore('game', () => {
     clearError();
   };
 
+  const retryConversation = async (): Promise<void> => {
+    const host = hostInstance.value;
+    if (!isHost.value || !host) return;
+    try {
+      if (gameState.value?.discordConversation?.status === 'auth-required') await connectDiscordAccount();
+      if (hostInstance.value === host) await host.prepareConversation();
+    } catch (error) { errorMessage.value = error instanceof Error ? error.message : 'Não foi possível conectar ao Discord.'; }
+  };
+
   return {
+    retryConversation,
     mode,
     isHost,
     myPlayerId,

@@ -436,7 +436,7 @@ export const GAME_META_STATS: readonly MetaStat[] = [
   { value: `${MIN_PLAYERS_TO_START}–${MAX_PLAYERS_PER_ROOM}`, label: 'jogadores' },
   { value: String(CARDS_LENGTH), label: 'personagens' },
   { value: String(SUPPORT_CARDS_LENGTH), label: 'cartas de apoio' },
-  { value: 'C$', label: 'Conto · moeda do jogo' },
+  { value: 'C$', label: 'moeda do jogo' },
 ] as const;
 
 

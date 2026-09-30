@@ -37,6 +37,7 @@ const {
   errorMessage,
   gameState,
   privateView,
+  retryConversation,
   createRoom,
   joinRoom,
   setReady,
@@ -68,9 +69,9 @@ const profileError = ref('');
 const isPreparingPhoto = ref(false);
 const photoInput = ref<(HTMLElement & { click(): void }) | null>(null);
 const inputRoomCode = ref('');
-const selectedAvatar = ref<RoleSlug>(storedProfile.avatarSlug);
+const selectedAvatar = ref<RoleSlug>(storedProfile.avatarSlug ?? 'colonel');
 watch([inputName, selectedAvatar, avatarImage, gender], () => {
-  if (!saveProfile({ name: inputName.value, avatarSlug: selectedAvatar.value, avatarImage: avatarImage.value, gender: gender.value })) profileError.value = 'Seu navegador não permitiu salvar o perfil. Você ainda pode jogar.';
+  if (!saveProfile({ name: inputName.value, avatarSlug: avatarImage.value ? undefined : selectedAvatar.value, avatarImage: avatarImage.value, gender: gender.value })) profileError.value = 'Seu navegador não permitiu salvar o perfil. Você ainda pode jogar.';
 });
 const uploadPhoto = async (event: Event) => {
   const input = event.target as InstanceType<typeof window.HTMLInputElement>; const file = input.files?.[0];
@@ -142,7 +143,7 @@ const handleCreate = async (): Promise<void> => {
   if (timingError.value || !inputName.value.trim() || (playAgainstBots.value && !validBotCount.value)) return;
   try {
     isSubmitting.value = true;
-    await createRoom(inputName.value.trim(), selectedAvatar.value, avatarImage.value, playAgainstBots.value ? Number(botCount.value) : 0, selectedDifficulty.value.value, { actionSeconds: actionSeconds.value, responseSeconds: responseSeconds.value });
+    await createRoom(inputName.value.trim(), avatarImage.value ? undefined : selectedAvatar.value, avatarImage.value, playAgainstBots.value ? Number(botCount.value) : 0, selectedDifficulty.value.value, { actionSeconds: actionSeconds.value, responseSeconds: responseSeconds.value });
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.warn('Falha na criação da sala:', err.message);
@@ -156,7 +157,7 @@ const handleJoin = async (): Promise<void> => {
   if (!inputName.value.trim() || !inputRoomCode.value.trim()) return;
   try {
     isSubmitting.value = true;
-    await joinRoom(inputRoomCode.value.trim(), inputName.value.trim(), selectedAvatar.value, avatarImage.value);
+    await joinRoom(inputRoomCode.value.trim(), inputName.value.trim(), avatarImage.value ? undefined : selectedAvatar.value, avatarImage.value);
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.warn('Falha ao ingressar na sala:', err.message);
@@ -205,7 +206,7 @@ const handleJoin = async (): Promise<void> => {
           :aria-busy="isSubmitting">
           <div class="space-y-6 px-4 py-6 sm:px-7 sm:py-7">
           <div class="space-y-2">
-            <label for="player-name" class="font-serif text-sm font-bold text-ink">Seu Codinome Político</label>
+            <label for="player-name" class="form-label">Seu codinome político</label>
             <div class="flex items-center gap-2">
               <input id="player-name" v-model="inputName" type="text" maxlength="60" autocomplete="nickname"
                 placeholder="Como vão chamar você?" required :disabled="isSubmitting" class="online-input flex-1" />
@@ -226,8 +227,8 @@ const handleJoin = async (): Promise<void> => {
             <p class="text-xs text-ink-muted" aria-live="polite">Nomes e personagens: {{ genderLabel }}</p>
           </div>
           <div v-if="activeTab === 'join'" class="space-y-2">
-            <label for="room-code" class="font-serif text-sm font-bold text-ink">Código da sala</label>
-            <input id="room-code" v-model="inputRoomCode" type="text" maxlength="6" placeholder="Ex: 7K3F" required
+            <label for="room-code" class="form-label">Código da sala</label>
+            <input id="room-code" v-model="inputRoomCode" type="text" maxlength="6" placeholder="0000" required
               autocomplete="off" autocapitalize="characters" :spellcheck="false" :disabled="isSubmitting"
               class="online-input uppercase tracking-[.2em] text-gold" />
           </div>
@@ -296,9 +297,9 @@ const handleJoin = async (): Promise<void> => {
                 <Clock class="size-4 shrink-0 text-gold-muted" aria-hidden="true" />Ritmo da mesa
               </h4>
               <div class="grid grid-cols-2 gap-3 sm:gap-4">
-                <div class="min-w-0 space-y-2.5">
+                <div class="min-w-0 space-y-2">
                   <label for="action-seconds"
-                    class="flex items-center gap-2 text-sm font-semibold text-ink"><span>Ação<span class="sr-only">
+                    class="form-label"><span>Ação<span class="sr-only">
                         (segundos)</span></span></label>
                   <div class="relative">
                     <input id="action-seconds" v-model.number="actionSeconds" type="number" min="1"
@@ -312,9 +313,9 @@ const handleJoin = async (): Promise<void> => {
                   <p id="action-time-help" class="text-xs leading-relaxed text-ink-subtle">Padrão: {{
                     ACTION_TIMEOUT_SECONDS }} s por turno</p>
                 </div>
-                <div class="min-w-0 space-y-2.5">
+                <div class="min-w-0 space-y-2">
                   <label for="response-seconds"
-                    class="flex items-center gap-2 text-sm font-semibold text-ink"><span>Resposta<span class="sr-only">
+                    class="form-label"><span>Resposta<span class="sr-only">
                         (segundos)</span></span></label>
                   <div class="relative">
                     <input id="response-seconds" v-model.number="responseSeconds" type="number" min="1"
@@ -335,10 +336,13 @@ const handleJoin = async (): Promise<void> => {
               <p v-if="timingError" id="timing-error" role="alert" class="text-xs text-status-red">{{ timingError }}</p>
             </div>
             <div class="space-y-4 border-t border-line/70 py-4">
+              <h4 class="flex items-center gap-2 font-serif text-sm font-bold text-gold-light">
+                <Bot class="size-4 shrink-0 text-gold-muted" aria-hidden="true" />Bots da mesa
+              </h4>
               <div class="flex min-h-11 items-center gap-3">
                 <label for="play-against-bots" class="min-w-0 flex-1 cursor-pointer">
-                  <span id="bots-label" class="flex items-center gap-2 font-serif text-sm font-bold text-gold-light">
-                    <Bot class="size-4 shrink-0 text-gold-muted" aria-hidden="true" />Adicionar bots à mesa
+                  <span id="bots-label" class="form-label">
+                    Adicionar bots à mesa
                   </span>
                   <span id="bots-help" class="mt-1 block text-xs leading-relaxed text-ink-muted">Treine sozinho ou jogue
                     com amigos e bots.</span>
@@ -347,17 +351,19 @@ const handleJoin = async (): Promise<void> => {
                   aria-labelledby="bots-label" aria-describedby="bots-help" />
               </div>
               <div v-if="playAgainstBots" class="space-y-4">
-                <div class="grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-x-4 gap-y-1">
-                  <label for="bot-count" class="text-sm font-semibold text-ink">Quantidade de bots</label>
+                <div class="grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-4">
+                  <div class="min-w-0 space-y-1">
+                    <label for="bot-count" class="form-label">Quantidade de bots</label>
+                    <p id="bot-count-help" class="text-xs leading-relaxed text-ink-subtle">De 1 a {{ MAX_BOTS_PER_ROOM }} bots.
+                      As vagas livres ficam para seus amigos.</p>
+                  </div>
                   <input id="bot-count" v-model.number="botCount" type="number" min="1" :max="MAX_BOTS_PER_ROOM"
                     step="1" required inputmode="numeric" :disabled="isSubmitting" :aria-invalid="!validBotCount"
                     aria-describedby="bot-count-help" class="online-input text-center font-semibold tabular-nums" />
-                  <p id="bot-count-help" class="col-span-2 text-xs text-ink-subtle">De 1 a {{ MAX_BOTS_PER_ROOM }} bots.
-                    As vagas livres ficam para seus amigos.</p>
                 </div>
                 <div class="pt-1">
                   <div class="flex items-center justify-between gap-3">
-                    <span class="text-sm font-semibold text-ink">Nível dos bots</span>
+                    <span class="form-label">Nível dos bots</span>
                     <span class="rounded border px-2.5 py-1 text-xs font-semibold" :class="difficultyTagClass"
                       aria-live="polite">{{ selectedDifficulty.label }}</span>
                   </div>
@@ -407,11 +413,11 @@ const handleJoin = async (): Promise<void> => {
     </div>
 
     <!-- TELA 2: LOBBY DA SALA -->
-    <LobbyRoom v-else-if="mode === 'lobby' && gameState" :room-code="currentRoomCode" :game-state="gameState"
+    <LobbyRoom @retry-conversation="retryConversation" v-else-if="mode === 'lobby' && gameState" :room-code="currentRoomCode" :game-state="gameState"
       :my-player-id="myPlayerId" :is-host="isHost" @set-ready="setReady" @start-game="startGame" @leave="handleLeave" />
 
     <!-- TELA 3: MESA DE JOGO ATIVA -->
-    <GameBoard v-else-if="mode === 'playing' && gameState" :game-state="gameState" :private-view="privateView"
+    <GameBoard @retry-conversation="retryConversation" v-else-if="mode === 'playing' && gameState" :game-state="gameState" :private-view="privateView"
       :my-player-id="myPlayerId" :is-host="isHost" @declare-action="declareAction" @declare-block="declareBlock"
       @declare-challenge="declareChallenge" @pass-response="passResponse" @choose-card="chooseCard"
       @choose-exchange="chooseExchange" @leave="handleLeave" />

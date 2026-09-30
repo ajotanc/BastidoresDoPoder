@@ -28,7 +28,7 @@ watch(() => props.history[0]?.id, async () => {
 
 <template>
   <section class="rounded border border-line bg-surface p-4 sm:p-5">
-    <header class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-line/40 pb-2.5">
+    <header class="mb-4 flex flex-wrap items-center justify-between gap-2 gold-divider-bottom relative pb-2.5">
       <div class="flex items-center gap-2">
         <Newspaper class="w-4 h-4 text-gold-light shrink-0" aria-hidden="true" />
         <h2 class="game-section-title">Plantão dos Bastidores</h2>

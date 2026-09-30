@@ -54,7 +54,7 @@ export interface PublicPlayerState {
   readonly id: string;
   readonly isBot?: boolean;
   readonly name: string;
-  readonly avatarSlug: RoleSlug;
+  readonly avatarSlug?: RoleSlug;
   readonly avatarImage?: string;
   readonly coins: number;
   readonly activeSupportCount: number;
@@ -138,6 +138,7 @@ export const DEFAULT_GAME_SETTINGS: GameSettings = {
  * Estado público autoritativo do jogo compartilhado pelo Host.
  */
 export interface GameState {
+  readonly discordConversation?: import('@/online/room/discordConversation').DiscordConversation;
   /** Shared room settings; optional for older rooms. */
   readonly settings?: GameSettings;
   readonly botDifficulty?: import('../bots/botDifficulty').BotDifficulty;

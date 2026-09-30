@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DiscordConversation from './DiscordConversation.vue';
 import { playerAvatar } from "@/utils/playerProfile";
 import { GAME_NAME } from "@/constants/gameConfig";
 import { ref, computed } from 'vue';
@@ -22,6 +23,7 @@ const botLevelClass = computed(() => BOT_DIFFICULTY_TAG_CLASSES[props.gameState.
 const botCount = computed(() => playerList.value.filter(player => player?.isBot).length);
 
 const emit = defineEmits<{
+  (e: 'retry-conversation'): void;
   (e: 'set-ready', ready: boolean): void;
   (e: 'start-game'): void;
   (e: 'leave'): void;
@@ -137,8 +139,10 @@ const handleShare = async (): Promise<void> => {
       </div>
     </div>
 
+    <DiscordConversation :conversation="gameState.discordConversation" :can-retry="isHost" @retry="emit('retry-conversation')" />
+
     <section class="rounded border border-line bg-surface p-4 shadow-card sm:p-6" aria-labelledby="lobby-settings-title">
-      <div class="mb-4 space-y-2 border-b border-line/40 pb-3">
+      <div class="mb-4 space-y-2 gold-divider-bottom relative pb-3">
         <h2 id="lobby-settings-title" class="game-section-title flex min-h-8 items-center gap-2">
           <SlidersHorizontal class="size-4 shrink-0 text-gold-light" aria-hidden="true" />Configurações da partida
         </h2>
@@ -181,7 +185,7 @@ const handleShare = async (): Promise<void> => {
     </section>
     <!-- Lista de Jogadores Conectados -->
     <div class="bg-surface border border-line/60 rounded p-4 sm:p-6 shadow-card space-y-4">
-      <div class="space-y-2 border-b border-line/40 pb-3">
+      <div class="space-y-2 gold-divider-bottom relative pb-3">
         <div class="flex min-h-8 min-w-0 flex-wrap items-center gap-2">
           <h2 class="game-section-title flex min-w-0 flex-1 items-center gap-2">
             <Users class="size-4 shrink-0 text-gold-light" aria-hidden="true" />Mesa de negociação
@@ -207,8 +211,8 @@ const handleShare = async (): Promise<void> => {
           <img :src="playerAvatar(player)" :alt="player.name" class="h-16 w-16 shrink-0 rounded object-cover object-top" />
           <div class="min-w-0 flex-1">
             <h3 class="break-words text-sm font-semibold leading-relaxed text-ink">{{ player.name }}</h3>
-            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
-              <span>{{ getRoleDisplayName(player.avatarSlug) }}</span>
+            <div class="player-details flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
+              <span v-if="!player.avatarImage && player.avatarSlug">{{ getRoleDisplayName(player.avatarSlug) }}</span>
               <span v-if="idx === 0" class="text-gold">Anfitrião</span>
               <span v-if="player.id === myPlayerId" class="text-gold">Você</span>
             </div>
@@ -222,7 +226,7 @@ const handleShare = async (): Promise<void> => {
     </div>
 
     <!-- Barra de Controle do Lobby -->
-    <div class="flex flex-col items-stretch gap-3 pt-4 border-t border-line/40">
+    <div class="flex flex-col items-stretch gap-3 pt-4 gold-divider-top relative">
       <div class="lobby-actions flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <button type="button" @click="emit('leave')"
           class="order-2 flex min-h-11 w-full items-center gap-2 text-sm font-semibold text-ink-muted transition-colors hover:text-status-red sm:order-1 sm:w-auto">
@@ -256,3 +260,11 @@ const handleShare = async (): Promise<void> => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.player-details > span + span::before {
+  content: "·";
+  margin-right: 0.5rem;
+  color: var(--ink-muted, #aab7c0);
+}
+</style>

@@ -3,6 +3,7 @@ import { RouterLink } from 'vue-router';
 import { Users, Bot, ArrowRight, EyeOff, BookOpen } from 'lucide-vue-next';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
+import Discord from '@/components/ui/icons/Discord.vue';
 import { BOT_DIFFICULTIES, BOT_DIFFICULTY_TAG_CLASSES } from '@/game/bots/botDifficulty';
 import { ACTION_TIMEOUT_SECONDS, RESPONSE_TIMEOUT_SECONDS, MIN_PLAYERS_TO_START } from '@/constants/gameConfig';
 
@@ -39,6 +40,13 @@ const levelDetails = {
         <p class="text-sm leading-relaxed text-ink-muted">Ao criar a sala, marque “Adicionar bots à mesa”, escolha a quantidade e ajuste o seletor “Nível dos bots”. Os bots fazem jogadas, blefam e contestam. Você também pode reunir amigos e bots na mesma partida.</p>
       </article>
     </div>
+    <article class="online-mode-card mb-6 rounded border border-line p-5 sm:p-6" aria-labelledby="online-discord-title">
+      <div class="mb-5 flex items-center justify-between gap-3">
+        <span class="flex h-11 w-11 items-center justify-center rounded border border-gold/30 bg-gold/10 text-gold"><Discord class="h-5 w-5" /></span>
+      </div>
+      <h3 id="online-discord-title" class="mb-3 font-serif text-lg font-bold text-gold-light">Conversa da mesa no Discord</h3>
+      <p class="text-sm leading-relaxed text-ink-muted">A mesa também conta com uma sala de voz no Discord para quem quiser conversar durante a partida.</p>
+    </article>
     <div class="mb-6">
       <h3 class="mb-2 font-serif text-xl font-bold text-gold-light">A mesma mesa. Quatro desafios.</h3>
       <p class="mb-5 max-w-2xl text-sm leading-relaxed text-ink-muted">Comece no seu ritmo e aumente a dificuldade quando quiser. Todos os níveis blefam e contestam; o que muda é o cuidado com cada decisão.</p>
@@ -46,7 +54,6 @@ const levelDetails = {
         <article v-for="level in BOT_DIFFICULTIES" :key="level.value" class="bg-surface p-5">
           <div class="mb-3 flex flex-wrap items-center gap-2">
           <h4 class="inline-flex rounded border px-2.5 py-1 text-xs font-semibold" :class="BOT_DIFFICULTY_TAG_CLASSES[level.value]">{{ level.label }}</h4>
-          <span v-if="level.value === 'intermediate'" class="text-xs text-ink-subtle">Nível inicial</span>
           </div>
           <p class="text-sm leading-relaxed text-ink-muted">{{ levelDetails[level.value].example }}</p>
         </article>

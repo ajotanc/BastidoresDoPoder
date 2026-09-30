@@ -20,7 +20,7 @@ it('envia a foto salva do perfil ao entrar em uma sala existente', async () => {
   try {
     await wrapper.get('form').trigger('submit');
     await flushPromises();
-    expect(join).toHaveBeenCalledWith('TEST', 'Ana', 'lawyer', avatarImage);
+    expect(join).toHaveBeenCalledWith('TEST', 'Ana', undefined, avatarImage);
   } finally {
     wrapper.unmount();
   }

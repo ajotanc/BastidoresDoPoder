@@ -60,7 +60,7 @@ export const createInitialAuthoritativeState = (
   roomCode: string,
   hostPlayerId: string,
   hostName: string,
-  hostAvatarSlug: RoleSlug,
+  hostAvatarSlug: RoleSlug | undefined,
   hostReconnectToken: string,
   settings: GameSettings = DEFAULT_GAME_SETTINGS,
   hostAvatarImage?: string
@@ -68,7 +68,7 @@ export const createInitialAuthoritativeState = (
   const initialPlayer: PublicPlayerState = {
     id: hostPlayerId,
     name: hostName,
-    avatarSlug: hostAvatarSlug,
+    ...(hostAvatarImage ? {} : { avatarSlug: hostAvatarSlug ?? 'colonel' }),
     ...(hostAvatarImage ? { avatarImage: hostAvatarImage } : {}),
     coins: settings.initialCoins,
     activeSupportCount: 0,
@@ -338,7 +338,7 @@ export const executeCommand = (
         state.publicState.players[senderPlayerId] = {
           id: senderPlayerId,
           name,
-          avatarSlug,
+          ...(avatarImage ? {} : { avatarSlug }),
           ...(avatarImage ? { avatarImage } : {}),
           coins: state.settings.initialCoins,
           activeSupportCount: 0,

@@ -7,7 +7,7 @@ describe('Perfil salvo e foto pública', () => {
   beforeEach(() => localStorage.clear());
   it('restaura nome, personagem e foto e tolera armazenamento inválido', () => {
     expect(saveProfile({ name: 'Ana', avatarSlug: 'baron', avatarImage: photo })).toBe(true);
-    expect(loadProfile()).toEqual({ name: 'Ana', avatarSlug: 'baron', avatarImage: photo, gender: 'all' });
+    expect(loadProfile()).toEqual({ name: 'Ana', avatarImage: photo, gender: 'all' });
     localStorage.setItem(PROFILE_STORAGE_KEY, '{invalid');
     expect(loadProfile().name).toBe('');
   });
@@ -21,8 +21,11 @@ describe('Perfil salvo e foto pública', () => {
   it('inclui foto do host e do convidado nos estados públicos', () => {
     const state = createInitialAuthoritativeState('ROOM', 'host', 'Host', 'colonel', 'token-host', undefined, photo);
     expect(state.publicState.players.host?.avatarImage).toBe(photo);
-    const result = executeCommand(state, { type: 'JOIN_ROOM', payload: { name: 'Ana', avatarSlug: 'baron', reconnectToken: 'token-guest', avatarImage: photo } }, 'guest', 'join-photo');
+    expect(state.publicState.players.host).not.toHaveProperty('avatarSlug');
+    const result = executeCommand(state, { type: 'JOIN_ROOM', payload: { name: 'Ana', reconnectToken: 'token-guest', avatarImage: photo } }, 'guest', 'join-photo');
+    expect(result.rejection).toBeUndefined();
     expect(result.broadcastPublicState.players.guest?.avatarImage).toBe(photo);
+    expect(result.broadcastPublicState.players.guest).not.toHaveProperty('avatarSlug');
   });
   it('recusa entrada em sala finalizada com mensagem específica', () => {
     const state = createInitialAuthoritativeState('ROOM', 'host', 'Host', 'colonel', 'token-host');

@@ -82,8 +82,8 @@ const displayCard = computed<RoleCard | undefined>(() => {
             <span v-if="item.cost" class="card-cost rounded-[1cqw] px-[1.5cqw] py-[0.8cqw] tabular-nums">{{ item.cost }}</span>
           </div>
           <div class="space-y-[0.8cqw]">
-            <h3 class="font-serif text-[4.4cqw] font-bold leading-[1.3] text-[#f7eedc]">{{ item.title }}</h3>
-            <p class="text-[3.5cqw] font-normal leading-[1.3] text-[#cbd4de]">{{ item.description }}</p>
+            <h3 class="min-h-[5.72cqw] whitespace-nowrap font-serif text-[4.4cqw] font-bold leading-[1.3] text-[#f7eedc]">{{ item.title }}</h3>
+            <p class="min-h-[9.1cqw] text-[3.5cqw] font-normal leading-[1.3] text-[#cbd4de]">{{ item.description }}</p>
           </div>
         </section>
       </div>

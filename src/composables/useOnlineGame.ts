@@ -26,6 +26,7 @@ export const useOnlineGame = () => {
     meAsPublicPlayer: refs.meAsPublicPlayer,
 
     // Ações da store do Pinia
+    retryConversation: store.retryConversation,
     createRoom: store.createRoom,
     joinRoom: store.joinRoom,
     setReady: store.setReady,

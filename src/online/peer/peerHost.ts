@@ -1,3 +1,4 @@
+import { createDiscordConversation } from '../room/discordConversation';
 import { resolveRoomSettings, type RoomTimingInput } from '@/game/models/roomSettings';
 import { DEFAULT_BOT_DIFFICULTY, type BotDifficulty } from '@/game/bots/botDifficulty';
 import { RECONNECT_GRACE_MS, HEARTBEAT_INTERVAL_MS, HEARTBEAT_TIMEOUT_MS } from '@/constants/gameConfig';
@@ -50,7 +51,7 @@ export class PeerHost {
     public readonly roomCode: string,
     public readonly hostPlayerId: string,
     hostName: string,
-    hostAvatarSlug: RoleSlug,
+    hostAvatarSlug: RoleSlug | undefined,
     hostReconnectToken: string,
     private callbacks: HostCallbacks,
     hostAvatarImage?: string,
@@ -61,6 +62,19 @@ export class PeerHost {
     this.authoritativeState = createInitialAuthoritativeState(roomCode, hostPlayerId, hostName, hostAvatarSlug, hostReconnectToken, resolveRoomSettings(timing), hostAvatarImage);
     this.authoritativeState = addBots(this.authoritativeState, botCount);
     this.authoritativeState.publicState = { ...this.authoritativeState.publicState, botDifficulty };
+  }
+
+  private readonly conversationSessionId = crypto.randomUUID();
+
+  public async prepareConversation(): Promise<void> {
+    const conversationState = this.authoritativeState.publicState.discordConversation;
+    if (this.destroyed || conversationState?.status === 'loading' || (conversationState?.retryAt ?? 0) > Date.now() || (conversationState?.status === 'ready' && (conversationState.expiresAt ?? 0) > Date.now())) return;
+    this.authoritativeState.publicState = { ...this.authoritativeState.publicState, discordConversation: { status: 'loading' } };
+    this.broadcastPublicState();
+    const conversation = await createDiscordConversation(this.roomCode, this.conversationSessionId);
+    if (this.destroyed) return;
+    this.authoritativeState.publicState = { ...this.authoritativeState.publicState, discordConversation: conversation };
+    this.broadcastPublicState();
   }
 
   public init(): Promise<string> {

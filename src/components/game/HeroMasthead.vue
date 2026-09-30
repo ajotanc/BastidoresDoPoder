@@ -58,14 +58,14 @@ import { ArrowDown, BookOpen } from 'lucide-vue-next';
 
     <!-- Estatísticas rápidas de mesa -->
     <div
-      class="relative z-10 mt-8 grid grid-cols-2 sm:grid-cols-4 bg-[#15212a]/95 border border-[#354047] rounded-md backdrop-blur-sm divide-y sm:divide-y-0 sm:divide-x divide-[#354047]"
+      class="relative z-10 mt-8 grid auto-rows-fr grid-cols-2 sm:grid-cols-4 bg-[#15212a]/95 border border-[#354047] rounded-md backdrop-blur-sm divide-y sm:divide-y-0 sm:divide-x divide-[#354047]"
       aria-label="Resumo do jogo">
       <div v-for="(stat, index) in GAME_META_STATS" :key="index"
-        class="p-3.5 sm:p-4 text-center flex flex-col justify-center">
+        class="px-2 py-3.5 sm:p-4 text-center flex flex-col justify-center">
         <strong class="block font-serif font-bold text-2xl sm:text-3xl text-gold mb-0.5">
           {{ stat.value }}
         </strong>
-        <small class="text-xs text-ink-muted tracking-wide">
+        <small class="block whitespace-nowrap text-[11px] leading-4 text-ink-muted sm:text-xs">
           {{ stat.label }}
         </small>
       </div>

@@ -15,7 +15,7 @@ const handleBackToTop = (event: MouseEvent): void => {
 </script>
 
 <template>
-  <footer class="border-t border-line-gold/70 pt-8 pb-12 mt-16 text-sm text-ink-muted text-center sm:text-left"
+  <footer class="gold-divider-top relative pt-8 pb-12 mt-16 text-sm text-ink-muted text-center sm:text-left"
     role="contentinfo">
     <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-6">
       <div class="space-y-1">
@@ -32,7 +32,7 @@ const handleBackToTop = (event: MouseEvent): void => {
       </div>
 
       <div class="flex shrink-0 flex-wrap items-center justify-center gap-4 text-xs">
-        <span class="whitespace-nowrap">© {{ currentYear }} <a href="https://www.instagram.com/ajotanc/" target="_blank" rel="noopener noreferrer" class="font-semibold text-gold hover:text-gold-light hover:underline transition-colors" aria-label="AJOTA no Instagram (abre em nova aba)">AJOTA</a></span>
+        <span class="whitespace-nowrap"><a href="https://www.instagram.com/ajotanc/" target="_blank" rel="noopener noreferrer" class="font-semibold text-gold hover:text-gold-light hover:underline transition-colors" aria-label="AJOTA no Instagram (abre em nova aba)">AJOTA</a> © {{ currentYear }}</span>
         <a href="#home" @click="handleBackToTop"
           class="text-gold hover:text-gold-light hover:underline transition-colors">
           Voltar ao topo ↑
