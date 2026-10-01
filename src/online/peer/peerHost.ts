@@ -127,6 +127,7 @@ export class PeerHost {
     const ids = pub.playerOrder.filter(id => id === host.id || pub.players[id]?.isBot || pub.players[id]?.isConnected);
     next.publicState = { ...next.publicState, revision: pub.revision + 1, botDifficulty: this.botDifficulty, discordConversation: pub.discordConversation,
       playerOrder: ids, players: Object.fromEntries(ids.map(id => [id, { ...pub.players[id]!, coins: previous.settings.initialCoins, activeSupportCount: 0, lostCards: [], isAlive: true, isReady: id === host.id || !!pub.players[id]!.isBot }])) };
+    if (pub.winnerPlayerId && ids.includes(pub.winnerPlayerId)) next.preferredFirstPlayerId = pub.winnerPlayerId;
     next.privateHands = Object.fromEntries(ids.map(id => [id, []]));
     next.reconnectTokens = Object.fromEntries(ids.filter(id => previous.reconnectTokens[id]).map(id => [id, previous.reconnectTokens[id]!]));
     this.processed.clear();

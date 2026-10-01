@@ -35,7 +35,7 @@ function setup(hands: RoleSlug[][] = [['executor', 'coordinator'], ['baron', 'ma
     s = run(s, { type: 'JOIN_ROOM', payload: { name: id, avatarSlug: 'baron', reconnectToken: `token-${id}` } }, id);
     s = run(s, { type: 'SET_READY', payload: { ready: true } }, id);
   }
-  s = run(s, { type: 'START_GAME', payload: {} });
+  s = run({ ...s, preferredFirstPlayerId: 'a' }, { type: 'START_GAME', payload: {} });
   const deck = createInitialDeck();
   hands.forEach((roles, i) => {
     const id = String.fromCharCode(97 + i);

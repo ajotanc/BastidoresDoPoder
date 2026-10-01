@@ -13,11 +13,13 @@ function panel() {
 }
 it('exporta o painel sem controles e preserva o original', async () => {
   const original = panel(); const png = new Blob(['png'], { type: 'image/png' });
+  original.style.fontFamily = '"Plus Jakarta Sans", sans-serif';
   toBlob.mockImplementation(async (clone: HTMLElement) => {
     expect(clone.isConnected).toBe(true);
     expect(clone.textContent).toContain('AJOTA');
     expect(clone.querySelector('[data-result-controls]')).toBeNull();
     expect(clone.getAttribute('aria-hidden')).toBe('true');
+    expect(clone.style.fontFamily).toBe(getComputedStyle(original).fontFamily);
     return png;
   });
   expect(await resultImage(original)).toBe(png);

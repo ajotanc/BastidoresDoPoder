@@ -12,18 +12,21 @@ export async function resultImage(panel: HTMLElement): Promise<Blob> {
   clone.inert = true;
   const width = Math.ceil(panel.getBoundingClientRect().width);
   if (width <= 0) throw new Error('O resumo não está mais disponível.');
+  const typography = getComputedStyle(panel);
   Object.assign(clone.style, {
     position: 'fixed', left: '-100000px', top: '0', width: `${width}px`,
     maxWidth: 'none', height: 'auto', margin: '0', boxShadow: 'none',
+    fontFamily: typography.fontFamily, fontSize: typography.fontSize,
+    lineHeight: typography.lineHeight, color: typography.color,
   });
   document.body.append(clone);
   try {
     await Promise.all(Array.from(clone.querySelectorAll('img'), img => img.decode().catch(() => {})));
-    const fontEmbedCSS = (await getFontEmbedCSS(panel, { preferredFontFormat: 'woff2' })).replace(/font-display:\s*swap/g, 'font-display: block');
+    // Keep every font subset: format filtering can discard Latin glyphs.
+    const fontEmbedCSS = await getFontEmbedCSS(panel);
     const blob = await toBlob(clone, {
       fontEmbedCSS,
       pixelRatio: Math.max(2, 1080 / Math.max(1, width)),
-      preferredFontFormat: 'woff2',
       style: { position: 'static', left: 'auto', top: 'auto' },
     });
     if (!blob) throw new Error('Não foi possível criar a imagem.');

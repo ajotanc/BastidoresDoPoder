@@ -18,7 +18,7 @@ describe('Tempos compartilhados da sala', () => {
   it('publica os tempos e aplica prazos personalizados nas ações e respostas', () => {
     const settings = resolveRoomSettings({ actionSeconds: 45, responseSeconds: 12 });
     let state = addBots(createInitialAuthoritativeState('TIME', 'host', 'Host', 'baron', 'token', settings), MIN_PLAYERS_TO_START - 1);
-    state = executeCommand(state, { type: 'START_GAME', payload: {} }, 'host', 'start').nextAuthoritativeState;
+    state = executeCommand({ ...state, preferredFirstPlayerId: 'host' }, { type: 'START_GAME', payload: {} }, 'host', 'start').nextAuthoritativeState;
     expect(state.publicState.settings).toEqual(settings);
     expect(state.publicState.deadlineAt! - dayjs().valueOf()).toBeGreaterThan(44000);
     const result = executeCommand(state, { type: 'DECLARE_ACTION', payload: { actionType: 'slushFund' } }, 'host', 'action');

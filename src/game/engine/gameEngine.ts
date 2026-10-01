@@ -38,6 +38,8 @@ export interface AuthoritativeGameState {
   reconnectTokens: Record<string, string>;
   privateNotices: Record<string, string>;
   playersPassedResponse: Set<string>;
+  /** Who must open the next match (rematch winner). Absent means the starter is drawn at random. */
+  preferredFirstPlayerId?: string;
   lossContinuation?: {
     next: 'block' | 'resolve' | 'end';
   };
@@ -196,6 +198,12 @@ export const getRoleDisplayName = (slug: RoleSlug): string => {
   return ROLE_DISPLAY_NAMES[slug] ?? slug;
 };
 
+const chooseStartingPlayer = (playerOrder: readonly string[], preferredId?: string): string | undefined => {
+  if (preferredId && playerOrder.includes(preferredId)) return preferredId;
+  if (!playerOrder.length) return undefined;
+  return playerOrder[Math.floor(Math.random() * playerOrder.length)];
+};
+
 /**
  * Função pura central da Engine autoritativa: executa um comando e produz o próximo estado.
  */
@@ -219,6 +227,7 @@ export const executeCommand = (
     reconnectTokens: { ...currentState.reconnectTokens },
     privateNotices: { ...currentState.privateNotices },
     playersPassedResponse: new Set(currentState.playersPassedResponse),
+    preferredFirstPlayerId: currentState.preferredFirstPlayerId,
     lossContinuation: currentState.lossContinuation,
   };
 
@@ -420,8 +429,10 @@ export const executeCommand = (
         }
       }
 
-      const firstPlayerId = state.publicState.playerOrder[0] || senderPlayerId;
+      const firstPlayerId = chooseStartingPlayer(state.publicState.playerOrder, state.preferredFirstPlayerId)
+        || senderPlayerId;
       state.deck = deck;
+      state.preferredFirstPlayerId = undefined;
       state.publicState = {
         ...state.publicState,
         phase: 'WAITING_ACTION',

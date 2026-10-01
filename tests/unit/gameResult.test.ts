@@ -1,12 +1,15 @@
 import { buildResultSummary, resultText } from '@/game/resultSummary';
-import { describe, expect, it } from 'vitest';
-import { mount, shallowMount } from '@vue/test-utils';
+import { describe, expect, it, vi } from 'vitest';
+import { mount, shallowMount, flushPromises } from '@vue/test-utils';
+import { shareResult } from '@/utils/shareResult';
 import GameResultBanner from '@/components/online/GameResultBanner.vue';
 import GameBoard from '@/components/online/GameBoard.vue';
 import GameNewsFeed from '@/components/online/GameNewsFeed.vue';
 import GameEventMessage from '@/components/online/GameEventMessage.vue';
 import { createInitialAuthoritativeState } from '@/game/engine/gameEngine';
 import type { GameState, GameEvent } from '@/game/models/gameState';
+
+vi.mock('@/utils/shareResult', () => ({ shareResult: vi.fn() }));
 
 const event = (id: string, type: string, message: string): GameEvent => ({ id, type, message, timestamp: 1, importance: 'normal' });
 function finished(): GameState {
@@ -22,6 +25,23 @@ function finished(): GameState {
 }
 
 describe('Resultado visível na mesa', () => {
+  it('troca o ícone por carregamento e impede compartilhamentos duplicados', async () => {
+    let finish!: (value: string) => void;
+    vi.mocked(shareResult).mockReturnValueOnce(new Promise(resolve => { finish = resolve; }));
+    const wrapper = mount(GameResultBanner, { props: { gameState: finished(), isHost: true } });
+    const button = wrapper.get('button[aria-label="Compartilhar resultado"]');
+    await button.trigger('click');
+    expect(button.attributes('aria-busy')).toBe('true');
+    expect(button.attributes('disabled')).toBeDefined();
+    expect(button.find('.animate-spin').exists()).toBe(true);
+    await button.trigger('click');
+    expect(shareResult).toHaveBeenCalledTimes(1);
+    finish('Imagem baixada.');
+    await flushPromises();
+    expect(button.attributes('aria-busy')).toBe('false');
+    expect(button.find('.animate-spin').exists()).toBe(false);
+    wrapper.unmount();
+  });
   it('permite virar os apoios do vencedor apenas após encerrar', async () => {
     const end = { ...finished(), winnerSupports: [{ id: 'remaining', roleSlug: 'baron' as const }] };
     const wrapper = shallowMount(GameBoard, { props: { gameState: { ...end, phase: 'WAITING_ACTION' }, myPlayerId: 'b', privateView: null, isHost: false } });

@@ -56,6 +56,7 @@ describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
     const c = join('c');
     send(b, 'b', { type: 'SET_READY', payload: { ready: true } });
     send(c, 'c', { type: 'SET_READY', payload: { ready: true } });
+    (host as unknown as { authoritativeState: { preferredFirstPlayerId?: string } }).authoritativeState.preferredFirstPlayerId = 'a';
     host.executeLocalHostCommand({ type: 'START_GAME', payload: {} });
     expect(state.phase).toBe('WAITING_ACTION');
     return { b, c };
@@ -126,7 +127,19 @@ describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
     send(c, 'c', { type: 'SET_READY', payload: { ready: true } });
     host.executeLocalHostCommand({ type: 'START_GAME', payload: {} });
     expect(state.phase).toBe('WAITING_ACTION');
+    expect(state.activePlayerId).toBe('a');
     expect(checkpoint.state.privateHands.b).toHaveLength(2);
+  });
+
+  it('revanche abre o primeiro turno com quem venceu a partida anterior', () => {
+    const { b, c } = start();
+    Object.assign(state, { phase: 'FINISHED', winnerPlayerId: 'b', deadlineAt: null });
+    host.startRematch();
+    send(b, 'b', { type: 'SET_READY', payload: { ready: true } });
+    send(c, 'c', { type: 'SET_READY', payload: { ready: true } });
+    host.executeLocalHostCommand({ type: 'START_GAME', payload: {} });
+    expect(state.phase).toBe('WAITING_ACTION');
+    expect(state.activePlayerId).toBe('b');
   });
 
   it.each([false, true])('restaura mãos, prazos e credenciais, incluindo espectador eliminado: %s', async eliminated => {
@@ -199,6 +212,7 @@ describe('Host: identidade, concorrência, sigilo, reconexão e timers', () => {
     const attacker = connect('attacker');
     send(attacker, bots[0]!, { type: 'JOIN_ROOM', payload: { name: 'Fake', avatarSlug: 'baron', reconnectToken: 'fake' } });
     expect(messages(attacker, 'COMMAND_REJECTED')).toHaveLength(1);
+    (host as unknown as { authoritativeState: { preferredFirstPlayerId?: string } }).authoritativeState.preferredFirstPlayerId = 'a';
     host.executeLocalHostCommand({ type: 'START_GAME', payload: {} });
     host.executeLocalHostCommand({ type: 'DECLARE_ACTION', payload: { actionType: 'salary' } });
     for (let i = 0; i < 30 && state.activePlayerId !== 'b'; i++) {

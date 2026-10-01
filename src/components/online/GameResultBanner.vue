@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Trophy, RotateCcw, Share2, Clock } from 'lucide-vue-next';
+import { Trophy, RotateCcw, Share2, Clock, LoaderCircle } from 'lucide-vue-next';
 import { buildResultSummary, durationLabel } from '@/game/resultSummary';
 import { shareResult } from '@/utils/shareResult';
 import { playerAvatar } from '@/utils/playerProfile';
@@ -64,10 +64,10 @@ const finalEvents = computed(() => {
       </div>
 
     <Accordion v-if="finalEvents.length" type="single" collapsible class="result-history" data-result-controls>
-      <AccordionItem value="final-sequence" class="border-0 bg-transparent">
-        <AccordionTrigger class="result-history-trigger text-xs text-ink-muted">Ver sequência final</AccordionTrigger>
-        <AccordionContent class="px-0 pb-3 pt-3">
-          <ol class="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-ink-muted"><li v-for="event in finalEvents" :key="event.id" class="break-words"><GameEventMessage :message="event.message" /></li></ol>
+      <AccordionItem value="final-sequence" class="border-line bg-paper/40">
+        <AccordionTrigger class="result-history-trigger text-sm font-semibold text-gold-light">Ver sequência final</AccordionTrigger>
+        <AccordionContent class="px-4 pb-4 pt-1 before:hidden">
+          <ol class="list-decimal space-y-3 pl-5 text-sm leading-relaxed text-ink-muted"><li v-for="event in finalEvents" :key="event.id" class="break-words"><GameEventMessage :message="event.message" /></li></ol>
         </AccordionContent>
       </AccordionItem>
     </Accordion>
@@ -75,7 +75,7 @@ const finalEvents = computed(() => {
     <footer v-if="summary || feedback" data-result-controls class="gold-divider-top relative pt-4">
       <div v-if="summary" class="flex items-stretch justify-end gap-2">
         <AppButton v-if="isHost && winner" class="min-w-0 flex-1 sm:flex-none sm:px-5" @click="$emit('play-again')"><RotateCcw class="h-4 w-4 shrink-0" aria-hidden="true" />Preparar revanche</AppButton>
-        <AppButton variant="outline" :class="isHost ? 'w-11 shrink-0 px-0 sm:w-auto sm:px-4' : 'flex-1'" :disabled="sharing" :aria-label="sharing ? 'Gerando imagem' : 'Compartilhar resultado'" :title="sharing ? 'Gerando imagem' : 'Compartilhar resultado'" @click="share"><Share2 class="h-4 w-4 shrink-0" :class="{ 'animate-pulse motion-reduce:animate-none': sharing }" aria-hidden="true" /><span :class="{ 'sr-only sm:not-sr-only': isHost }">{{ sharing ? 'Gerando imagem…' : 'Compartilhar resultado' }}</span></AppButton>
+        <AppButton variant="outline" :class="isHost ? 'w-11 shrink-0 px-0 sm:w-auto sm:px-4' : 'flex-1'" :disabled="sharing" :aria-busy="sharing" :aria-label="sharing ? 'Gerando imagem' : 'Compartilhar resultado'" :title="sharing ? 'Gerando imagem' : 'Compartilhar resultado'" @click="share"><LoaderCircle v-if="sharing" class="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" aria-hidden="true" /><Share2 v-else class="h-4 w-4 shrink-0" aria-hidden="true" /><span :class="{ 'sr-only sm:not-sr-only': isHost }">{{ sharing ? 'Gerando imagem…' : 'Compartilhar resultado' }}</span></AppButton>
       </div>
       <p v-if="feedback" class="mt-3 text-xs text-ink-muted" role="status">{{ feedback }}</p>
       <p v-if="gameState.discordResultStatus" class="mt-3 text-xs text-ink-subtle" role="status">{{ gameState.discordResultStatus === 'sent' ? 'Vitória registrada no Discord.' : gameState.discordResultStatus === 'sending' ? 'Registrando vitória no Discord…' : 'Não foi possível registrar no Discord. Você ainda pode compartilhar o resultado.' }}</p>
@@ -95,10 +95,11 @@ const finalEvents = computed(() => {
   .result-overview { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .85fr); align-items: center; gap: 32px; }
   .result-decision { padding-top: 0; }
 }
-.result-history { margin-top: 8px; margin-bottom: 8px; }
-.result-history :deep(button.result-history-trigger) { padding: 10px 0; }
+.result-history { margin-block: 20px; }
+.result-history :deep(button.result-history-trigger) { padding: 14px 16px; }
 @media (min-width: 640px) {
   .result-winner { padding-block: 28px; }
   .result-avatar { width: 72px; height: 72px; }
 }
 </style>
+

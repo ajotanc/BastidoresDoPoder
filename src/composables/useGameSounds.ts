@@ -19,10 +19,12 @@ export function useGameSounds(state: Ref<GameState>, playerId: Ref<string>) {
     const context = audio;
     notes.forEach((frequency, index) => {
       const oscillator = context.createOscillator(); const gain = context.createGain();
-      const start = context.currentTime + index * 0.13;
+      const start = context.currentTime + index * 0.18;
+      oscillator.type = 'triangle';
       oscillator.frequency.value = frequency;
-      gain.gain.setValueAtTime(0, start); gain.gain.linearRampToValueAtTime(0.14, start + 0.015); gain.gain.exponentialRampToValueAtTime(0.001, start + 0.2);
-      oscillator.connect(gain); gain.connect(context.destination); oscillator.start(start); oscillator.stop(start + 0.22);
+      gain.gain.setValueAtTime(0, start); gain.gain.linearRampToValueAtTime(0.4, start + 0.015);
+      gain.gain.setValueAtTime(0.4, start + 0.08); gain.gain.exponentialRampToValueAtTime(0.001, start + 0.3);
+      oscillator.connect(gain); gain.connect(context.destination); oscillator.start(start); oscillator.stop(start + 0.32);
       oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
     });
   }

@@ -16,7 +16,7 @@ vi.mock('@/constants/gameConfig', async importOriginal => ({
 const initial = () => createInitialAuthoritativeState('BOTS', 'host', 'Human', 'baron', 'token');
 const setup = (count = 2) => {
   const lobby = addBots(initial(), count);
-  return executeCommand(lobby, { type: 'START_GAME', payload: {} }, 'host', 'start').nextAuthoritativeState;
+  return executeCommand({ ...lobby, preferredFirstPlayerId: 'host' }, { type: 'START_GAME', payload: {} }, 'host', 'start').nextAuthoritativeState;
 };
 afterEach(() => vi.useRealTimers());
 
@@ -27,7 +27,7 @@ describe('Bots: cadastro e limites', () => {
     const bots = Object.values(state.publicState.players).filter(p => p.isBot);
     expect(bots).toHaveLength(2);
     expect(bots.every(p => p.isReady && p.isConnected && p.name.endsWith('(Bot)'))).toBe(true);
-    expect(executeCommand(state, { type: 'START_GAME', payload: {} }, 'host', 'start').rejection).toBeUndefined();
+    expect(executeCommand({ ...state, preferredFirstPlayerId: 'host' }, { type: 'START_GAME', payload: {} }, 'host', 'start').rejection).toBeUndefined();
   });
   it.each([-1, 1.5, NaN, Infinity, MAX_BOTS_PER_ROOM + 1])('rejeita quantidade inválida %s', count => {
     expect(() => validateBotCount(count)).toThrow();

@@ -6,7 +6,11 @@ vi.mock('@/constants/gameConfig', async importOriginal => ({
 import {
   createInitialAuthoritativeState,
   executeCommand,
+  type AuthoritativeGameState,
 } from '@/game/engine/gameEngine';
+
+const startMatch = (state: AuthoritativeGameState, hostId: string, firstPlayerId = hostId, messageId = 'start') =>
+  executeCommand({ ...state, preferredFirstPlayerId: firstPlayerId }, { type: 'START_GAME', payload: {} }, hostId, messageId).nextAuthoritativeState;
 
 describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
   it('deve inicializar a sala em LOBBY com o Host', () => {
@@ -36,9 +40,8 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
     expect(state.publicState.players['player-2']?.name).toBe('Senador');
 
     state = executeCommand(state, { type: 'SET_READY', payload: { ready: true } }, 'player-2', 'ready').nextAuthoritativeState;
-    // Iniciar jogo
     const startResult = executeCommand(
-      state,
+      { ...state, preferredFirstPlayerId: 'host-1' },
       {
         type: 'START_GAME',
         payload: {},
@@ -65,7 +68,7 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
       'msg-1'
     ).nextAuthoritativeState;
     state = executeCommand(state, { type: 'SET_READY', payload: { ready: true } }, 'player-2', 'ready').nextAuthoritativeState;
-    state = executeCommand(state, { type: 'START_GAME', payload: {} }, 'host-1', 'msg-2').nextAuthoritativeState;
+    state = startMatch(state, 'host-1', 'host-1', 'msg-2');
 
     const actionResult = executeCommand(
       state,
@@ -93,7 +96,7 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
       'msg-1'
     ).nextAuthoritativeState;
     state = executeCommand(state, { type: 'SET_READY', payload: { ready: true } }, 'player-2', 'ready').nextAuthoritativeState;
-    state = executeCommand(state, { type: 'START_GAME', payload: {} }, 'host-1', 'msg-2').nextAuthoritativeState;
+    state = startMatch(state, 'host-1', 'host-1', 'msg-2');
 
     // Força 10 moedas para o host
     const playerHost = state.publicState.players['host-1'];
@@ -124,7 +127,7 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
       'msg-1'
     ).nextAuthoritativeState;
     state = executeCommand(state, { type: 'SET_READY', payload: { ready: true } }, 'player-2', 'ready').nextAuthoritativeState;
-    state = executeCommand(state, { type: 'START_GAME', payload: {} }, 'host-1', 'msg-2').nextAuthoritativeState;
+    state = startMatch(state, 'host-1', 'host-1', 'msg-2');
 
     // Define mão do host explicitamente sem Barão (apenas Coronel e Advogada)
     state.privateHands['host-1'] = [
@@ -171,7 +174,7 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
       'msg-1'
     ).nextAuthoritativeState;
     state = executeCommand(state, { type: 'SET_READY', payload: { ready: true } }, 'player-2', 'ready').nextAuthoritativeState;
-    state = executeCommand(state, { type: 'START_GAME', payload: {} }, 'host-1', 'msg-2').nextAuthoritativeState;
+    state = startMatch(state, 'host-1', 'host-1', 'msg-2');
 
     // Dá 7 moedas para o host
     const hostPlayer = state.publicState.players['host-1'];
@@ -240,7 +243,7 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
       'msg-1'
     ).nextAuthoritativeState;
     state = executeCommand(state, { type: 'SET_READY', payload: { ready: true } }, 'player-2', 'ready').nextAuthoritativeState;
-    state = executeCommand(state, { type: 'START_GAME', payload: {} }, 'host-1', 'msg-2').nextAuthoritativeState;
+    state = startMatch(state, 'host-1', 'host-1', 'msg-2');
 
     // Dá 7 moedas para o host e 3 moedas para o player-2
     const hostPlayer = state.publicState.players['host-1'];
@@ -306,7 +309,7 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
     ).nextAuthoritativeState;
 
     state = executeCommand(state, { type: 'SET_READY', payload: { ready: true } }, 'p2', 'ready').nextAuthoritativeState;
-    state = executeCommand(state, { type: 'START_GAME', payload: {} }, 'p1', 'msg-start').nextAuthoritativeState;
+    state = startMatch(state, 'p1', 'p1', 'msg-start');
 
     // Função auxiliar para contar todas as cartas no ecossistema
     const countAllCardsByRole = () => {
@@ -356,7 +359,7 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
     let state = createInitialAuthoritativeState('ROOM-EXEC', 'p1', 'Jorge', 'executor', 'tok-1');
     state = executeCommand(state, { type: 'JOIN_ROOM', payload: { name: 'Ajota', avatarSlug: 'colonel', reconnectToken: 'tok-2' } }, 'p2', 'c-join').nextAuthoritativeState;
     state = executeCommand(state, { type: 'SET_READY', payload: { ready: true } }, 'p2', 'c-r2').nextAuthoritativeState;
-    state = executeCommand(state, { type: 'START_GAME', payload: {} }, 'p1', 'c-start').nextAuthoritativeState;
+    state = startMatch(state, 'p1', 'p1', 'c-start');
 
     // Ajusta Jorge com moedas suficientes e Ajota com apenas 1 carta ativa restante
     const p1 = state.publicState.players['p1']!;
@@ -420,5 +423,36 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
     expect(state.publicState.players['p2']?.activeSupportCount).toBe(0);
     expect(state.publicState.phase).toBe('FINISHED');
     expect(state.publicState.winnerPlayerId).toBe('p1');
+  });
+
+  it('abre a partida com um jogador sorteado na mesa', () => {
+    let state = createInitialAuthoritativeState('7k3f', 'host-1', 'Presidente', 'colonel', 'token-1');
+    state = executeCommand(
+      state,
+      { type: 'JOIN_ROOM', payload: { name: 'Senador', avatarSlug: 'baron', reconnectToken: 'token-2' } },
+      'player-2',
+      'msg-1'
+    ).nextAuthoritativeState;
+    state = executeCommand(state, { type: 'SET_READY', payload: { ready: true } }, 'player-2', 'ready').nextAuthoritativeState;
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    state = executeCommand(state, { type: 'START_GAME', payload: {} }, 'host-1', 'msg-2').nextAuthoritativeState;
+    expect(state.publicState.activePlayerId).toBe('player-2');
+    expect(state.preferredFirstPlayerId).toBeUndefined();
+    vi.restoreAllMocks();
+  });
+
+  it('na revanche o vencedor permanece como primeiro a jogar', () => {
+    let state = createInitialAuthoritativeState('7k3f', 'host-1', 'Presidente', 'colonel', 'token-1');
+    state = executeCommand(
+      state,
+      { type: 'JOIN_ROOM', payload: { name: 'Senador', avatarSlug: 'baron', reconnectToken: 'token-2' } },
+      'player-2',
+      'msg-1'
+    ).nextAuthoritativeState;
+    state = executeCommand(state, { type: 'SET_READY', payload: { ready: true } }, 'player-2', 'ready').nextAuthoritativeState;
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    state = startMatch(state, 'host-1', 'player-2', 'msg-2');
+    expect(state.publicState.activePlayerId).toBe('player-2');
+    vi.restoreAllMocks();
   });
 });
