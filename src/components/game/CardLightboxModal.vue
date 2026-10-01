@@ -4,7 +4,7 @@ import { ref, watch, nextTick } from 'vue';
 import { useLightbox } from '@/composables/useLightbox';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import AppButton from '@/components/ui/AppButton.vue';
-import { X, Printer, RotateCw } from 'lucide-vue-next';
+import { X, Printer, RotateCw } from '@lucide/vue';
 import Card from '@/components/game/Card.vue';
 import { SUPPORT_CARDS_LENGTH } from '@/constants/gameData';
 

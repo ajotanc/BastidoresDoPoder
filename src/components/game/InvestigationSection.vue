@@ -2,7 +2,7 @@
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
 import AppPanel from '@/components/ui/AppPanel.vue';
 import AppCallout from '@/components/ui/AppCallout.vue';
-import { UserCheck, UserX } from 'lucide-vue-next';
+import { UserCheck, UserX } from '@lucide/vue';
 </script>
 
 <template>

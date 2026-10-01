@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onBeforeUnmount } from 'vue';
-import { ArrowUpRight, LoaderCircle } from 'lucide-vue-next';
+import { ArrowUpRight } from '@lucide/vue';
+import { Spinner } from '@/components/ui/spinner';
 import Discord from '@/components/ui/icons/Discord.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import type { DiscordConversation } from '@/online/room/discordConversation';
@@ -50,7 +51,7 @@ const description = computed(() => props.conversation?.status === 'loading' ? 'P
           Entrar na conversa <ArrowUpRight class="size-4 shrink-0" aria-hidden="true" />
         </AppButton>
         <AppButton v-else variant="primary" :disabled="!retryAllowed" @click="emit('retry')" class="w-full sm:min-w-48" :aria-busy="conversation.status === 'loading'">
-          <LoaderCircle v-if="conversation.status === 'loading'" class="size-4 motion-safe:animate-spin" aria-hidden="true" />
+          <Spinner v-if="conversation.status === 'loading'" size="sm" aria-hidden="true" />
           {{ actionLabel }}
         </AppButton>
       </div>

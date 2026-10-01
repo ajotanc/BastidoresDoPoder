@@ -2,7 +2,7 @@
 import { TURN_STEPS, RESOLUTION_RULES } from '@/constants/gameData';
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
 import AppCallout from '@/components/ui/AppCallout.vue';
-import { CheckCircle2, AlertOctagon } from 'lucide-vue-next';
+import { CheckCircle2, AlertOctagon } from '@lucide/vue';
 </script>
 
 <template>

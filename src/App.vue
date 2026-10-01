@@ -11,6 +11,7 @@ import AppNavbar from '@/components/layout/AppNavbar.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
 import CardLightboxModal from '@/components/game/CardLightboxModal.vue';
 import CoinLightboxModal from '@/components/game/CoinLightboxModal.vue';
+import { Sonner } from '@/components/ui/sonner';
 
 const game = useGameStore();
 const sessionActive = computed(() => ['creating', 'joining', 'lobby', 'playing'].includes(game.mode) && game.gameState?.phase !== 'FINISHED');
@@ -94,5 +95,8 @@ const handleNavbarNavigate = (sectionId: string): void => {
 
     <!-- Modal Lightbox para Ampliação e Download de Moedas (Contos) -->
     <CoinLightboxModal />
+
+    <!-- Notificações Toast do Sistema -->
+    <Sonner />
   </div>
 </template>

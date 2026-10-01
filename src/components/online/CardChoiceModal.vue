@@ -4,7 +4,7 @@ import Card from '@/components/game/Card.vue';
 import { ref, computed, watch } from 'vue';
 import type { SupportCard } from '@/game/models/gameState';
 import { getRoleDisplayName } from '@/game/engine/gameEngine';
-import { AlertTriangle } from 'lucide-vue-next';
+import { AlertTriangle } from '@lucide/vue';
 
 interface Props {
   isOpen: boolean;

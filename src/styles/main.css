@@ -91,7 +91,9 @@ button:focus-visible,
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  *, *::before, *::after {
+  *:not(.animate-spin):not(.app-spinner),
+  *::before,
+  *::after {
     animation: none !important;
     transition: none !important;
   }
@@ -120,14 +122,14 @@ button[class], .app-button {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 14px;
 }
-button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-checkbox):not(.app-switch), .app-button {
+button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-checkbox):not(.app-switch):not([data-close-button]):not([data-sonner-toast] button), .app-button {
   min-height: 44px;
   padding: 10px 12px;
   border-width: 1px;
   font-weight: 600;
   line-height: 1.4;
 }
-button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-select-trigger):not(.rules-action):not(:has(.block)):not(.app-switch) {
+button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-select-trigger):not(.rules-action):not(:has(.block)):not(.app-switch):not([data-close-button]):not([data-sonner-toast] button) {
   align-items: center;
   justify-content: center;
   gap: 8px;

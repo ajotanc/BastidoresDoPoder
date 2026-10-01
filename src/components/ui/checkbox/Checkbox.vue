@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
 import { computed } from 'vue';
-import { Check } from 'lucide-vue-next';
+import { Check } from '@lucide/vue';
 import { CheckboxRoot, CheckboxIndicator, useForwardPropsEmits, type CheckboxRootProps, type CheckboxRootEmits } from 'radix-vue';
 import { cn } from '@/utils/cn';
 defineOptions({ name: 'AppCheckbox' });

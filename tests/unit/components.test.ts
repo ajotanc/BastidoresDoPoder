@@ -61,6 +61,69 @@ describe('Testes de Componentes com @vue/test-utils e jsdom', () => {
     expect(wrapper.element.tagName.toLowerCase()).toBe('span');
     expect(wrapper.classes()).toContain('cursor-default');
   });
+
+  it('Spinner deve renderizar com atributos de acessibilidade e classes padrão', async () => {
+    const { Spinner } = await import('@/components/ui/spinner');
+    const wrapper = mount(Spinner);
+
+    expect(wrapper.element.tagName.toLowerCase()).toBe('svg');
+    expect(wrapper.attributes('aria-hidden')).toBe('true');
+    expect(wrapper.classes()).toContain('animate-spin');
+    expect(wrapper.classes()).toContain('text-gold');
+    expect(wrapper.classes()).toContain('h-5');
+  });
+
+  it('Spinner deve aplicar tamanho, variante e classes customizadas', async () => {
+    const { Spinner } = await import('@/components/ui/spinner');
+    const wrapper = mount(Spinner, {
+      props: {
+        size: 'sm',
+        variant: 'ink',
+        class: 'custom-spinner-class',
+      },
+    });
+
+    expect(wrapper.classes()).toContain('h-4');
+    expect(wrapper.classes()).toContain('w-4');
+    expect(wrapper.classes()).toContain('text-ink');
+    expect(wrapper.classes()).toContain('custom-spinner-class');
+  });
+
+  it('Spinner deve renderizar acessibilidade com label e role status', async () => {
+    const { Spinner } = await import('@/components/ui/spinner');
+    const wrapper = mount(Spinner, {
+      props: {
+        label: 'Carregando dados',
+      },
+    });
+
+    expect(wrapper.element.tagName.toLowerCase()).toBe('span');
+    expect(wrapper.attributes('role')).toBe('status');
+    expect(wrapper.attributes('aria-label')).toBe('Carregando dados');
+    expect(wrapper.find('span.sr-only').text()).toBe('Carregando dados');
+  });
+
+  it('AppSpinner deve funcionar como wrapper transparente', async () => {
+    const { default: AppSpinner } = await import('@/components/ui/AppSpinner.vue');
+    const wrapper = mount(AppSpinner, {
+      props: {
+        size: 'lg',
+        variant: 'white',
+      },
+    });
+
+    expect(wrapper.classes()).toContain('h-8');
+    expect(wrapper.classes()).toContain('text-white');
+  });
+
+  it('Sonner deve renderizar container Toaster e expor métodos toast', async () => {
+    const { Sonner, toast } = await import('@/components/ui/sonner');
+    expect(typeof toast.success).toBe('function');
+    expect(typeof toast.error).toBe('function');
+
+    const wrapper = mount(Sonner);
+    expect(wrapper.exists()).toBe(true);
+  });
 });
 
 describe('RoleCardsSection - Filtro de Personagens e Ajuda', () => {

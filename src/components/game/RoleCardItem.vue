@@ -2,7 +2,7 @@
 import Card from '@/components/game/Card.vue';
 import type { RoleCard } from '@/types/game';
 import { useLightbox } from '@/composables/useLightbox';
-import { ZoomIn, BookOpen } from 'lucide-vue-next';
+import { ZoomIn, BookOpen } from '@lucide/vue';
 
 interface Props {
   card: RoleCard;

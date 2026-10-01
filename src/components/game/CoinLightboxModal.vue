@@ -2,7 +2,7 @@
 import { useCoinLightbox } from '@/composables/useCoinLightbox';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import AppButton from '@/components/ui/AppButton.vue';
-import { X, Download, Coins, Sparkles, Scale } from 'lucide-vue-next';
+import { X, Download, Coins, Sparkles, Scale } from '@lucide/vue';
 
 const { isOpen, activeCoin, closeCoinLightbox } = useCoinLightbox();
 </script>

@@ -4,7 +4,7 @@ import { ref, watch } from 'vue';
 import { NAVIGATION_SECTIONS } from '@/constants/gameData';
 import { usePwaInstall } from '@/composables/usePwaInstall';
 import { scrollToSection } from '@/utils/navigation';
-import { Download, BookOpen, Menu, X, ArrowUpRight, ChevronRight } from 'lucide-vue-next';
+import { Download, BookOpen, Menu, X, ArrowUpRight, ChevronRight } from '@lucide/vue';
 const props = withDefaults(defineProps<{ activeSectionId: string; isOnlineActive?: boolean }>(), { isOnlineActive: false });
 const emit = defineEmits<{ (e: 'navigate', sectionId: string): void; (e: 'toggle-online'): void }>();
 const { isInstallable, installApp } = usePwaInstall();

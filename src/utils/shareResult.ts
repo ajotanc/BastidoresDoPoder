@@ -1,4 +1,6 @@
+import { GAME_NAME } from '@/constants/gameConfig';
 import type { ResultSummary } from '@/game/resultSummary';
+import dayjs from 'dayjs';
 
 /** Export the rendered summary, keeping the same avatar, typography and layout. */
 export async function resultImage(panel: HTMLElement): Promise<Blob> {
@@ -35,7 +37,10 @@ export async function resultImage(panel: HTMLElement): Promise<Blob> {
 }
 export async function shareResult(summary: ResultSummary, panel: HTMLElement): Promise<string> {
   const blob = await resultImage(panel);
-  const file = new File([blob], `bastidores-mesa-${summary.roomCode}.png`, { type: 'image/png' });
+  const timestamp = dayjs().unix();
+  const filename = GAME_NAME.toLocaleLowerCase().replace(/\s/g, '-');
+
+  const file = new File([blob], `${timestamp}-${filename}-${summary.roomCode}.png`, { type: 'image/png' });
   if (navigator.canShare?.({ files: [file] })) {
     try { await navigator.share({ files: [file], title: 'Bastidores do Poder' }); return ''; }
     catch (error) { if (error instanceof DOMException && error.name === 'AbortError') return ''; }

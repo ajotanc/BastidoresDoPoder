@@ -3,7 +3,7 @@ import { GAME_NAME } from "@/constants/gameConfig";
 import { computed } from 'vue';
 import type { RoleCard, RoleSlug } from '@/types/game';
 import { ROLE_CARDS } from '@/constants/gameData';
-import { ShieldPlus, SwordsIcon } from 'lucide-vue-next';
+import { ShieldPlus, SwordsIcon } from '@lucide/vue';
 
 defineOptions({
   name: 'GameCard'

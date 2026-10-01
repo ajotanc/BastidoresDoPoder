@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { SelectRoot, SelectTrigger, SelectValue, SelectPortal, SelectContent, SelectViewport, SelectItem, SelectItemText, SelectItemIndicator, SelectIcon } from 'radix-vue';
-import { Check, ChevronDown } from 'lucide-vue-next';
+import { Check, ChevronDown } from '@lucide/vue';
 defineProps<{ modelValue: string; label: string; options: readonly { id: string; label: string }[] }>();
 const emit = defineEmits<{ (event: 'update:modelValue', value: string): void }>();
 </script>

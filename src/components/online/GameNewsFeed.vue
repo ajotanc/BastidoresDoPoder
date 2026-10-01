@@ -2,7 +2,7 @@
 import dayjs from 'dayjs';
 import { computed, ref, watch, nextTick } from 'vue';
 import type { GameEvent } from '@/game/models/gameState';
-import { Newspaper } from 'lucide-vue-next';
+import { Newspaper } from '@lucide/vue';
 import GameEventMessage from './GameEventMessage.vue';
 
 interface Props {

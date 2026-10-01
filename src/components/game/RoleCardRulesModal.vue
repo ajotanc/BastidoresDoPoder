@@ -5,7 +5,7 @@ import type { RoleCard } from '@/types/game';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import { useLightbox } from '@/composables/useLightbox';
-import { X, Swords, ShieldCheck, Info, ZoomIn } from 'lucide-vue-next';
+import { X, Swords, ShieldCheck, Info, ZoomIn } from '@lucide/vue';
 
 interface Props {
   card: RoleCard | null;

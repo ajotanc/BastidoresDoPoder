@@ -7,7 +7,7 @@ import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
 import RoleCardItem from '@/components/game/RoleCardItem.vue';
 import RoleCardRulesModal from '@/components/game/RoleCardRulesModal.vue';
 import { normalizeSearch } from '@/utils/search';
-import { Search } from 'lucide-vue-next';
+import { Search } from '@lucide/vue';
 
 const searchQuery = ref<string>('');
 const selectedCategory = ref<string>('all');

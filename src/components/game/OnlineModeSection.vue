@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
-import { Users, Bot, ArrowRight, EyeOff, BookOpen } from 'lucide-vue-next';
+import { Users, Bot, ArrowRight, EyeOff, BookOpen } from '@lucide/vue';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
 import Discord from '@/components/ui/icons/Discord.vue';

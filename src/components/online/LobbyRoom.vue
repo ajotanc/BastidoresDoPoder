@@ -7,7 +7,7 @@ import { DEFAULT_GAME_SETTINGS } from '@/game/models/gameState';
 import { BOT_DIFFICULTIES, DEFAULT_BOT_DIFFICULTY, BOT_DIFFICULTY_TAG_CLASSES } from '@/game/bots/botDifficulty';
 import { MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM, type GameState } from '@/game/models/gameState';
 import { getRoleDisplayName } from '@/game/engine/gameEngine';
-import { Copy, Check, CheckCircle2, LogOut, Users, Share2, SlidersHorizontal, Clock, Bot } from 'lucide-vue-next';
+import { Copy, Check, CheckCircle2, LogOut, Users, Share2, SlidersHorizontal, Clock, Bot } from '@lucide/vue';
 
 interface Props {
   roomCode: string;

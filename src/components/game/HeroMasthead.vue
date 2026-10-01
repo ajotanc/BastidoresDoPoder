@@ -2,7 +2,7 @@
 import { GAME_NAME, GAME_NAME_FIRST_LINE, GAME_NAME_SECOND_LINE, MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM } from "@/constants/gameConfig";
 import { GAME_META_STATS } from '@/constants/gameData';
 import AppButton from '@/components/ui/AppButton.vue';
-import { ArrowDown, BookOpen } from 'lucide-vue-next';
+import { ArrowDown, BookOpen } from '@lucide/vue';
 </script>
 
 <template>

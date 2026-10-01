@@ -3,7 +3,7 @@ import { GENERAL_ACTIONS } from '@/constants/gameData';
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
 import AppCallout from '@/components/ui/AppCallout.vue';
 import AppBadge from '@/components/ui/AppBadge.vue';
-import { AlertTriangle } from 'lucide-vue-next';
+import { AlertTriangle } from '@lucide/vue';
 </script>
 
 <template>

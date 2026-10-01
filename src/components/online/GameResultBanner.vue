@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Trophy, RotateCcw, Share2, Clock, LoaderCircle } from 'lucide-vue-next';
+import { Trophy, RotateCcw, Share2, Clock } from '@lucide/vue';
 import { buildResultSummary, durationLabel } from '@/game/resultSummary';
 import { shareResult } from '@/utils/shareResult';
 import { playerAvatar } from '@/utils/playerProfile';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import AppButton from '@/components/ui/AppButton.vue';
+import { Spinner } from '@/components/ui/spinner';
+import { toast } from '@/components/ui/sonner';
 import GameEventMessage from './GameEventMessage.vue';
 import type { GameState } from '@/game/models/gameState';
 
@@ -15,13 +17,20 @@ const summary = computed(() => buildResultSummary(props.gameState));
 const decisivePlay = computed(() => summary.value?.decisivePlay.replace(/^APOIO PERDIDO!\s*/i, '') ?? '');
 const resultPanel = ref<HTMLElement | null>(null);
 const sharing = ref(false);
-const feedback = ref('');
-async function share() {
+async function share(): Promise<void> {
   if (!summary.value || !resultPanel.value || sharing.value) return;
   sharing.value = true;
-  try { feedback.value = await shareResult(summary.value, resultPanel.value); }
-  catch { feedback.value = 'Não foi possível gerar a imagem. Tente novamente.'; }
-  finally { sharing.value = false; }
+  try {
+    const message = await shareResult(summary.value, resultPanel.value);
+    if (message) {
+      toast.success(message);
+    }
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Não foi possível gerar a imagem. Tente novamente.';
+    toast.error(errorMsg);
+  } finally {
+    sharing.value = false;
+  }
 }
 const winner = computed(() => props.gameState.players[props.gameState.winnerPlayerId ?? '']);
 const finalEvents = computed(() => {
@@ -72,12 +81,11 @@ const finalEvents = computed(() => {
       </AccordionItem>
     </Accordion>
 
-    <footer v-if="summary || feedback" data-result-controls class="gold-divider-top relative pt-4">
+    <footer v-if="summary" data-result-controls class="gold-divider-top relative pt-4">
       <div v-if="summary" class="flex items-stretch justify-end gap-2">
         <AppButton v-if="isHost && winner" class="min-w-0 flex-1 sm:flex-none sm:px-5" @click="$emit('play-again')"><RotateCcw class="h-4 w-4 shrink-0" aria-hidden="true" />Preparar revanche</AppButton>
-        <AppButton variant="outline" :class="isHost ? 'w-11 shrink-0 px-0 sm:w-auto sm:px-4' : 'flex-1'" :disabled="sharing" :aria-busy="sharing" :aria-label="sharing ? 'Gerando imagem' : 'Compartilhar resultado'" :title="sharing ? 'Gerando imagem' : 'Compartilhar resultado'" @click="share"><LoaderCircle v-if="sharing" class="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" aria-hidden="true" /><Share2 v-else class="h-4 w-4 shrink-0" aria-hidden="true" /><span :class="{ 'sr-only sm:not-sr-only': isHost }">{{ sharing ? 'Gerando imagem…' : 'Compartilhar resultado' }}</span></AppButton>
+        <AppButton variant="outline" :class="isHost ? 'w-11 shrink-0 px-0 sm:w-auto sm:px-4' : 'flex-1'" :disabled="sharing" :aria-busy="sharing" :aria-label="sharing ? 'Gerando imagem' : 'Compartilhar resultado'" :title="sharing ? 'Gerando imagem' : 'Compartilhar resultado'" @click="share"><Spinner v-if="sharing" size="sm" aria-hidden="true" /><Share2 v-else class="h-4 w-4 shrink-0" aria-hidden="true" /><span :class="{ 'sr-only sm:not-sr-only': isHost }">{{ sharing ? 'Gerando imagem…' : 'Compartilhar resultado' }}</span></AppButton>
       </div>
-      <p v-if="feedback" class="mt-3 text-xs text-ink-muted" role="status">{{ feedback }}</p>
       <p v-if="gameState.discordResultStatus" class="mt-3 text-xs text-ink-subtle" role="status">{{ gameState.discordResultStatus === 'sent' ? 'Vitória registrada no Discord.' : gameState.discordResultStatus === 'sending' ? 'Registrando vitória no Discord…' : 'Não foi possível registrar no Discord. Você ainda pode compartilhar o resultado.' }}</p>
       <p v-if="winner && !isHost" class="mt-3 text-xs text-ink-subtle">A revanche pode ser preparada pelo anfitrião.</p>
     </footer>

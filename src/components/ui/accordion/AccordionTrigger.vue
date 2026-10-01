@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, type HTMLAttributes } from 'vue';
 import { AccordionHeader, AccordionTrigger, type AccordionTriggerProps, useForwardProps } from 'radix-vue';
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown } from '@lucide/vue';
 import { cn } from '@/utils/cn';
 defineOptions({ inheritAttrs: false });
 const props = defineProps<AccordionTriggerProps & { class?: HTMLAttributes['class'] }>();

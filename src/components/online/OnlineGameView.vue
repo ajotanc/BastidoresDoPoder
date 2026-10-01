@@ -13,12 +13,13 @@ import type { RoleSlug } from '@/types/game';
 import { useOnlineGame } from '@/composables/useOnlineGame';
 import { PLAYABLE_ROLES } from '@/game/engine/deck';
 import { getRoleDisplayName } from '@/game/engine/gameEngine';
-import { AlertCircle, PlusCircle, LogIn, ArrowLeft, Camera, Upload, Shuffle, Trash2, Mars, Venus, Users, UserRound, SlidersHorizontal, Clock, Bot } from 'lucide-vue-next';
+import { AlertCircle, PlusCircle, LogIn, ArrowLeft, Camera, Upload, Shuffle, Trash2, Mars, Venus, Users, UserRound, SlidersHorizontal, Clock, Bot } from '@lucide/vue';
 import LobbyRoom from './LobbyRoom.vue';
 import GameBoard from './GameBoard.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import AppButton from '@/components/ui/AppButton.vue';
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
+import dayjs from 'dayjs';
 
 interface Props {
   initialRoomId?: string;
@@ -225,7 +226,7 @@ const handleJoin = async (): Promise<void> => {
         <p class="text-xs leading-relaxed text-ink-muted">Retome neste navegador. Os convidados podem voltar pelo mesmo código.</p>
         <article v-for="save in savedGames" :key="save.roomCode" class="space-y-3 border-t border-line pt-3">
           <p class="text-sm text-ink">Mesa {{ save.roomCode }} · {{ save.state.publicState.players[save.hostPlayerId]?.name }}</p>
-          <p class="text-xs text-ink-muted">{{ save.state.publicState.phase === 'LOBBY' ? 'Aguardando jogadores' : `Turno ${save.state.publicState.turn}` }} · {{ new Date(save.savedAt).toLocaleString('pt-BR') }}</p>
+          <p class="text-xs text-ink-muted">{{ save.state.publicState.phase === 'LOBBY' ? 'Aguardando jogadores' : `Turno ${save.state.publicState.turn}` }} · {{ dayjs(save.savedAt).format('DD/MM/YYYY') }}</p>
           <div class="flex flex-wrap gap-2">
             <AppButton :disabled="mode !== 'idle' || isResuming" @click="resumeGame(save.roomCode)">Retomar partida</AppButton>
             <AppButton variant="ghost" :disabled="mode !== 'idle' || isResuming" @click="discardCode = save.roomCode">Descartar</AppButton>

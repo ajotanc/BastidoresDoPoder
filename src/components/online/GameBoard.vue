@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useGameSounds } from '@/composables/useGameSounds';
-import { Volume2, VolumeX } from 'lucide-vue-next';
+import { Volume2, VolumeX } from '@lucide/vue';
 import DiscordConversation from './DiscordConversation.vue';
 import { playerAvatar } from "@/utils/playerProfile";
 import GameResultBanner from './GameResultBanner.vue';
@@ -32,7 +32,7 @@ import {
   Landmark,
   Users,
   Clock,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import GameNewsFeed from './GameNewsFeed.vue';
 import ActionSelectorModal from './ActionSelectorModal.vue';
 import CardChoiceModal from './CardChoiceModal.vue';
@@ -486,7 +486,7 @@ const copyGameLink = async (): Promise<void> => {
             Gabinetes Rivais
           </h2>
         </div>
-        <div class="flex items-center gap-1 text-sm text-ink-muted">
+        <div v-if="opponents.length > 2" class="flex items-center gap-1 text-sm text-ink-muted">
           <span>Deslize para o lado</span>
           <span>→</span>
         </div>
@@ -682,7 +682,7 @@ const copyGameLink = async (): Promise<void> => {
           <section v-if="gameState.discard.length > 0" aria-label="Últimos apoios revelados" class="min-w-0 pt-4 border-t border-line/50 space-y-3">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <h3 class="game-section-title">Últimos apoios revelados</h3>
-              <span class="text-sm text-ink-muted">Arraste para explorar →</span>
+              <span v-if="recentRevealedCards.length > 0" class="text-sm text-ink-muted">Arraste para explorar →</span>
             </div>
             <div
               class="revealed-carousel drag-scroll grid grid-flow-col auto-cols-[100%] sm:auto-cols-[320px] gap-3 overflow-x-auto pb-3 snap-x snap-mandatory"

@@ -7,7 +7,7 @@ import type { ActionType, PublicPlayerState } from '@/game/models/gameState';
 import type { ActionIntent } from '@/game/models/commands';
 import { PLAYABLE_ROLES } from '@/game/engine/deck';
 import { getActionCost, getRoleDisplayName } from '@/game/engine/gameEngine';
-import { X } from 'lucide-vue-next';
+import { X } from '@lucide/vue';
 
 interface Props {
   isOpen: boolean;

@@ -2,7 +2,7 @@
 import { GAME_COINS } from '@/constants/gameData';
 import { useCoinLightbox } from '@/composables/useCoinLightbox';
 import CoinBadge from '@/components/game/CoinBadge.vue';
-import { ZoomIn } from 'lucide-vue-next';
+import { ZoomIn } from '@lucide/vue';
 
 const { openCoinLightbox } = useCoinLightbox();
 </script>
