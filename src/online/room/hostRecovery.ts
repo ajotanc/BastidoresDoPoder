@@ -56,20 +56,23 @@ async function transaction<T>(mode: IDBTransactionMode, action: (store: IDBObjec
   });
 }
 // Serialize writes/deletions so a queued snapshot cannot resurrect a finished game.
-let writes: Promise<unknown> = Promise.resolve();
-export function persistCheckpoint(checkpoint: HostCheckpoint): Promise<unknown> {
+let writes: Promise<void> = Promise.resolve();
+export function persistCheckpoint(checkpoint: HostCheckpoint): Promise<void> {
   const copy = structuredClone(checkpoint);
-  const task = writes.catch(() => undefined).then(() => copy.state.publicState.phase === 'FINISHED' ? transaction('readwrite', store => store.delete(copy.roomCode)) : transaction('readwrite', store => store.put(copy)));
+  const task = writes.catch(() => undefined).then(async () => {
+    if (copy.state.publicState.phase === 'FINISHED') await transaction('readwrite', store => store.delete(copy.roomCode));
+    else await transaction('readwrite', store => store.put(copy));
+  });
   writes = task;
   return task;
 }
-export function deleteCheckpoint(roomCode: string): Promise<unknown> {
-  const task = writes.catch(() => undefined).then(() => transaction('readwrite', store => store.delete(roomCode)));
+export function deleteCheckpoint(roomCode: string): Promise<void> {
+  const task = writes.catch(() => undefined).then(async () => { await transaction('readwrite', store => store.delete(roomCode)); });
   writes = task; return task;
 }
 export async function listCheckpoints(): Promise<HostCheckpoint[]> {
   await writes.catch(() => undefined);
-  const records = await transaction('readonly', store => store.getAll());
+  const records = await transaction<unknown[]>('readonly', store => store.getAll());
   const valid: HostCheckpoint[] = [];
   for (const record of records) {
     if (validCheckpoint(record)) valid.push(record);

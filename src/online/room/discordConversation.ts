@@ -1,3 +1,4 @@
+import { isRecord } from '@/utils/typeGuards';
 export interface DiscordConversation {
   status: 'loading' | 'ready' | 'error' | 'auth-required';
   url?: string;
@@ -13,8 +14,8 @@ export async function createDiscordConversation(roomCode: string, sessionId: str
     if (response.status === 401) return { status: 'auth-required' };
     if (response.status === 429) return { status: 'error', retryAt: Date.now() + 180000 };
     if (!response.ok) throw new Error('Discord indisponível');
-    const result = await response.json();
-    if (!/^https:\/\/discord\.gg\/[\w-]+$/.test(result.url) || !Number.isFinite(result.expiresAt) || result.expiresAt <= Date.now()) throw new Error('Convite inválido');
+    const result: unknown = await response.json();
+    if (!isRecord(result) || typeof result.url !== 'string' || !/^https:\/\/discord\.gg\/[\w-]+$/.test(result.url) || typeof result.expiresAt !== 'number' || !Number.isFinite(result.expiresAt) || result.expiresAt <= Date.now()) throw new Error('Convite inválido');
     return { status: 'ready', url: result.url, expiresAt: result.expiresAt };
   } catch { return { status: 'error', retryAt: Date.now() + 15000 }; }
 }

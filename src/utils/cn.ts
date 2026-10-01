@@ -3,7 +3,7 @@ import { twMerge } from 'tailwind-merge';
 
 /**
  * Utilitário padrão para concatenação e mesclagem de classes CSS com Tailwind.
- * Segue o padrão shadcn-vue sem utilizar any ou unknown.
+ * Aceita os valores de classe definidos pelo clsx e resolve conflitos do Tailwind.
  */
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));

@@ -1,5 +1,6 @@
 import { authenticatedUser } from '../lib/discordAuth';
 import { createConversation } from '../lib/discord';
+import { isRecord } from '../../src/utils/typeGuards';
 export default async function handler(request: Request): Promise<Response> {
   const json = (data: object, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
   if (request.method !== 'POST') return json({ error: 'Método não permitido.' }, 405);
@@ -9,9 +10,9 @@ export default async function handler(request: Request): Promise<Response> {
   if (!userId) return json({ error: 'Conecte seu Discord para criar a conversa.' }, 401);
   const body = await request.text();
   if (body.length > 512) return json({ error: 'Solicitação inválida.' }, 413);
-  let payload;
+  let payload: unknown;
   try { payload = JSON.parse(body); } catch { return json({ error: 'Solicitação inválida.' }, 400); }
-  if (!payload || typeof payload.roomCode !== 'string' || typeof payload.sessionId !== 'string' || !/^[2-9A-HJ-NP-Z]{4}$/.test(payload.roomCode ?? '') ||
+  if (!isRecord(payload) || typeof payload.roomCode !== 'string' || typeof payload.sessionId !== 'string' || !/^[2-9A-HJ-NP-Z]{4}$/.test(payload.roomCode ?? '') ||
       !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(payload.sessionId ?? ''))
     return json({ error: 'Mesa inválida.' }, 400);
   try { return json(await createConversation(payload.roomCode, `${userId}:${payload.sessionId}`)); }

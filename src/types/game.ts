@@ -1,6 +1,6 @@
 /**
  * Tipagens do jogo Bastidores do Poder.
- * Nenhuma tipagem utiliza any ou unknown, seguindo estritamente a regra do projeto.
+ * Modelos de domínio; entradas externas são validadas antes de assumir estes tipos.
  */
 
 export type RoleSlug =

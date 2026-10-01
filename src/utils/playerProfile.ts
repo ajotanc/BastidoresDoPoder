@@ -1,6 +1,7 @@
 import type { RoleSlug } from '@/types/game';
 import { PLAYABLE_ROLES } from '@/game/engine/deck';
 import type { PlayerGender } from './playerName';
+import { isRecord } from './typeGuards';
 export const PROFILE_STORAGE_KEY = 'bdp-player-profile';
 export const isAvatarImage = (value: unknown): value is string =>
   typeof value === 'string' && value.length <= 50000 && /^data:image[/](?:jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/.test(value);
@@ -8,11 +9,11 @@ export interface PlayerProfile { name: string; avatarSlug?: RoleSlug; avatarImag
 export function loadProfile(): PlayerProfile {
   const fallback: PlayerProfile = { name: '', avatarSlug: 'colonel' };
   try {
-    const value = JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY) || 'null');
-    if (!value || typeof value !== 'object') return fallback;
+    const value: unknown = JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY) || 'null');
+    if (!isRecord(value)) return fallback;
     return { name: typeof value.name === 'string' ? value.name.slice(0, 60) : '',
-      gender: ['male', 'female'].includes(value.gender) ? value.gender : 'all',
-      ...(isAvatarImage(value.avatarImage) ? {} : { avatarSlug: PLAYABLE_ROLES.includes(value.avatarSlug) ? value.avatarSlug : 'colonel' }),
+      gender: value.gender === 'male' || value.gender === 'female' ? value.gender : 'all',
+      ...(isAvatarImage(value.avatarImage) ? {} : { avatarSlug: PLAYABLE_ROLES.find(role => role === value.avatarSlug) ?? 'colonel' }),
       ...(isAvatarImage(value.avatarImage) ? { avatarImage: value.avatarImage } : {}) };
   } catch { return fallback; }
 }

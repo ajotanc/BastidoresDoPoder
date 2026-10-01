@@ -33,7 +33,7 @@ it('mantém o canvas na escala do mobile, inclusive após girar a tela', async (
   await flushPromises();
   const canvas = document.querySelector('canvas')!;
   expect([canvas.width, canvas.height]).toEqual([390, 844]);
-  expect(effects.start).toHaveBeenCalledWith(expect.objectContaining({ defaultSize: 3, particlesPerFrame: 1 }));
+  expect(effects.start).toHaveBeenCalledWith(expect.objectContaining({ defaultSize: 4, particlesPerFrame: 1, windSpeedMax: 2 }));
   vi.stubGlobal('innerWidth', 844);
   vi.stubGlobal('innerHeight', 390);
   window.dispatchEvent(new Event('resize'));

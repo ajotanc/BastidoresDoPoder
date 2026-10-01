@@ -7,6 +7,7 @@ declare module 'vue-confetti' {
       defaultColors: string[];
       defaultSize: number;
       defaultDropRate: number;
+      windSpeedMax: number;
     }): void;
     stop(): void;
     remove(): void;

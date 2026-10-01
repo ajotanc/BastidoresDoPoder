@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { isRecord } from '../../src/utils/typeGuards';
 import { cookie, readSession, sessionCookie, signSession } from '../lib/discordAuth';
 export default async function auth(request: Request): Promise<Response> {
  const url=new URL(request.url);
@@ -22,12 +23,12 @@ export default async function auth(request: Request): Promise<Response> {
  try {
   const tokenResponse=await fetch('https://discord.com/api/v10/oauth2/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,client_secret:clientSecret,grant_type:'authorization_code',code:url.searchParams.get('code')!,redirect_uri:redirectUri}),signal:AbortSignal.timeout(5000)});
   if(!tokenResponse.ok)throw new Error('TOKEN_EXCHANGE_FAILED');
-  const token=await tokenResponse.json();
-  if(typeof token.access_token!=='string')throw new Error('INVALID_TOKEN_RESPONSE');
+  const token: unknown=await tokenResponse.json();
+  if(!isRecord(token)||typeof token.access_token!=='string')throw new Error('INVALID_TOKEN_RESPONSE');
   const userResponse=await fetch('https://discord.com/api/v10/users/@me',{headers:{Authorization:`Bearer ${token.access_token}`},signal:AbortSignal.timeout(5000)});
   if(!userResponse.ok)throw new Error('USER_LOOKUP_FAILED');
-  const user=await userResponse.json();
-  if(typeof user.id!=='string'||!/^\d{17,20}$/.test(user.id))throw new Error('INVALID_USER');
+  const user: unknown=await userResponse.json();
+  if(!isRecord(user)||typeof user.id!=='string'||!/^\d{17,20}$/.test(user.id))throw new Error('INVALID_USER');
   headers.append('Set-Cookie',sessionCookie('bdp_discord_session',signSession({kind:'user',userId:user.id,expiresAt:Date.now()+8*3600000}),8*3600));
   const nonce=randomUUID();
   headers.set('Content-Type','text/html; charset=utf-8');

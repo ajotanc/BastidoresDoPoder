@@ -37,7 +37,8 @@ export function useVictoryCelebration(state: Ref<GameState>) {
       const mobile = canvas.width < 640;
       confetti.start({ canvasElement: canvas, particlesPerFrame: mobile ? 1 : 1.5,
         particles: [{ type: 'rect' }, { type: 'circle' }],
-        defaultColors: ['#e6bf73', '#f3d59a', '#fff3d4'], defaultSize: mobile ? 3 : 4, defaultDropRate: 3,
+        defaultColors: ['#e6bf73', '#f3d59a', '#fff3d4'], defaultSize: mobile ? 4 : 5, defaultDropRate: 4,
+        windSpeedMax: 2,
       });
       const stopTimer = window.setTimeout(() => confetti.stop(), 2200);
       const removeTimer = window.setTimeout(dispose, 7000);

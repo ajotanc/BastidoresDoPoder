@@ -111,7 +111,8 @@ export class PeerHost {
     let sent = false;
     try {
       const response = await fetch('/.netlify/functions/discord-result', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ summary }), signal: AbortSignal.timeout(30000) });
-      sent = response.ok && (await response.json()).sent === true;
+      const result: unknown = response.ok ? await response.json() : null;
+      sent = typeof result === 'object' && result !== null && 'sent' in result && result.sent === true;
     } catch { /* The result remains available locally when Discord is unavailable. */ }
     if (this.destroyed || this.authoritativeState.publicState.gameId !== state.gameId) return;
     this.authoritativeState.publicState = { ...this.authoritativeState.publicState, discordResultStatus: sent ? 'sent' : 'error' };

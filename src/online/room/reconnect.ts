@@ -2,6 +2,8 @@
  * Gerenciamento de tokens de reconexão no sessionStorage para jogadores do Bastidores do Poder.
  */
 
+import { isRecord } from '@/utils/typeGuards';
+
 const STORAGE_PREFIX = 'bdp_session_';
 
 export interface SavedSession {
@@ -35,15 +37,16 @@ export const loadPlayerSession = (roomCode: string): SavedSession | null => {
     const raw = sessionStorage.getItem(key);
     if (!raw) return null;
     const parsed: unknown = JSON.parse(raw);
-    if (typeof parsed === 'object' && parsed !== null) {
-      const obj = parsed as Record<string, string>;
-      if (obj.playerId && obj.reconnectToken && obj.roomCode) {
+    if (isRecord(parsed)) {
+      const obj = parsed;
+      if (typeof obj.playerId === 'string' && obj.playerId && typeof obj.reconnectToken === 'string' && obj.reconnectToken &&
+          typeof obj.roomCode === 'string' && obj.roomCode.toUpperCase() === roomCode.toUpperCase()) {
         return {
           playerId: obj.playerId,
           reconnectToken: obj.reconnectToken,
           roomCode: obj.roomCode,
-          playerName: obj.playerName || 'Jogador',
-          isHost: (parsed as Record<string, unknown>).isHost === true,
+          playerName: typeof obj.playerName === 'string' && obj.playerName ? obj.playerName : 'Jogador',
+          isHost: obj.isHost === true,
         };
       }
     }

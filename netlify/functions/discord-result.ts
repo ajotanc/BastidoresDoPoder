@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { channels, discord } from '../lib/discord';
+import { isRecord } from '../../src/utils/typeGuards';
 import { durationLabel, type ResultSummary } from '../../src/game/resultSummary';
 
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
@@ -20,9 +21,9 @@ export default async function handler(request: Request): Promise<Response> {
   if (!request.headers.get('content-type')?.startsWith('application/json')) return json({ error: 'Formato inválido.' }, 415);
   const body = await request.text();
   if (body.length > 4096) return json({ error: 'Solicitação inválida.' }, 413);
-  let payload;
+  let payload: unknown;
   try { payload = JSON.parse(body); } catch { return json({ error: 'Solicitação inválida.' }, 400); }
-  if (!payload || !validSummary(payload.summary)) return json({ error: 'Resultado inválido.' }, 400);
+  if (!isRecord(payload) || !validSummary(payload.summary)) return json({ error: 'Resultado inválido.' }, 400);
   const summary: ResultSummary = payload.summary;
   if (summary.finishedAt < Date.now() - 86400000 || summary.finishedAt > Date.now() + 60000) return json({ error: 'Resultado expirado ou com horário inválido.' }, 400);
   try {

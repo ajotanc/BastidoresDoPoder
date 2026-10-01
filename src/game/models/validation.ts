@@ -3,8 +3,8 @@ import type { ClientCommand } from './commands';
 import { ACTION_TYPES } from '../engine/rules';
 import { PLAYABLE_ROLES } from '@/constants/gameData';
 
-export const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
+import { isRecord } from '@/utils/typeGuards';
+export { isRecord } from '@/utils/typeGuards';
 export const isIdentifier = (value: unknown): value is string =>
   typeof value === 'string' && /^[a-zA-Z0-9_-]{1,128}$/.test(value) &&
   !['__proto__', 'constructor', 'prototype'].includes(value);
