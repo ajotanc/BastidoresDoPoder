@@ -18,9 +18,9 @@ it('sons começam ativos, respeitam a preferência e não repetem a vitória', a
   expect(wrapper.text()).toBe('true'); expect(audio).toHaveBeenCalledOnce();
   document.dispatchEvent(new Event('pointerdown'));
   state.value = { ...state.value, phase: 'FINISHED', winnerPlayerId: 'a' }; await wrapper.vm.$nextTick();
-  expect(start).toHaveBeenCalledTimes(3);
+  expect(start).toHaveBeenCalledTimes(6);
   expect(volume).toHaveBeenCalledWith(0.4, expect.any(Number));
-  state.value = { ...state.value, revision: 10 }; await wrapper.vm.$nextTick(); expect(start).toHaveBeenCalledTimes(3);
+  state.value = { ...state.value, revision: 10 }; await wrapper.vm.$nextTick(); expect(start).toHaveBeenCalledTimes(6);
   await wrapper.get('button').trigger('click'); expect(localStorage.getItem('bdp-sounds')).toBe('false');
   wrapper.unmount(); expect(close).toHaveBeenCalledOnce();
 });

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useGameSounds } from '@/composables/useGameSounds';
+import { useVictoryCelebration } from '@/composables/useVictoryCelebration';
 import { Volume2, VolumeX } from '@lucide/vue';
 import DiscordConversation from './DiscordConversation.vue';
 import { playerAvatar } from "@/utils/playerProfile";
@@ -47,6 +48,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const sounds = useGameSounds(computed(() => props.gameState), computed(() => props.myPlayerId));
+useVictoryCelebration(computed(() => props.gameState));
 const rivalDrag = useDragScroll();
 const rivalsContainer = ref<HTMLElement | null>(null);
 const touchingRivals = ref(false);

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { channels, discord } from '../lib/discord';
-import { resultText, type ResultSummary } from '../../src/game/resultSummary';
+import { durationLabel, type ResultSummary } from '../../src/game/resultSummary';
 
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
 function validSummary(value: unknown): value is ResultSummary {
@@ -47,9 +47,18 @@ export default async function handler(request: Request): Promise<Response> {
       if (page === 4) throw new Error('HISTORY_SCAN_INCOMPLETE');
       before = messages.at(-1)!.id;
     }
-    const description = resultText(summary).replace(/([\\`*_~|>])/g, '\\$1');
+    const escape = (value: string) => value.replace(/([\\`*_~|>[\]#])/g, '\\$1');
+    const description = `🏆 **${escape(summary.winnerName)} conquistou o poder!**\nMesa ${summary.roomCode} · ${summary.turns} turnos · ${durationLabel(summary.durationSeconds)}`;
     await discord(`/channels/${destination.id}/messages`, 'POST', {
-      embeds: [{ title: 'Bastidores do Poder · Resultado da mesa', description, color: 0xe8c474, url }],
+      embeds: [{ title: 'Bastidores do Poder · Resultado da mesa', description, color: 0xe8c474, url,
+        fields: [
+          { name: 'Apoios restantes', value: `${summary.supports} ${summary.supports === 1 ? 'apoio' : 'apoios'}`, inline: true },
+          { name: 'Reserva final', value: `C$ ${summary.coins}`, inline: true },
+          { name: 'Jogada decisiva', value: escape(summary.decisivePlay.replace(/^APOIO PERDIDO!\s*/i, '')).slice(0, 1000) },
+        ],
+        footer: { text: `Mesa ${summary.roomCode} · A disputa acabou. A próxima já pode começar.` },
+        timestamp: new Date(summary.finishedAt).toISOString(),
+      }],
       allowed_mentions: { parse: [] }, nonce, enforce_nonce: true,
     });
     return json({ sent: true });

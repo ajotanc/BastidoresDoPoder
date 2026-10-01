@@ -105,6 +105,8 @@ it('publica sem login nem sala de voz e usa apenas o destino configurado', async
  expect(body).toMatchObject({ allowed_mentions: { parse: [] }, enforce_nonce: true });
  expect(body.nonce).toHaveLength(24);
  expect(body.embeds[0].description).toContain('Mesa ABCD · 15 turnos · 1 min');
+ expect(body.embeds[0].description).toContain('🏆 **');
+ expect(body.embeds[0].fields.map((field: { name: string }) => field.name)).toEqual(['Apoios restantes', 'Reserva final', 'Jogada decisiva']);
  expect(fetch.mock.calls.some(([url]) => url.includes('audit-logs') || url.includes('invites'))).toBe(false);
  const dedup = resultUpstream([{ id: snowflake(Date.now()), author: { id: botId }, embeds: body.embeds }]); vi.stubGlobal('fetch', dedup);
  expect((await resultHandler(request({ summary: summary() }, 'https://game.test', false))).status).toBe(200);

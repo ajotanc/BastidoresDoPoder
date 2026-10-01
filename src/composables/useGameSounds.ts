@@ -30,7 +30,7 @@ export function useGameSounds(state: Ref<GameState>, playerId: Ref<string>) {
   }
   watch(state, (next, previous) => {
     if (next.gameId !== previous.gameId) return;
-    if (next.phase === 'FINISHED' && previous.phase !== 'FINISHED' && next.winnerPlayerId) play([392, 494, 587]);
+    if (next.phase === 'FINISHED' && previous.phase !== 'FINISHED' && next.winnerPlayerId) play([392, 494, 587, 784, 659, 784]);
     else if (next.history[0]?.id !== previous.history[0]?.id && next.history.some(event => event.type === 'CHALLENGE_DECLARED' && !previous.history.some(old => old.id === event.id))) play([330, 262]);
     else if (next.phase === 'WAITING_ACTION' && next.activePlayerId === playerId.value && (previous.phase !== 'WAITING_ACTION' || previous.activePlayerId !== next.activePlayerId || previous.turn !== next.turn)) play([440, 554]);
   });

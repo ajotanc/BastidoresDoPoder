@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DiscordConversation from './DiscordConversation.vue';
+import { toast } from '@/components/ui/sonner';
 import { playerAvatar } from "@/utils/playerProfile";
 import { GAME_NAME } from "@/constants/gameConfig";
 import { ref, computed } from 'vue';
@@ -52,12 +53,14 @@ const copyRoomLink = async (): Promise<void> => {
   try {
     if (typeof window !== 'undefined' && window.navigator?.clipboard) {
       await window.navigator.clipboard.writeText(shareableUrl.value);
+      toast.success('Convite copiado. Envie para seus amigos.');
       copiedNotice.value = true;
       window.setTimeout(() => {
         copiedNotice.value = false;
       }, 2500);
-    }
+    } else { toast.error('Não foi possível copiar o convite neste navegador.'); }
   } catch (err: unknown) {
+    toast.error('Não foi possível copiar o convite. Tente novamente.');
     if (err instanceof Error) {
       console.warn('Erro ao copiar link:', err.message);
     }
@@ -73,7 +76,8 @@ const handleShare = async (): Promise<void> => {
         url: shareableUrl.value,
       });
       return;
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') return;
       // Fallback para cópia
     }
   }

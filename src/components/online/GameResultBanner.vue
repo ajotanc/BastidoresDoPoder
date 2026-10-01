@@ -25,8 +25,8 @@ async function share(): Promise<void> {
     if (message) {
       toast.success(message);
     }
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Não foi possível gerar a imagem. Tente novamente.';
+  } catch {
+    const errorMsg = 'Não foi possível gerar a imagem. Tente novamente.';
     toast.error(errorMsg);
   } finally {
     sharing.value = false;
@@ -67,7 +67,7 @@ const finalEvents = computed(() => {
       <div v-if="summary" class="result-decision">
         <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
           <h4 class="font-serif text-sm font-semibold text-gold-light">Jogada decisiva</h4>
-          <span v-if="summary.durationSeconds !== null" class="inline-flex items-center gap-1.5 text-xs tabular-nums text-ink-subtle" :aria-label="`Duração: ${durationLabel(summary.durationSeconds)}`"><Clock class="h-3 w-3" aria-hidden="true" />{{ durationLabel(summary.durationSeconds) }}</span>
+          <span v-if="summary.durationSeconds !== null" class="inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 text-xs tabular-nums text-ink-subtle" :aria-label="`Duração: ${durationLabel(summary.durationSeconds)}`"><Clock class="h-3 w-3" aria-hidden="true" />{{ durationLabel(summary.durationSeconds) }}</span>
         </div>
         <p class="break-words text-sm leading-relaxed text-ink-muted">{{ decisivePlay }}</p>
       </div>
@@ -103,11 +103,10 @@ const finalEvents = computed(() => {
   .result-overview { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .85fr); align-items: center; gap: 32px; }
   .result-decision { padding-top: 0; }
 }
-.result-history { margin-block: 20px; }
+.result-history { margin-top: 20px; margin-bottom: 16px; }
 .result-history :deep(button.result-history-trigger) { padding: 14px 16px; }
 @media (min-width: 640px) {
   .result-winner { padding-block: 28px; }
   .result-avatar { width: 72px; height: 72px; }
 }
 </style>
-
