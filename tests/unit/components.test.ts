@@ -124,6 +124,80 @@ describe('Testes de Componentes com @vue/test-utils e jsdom', () => {
     const wrapper = mount(Sonner);
     expect(wrapper.exists()).toBe(true);
   });
+
+  it('Toggle deve alternar estado ativo/inativo e emitir update:pressed', async () => {
+    const { Toggle } = await import('@/components/ui/toggle');
+    const wrapper = mount(Toggle, {
+      props: {
+        pressed: false,
+        variant: 'outline',
+        size: 'icon',
+      },
+      slots: {
+        default: 'Som',
+      },
+    });
+
+    expect(wrapper.attributes('aria-pressed')).toBe('false');
+    expect(wrapper.attributes('data-state')).toBe('off');
+
+    await wrapper.trigger('click');
+    expect(wrapper.emitted('update:pressed')).toBeTruthy();
+    expect(wrapper.emitted('update:pressed')?.[0]).toEqual([true]);
+
+    await wrapper.setProps({ pressed: true });
+    expect(wrapper.attributes('aria-pressed')).toBe('true');
+    expect(wrapper.attributes('data-state')).toBe('on');
+  });
+
+  it('Button deve renderizar tag button e variante especificada', async () => {
+    const { Button } = await import('@/components/ui/button');
+    const wrapper = mount(Button, {
+      props: { variant: 'gold', size: 'sm' },
+      slots: { default: 'Ação Principal' },
+    });
+
+    expect(wrapper.element.tagName.toLowerCase()).toBe('button');
+    expect(wrapper.text()).toBe('Ação Principal');
+    expect(wrapper.classes()).toContain('bg-gold');
+  });
+
+  it('GameResultSummary deve renderizar versão short e versão story 16:9', async () => {
+    const { default: GameResultSummary } = await import('@/components/game/GameResultSummary.vue');
+    const { createInitialAuthoritativeState } = await import('@/game/engine/gameEngine');
+
+    const state = {
+      ...createInitialAuthoritativeState('TEST', 'p1', 'Deputado Alerson', 'baron', 'token-1').publicState,
+      phase: 'FINISHED' as const,
+      winnerPlayerId: 'p1',
+      history: [
+        { id: '1', type: 'GAME_FINISHED', message: 'Deputado Alerson venceu.', timestamp: 1, importance: 'normal' as const },
+        { id: '2', type: 'ACTION_DECLARED', message: 'Deputado Alerson declarou Golpe Final.', timestamp: 1, importance: 'normal' as const },
+        { id: '3', type: 'TURN_CHANGED', message: 'Turno 8', timestamp: 1, importance: 'normal' as const },
+      ],
+    };
+
+    // Testa variant="short"
+    const wrapperShort = mount(GameResultSummary, {
+      props: { gameState: state, variant: 'short' },
+    });
+    expect(wrapperShort.find('.result-summary-short').exists()).toBe(true);
+    expect(wrapperShort.text()).toContain('Resultado da mesa');
+    expect(wrapperShort.text()).toContain('Deputado Alerson');
+    expect(wrapperShort.text()).toContain('Vencedor da mesa');
+
+    // Testa variant="story" (Instagram Stories 16:9 vertical)
+    const wrapperStory = mount(GameResultSummary, {
+      props: { gameState: state, variant: 'story' },
+    });
+    expect(wrapperStory.find('.result-summary-story').exists()).toBe(true);
+    expect(wrapperStory.text().toUpperCase()).toContain('BASTIDORES');
+    expect(wrapperStory.text().toUpperCase()).toContain('DO PODER');
+    expect(wrapperStory.text()).toContain('Deputado Alerson');
+    expect(wrapperStory.text()).toContain('Nova Sessão');
+    expect(wrapperStory.text()).toContain('A próxima mesa é sua?');
+    expect(wrapperStory.text()).toContain('dispute o controle político');
+  });
 });
 
 describe('RoleCardsSection - Filtro de Personagens e Ajuda', () => {
@@ -155,4 +229,93 @@ describe('RoleCardsSection - Filtro de Personagens e Ajuda', () => {
     expect(wrapper.text()).not.toContain('Coronel');
   });
 });
+
+describe('Tag Component', () => {
+  it('deve renderizar texto e classes corretas para variante e tamanho', async () => {
+    const { Tag } = await import('@/components/ui/tag');
+    const wrapper = mount(Tag, {
+      props: { variant: 'primary', size: 'sm' },
+      slots: { default: 'Mesa BDP1' },
+    });
+
+    expect(wrapper.element.tagName.toLowerCase()).toBe('span');
+    expect(wrapper.text()).toBe('Mesa BDP1');
+    expect(wrapper.classes()).toContain('bg-surface-elevated');
+    expect(wrapper.classes()).toContain('text-[11px]');
+
+    const wrapperXs = mount(Tag, {
+      props: { variant: 'primary', size: 'xs' },
+      slots: { default: 'XS' },
+    });
+    expect(wrapperXs.classes()).toContain('text-[10px]');
+  });
+
+  it('deve suportar variante gold com cores idênticas ao Button', async () => {
+    const { Tag } = await import('@/components/ui/tag');
+    const wrapper = mount(Tag, {
+      props: { variant: 'gold', size: 'md' },
+      slots: { default: 'Vencedor' },
+    });
+
+    expect(wrapper.classes()).toContain('bg-gold');
+    expect(wrapper.classes()).toContain('text-surface-elevated');
+    expect(wrapper.classes()).toContain('text-xs');
+  });
+});
+
+describe('Alert Component (shadcn-vue)', () => {
+  it('deve renderizar Alert, AlertTitle e AlertDescription com variante warning', async () => {
+    const { Alert, AlertTitle, AlertDescription } = await import('@/components/ui/alert');
+    const wrapper = mount(Alert, {
+      props: { variant: 'warning' },
+      slots: {
+        default: [
+          '<h5 class="title">Conexão interrompida</h5>',
+          '<div class="desc">Aguarde o anfitrião</div>',
+        ],
+      },
+    });
+
+    const titleWrapper = mount(AlertTitle, { slots: { default: 'Atenção' } });
+    const descWrapper = mount(AlertDescription, { slots: { default: 'Descrição do alerta' } });
+
+    expect(wrapper.attributes('role')).toBe('alert');
+    expect(wrapper.classes()).toContain('border-gold/40');
+    expect(wrapper.classes()).toContain('bg-surface-elevated');
+    expect(wrapper.text()).toContain('Conexão interrompida');
+    expect(titleWrapper.classes()).toContain('font-serif');
+    expect(descWrapper.classes()).toContain('leading-relaxed');
+  });
+
+  it('deve renderizar Alert com flex items-center e respeitar prop size sm e lg', async () => {
+    const { Alert } = await import('@/components/ui/alert');
+    const wrapperSm = mount(Alert, {
+      props: { size: 'sm', variant: 'success' },
+      slots: { default: 'Sucesso rápido' },
+    });
+    expect(wrapperSm.classes()).toContain('flex');
+    expect(wrapperSm.classes()).toContain('items-center');
+    expect(wrapperSm.classes()).toContain('text-xs');
+    expect(wrapperSm.classes()).toContain('bg-status-green-bg/80');
+
+    const wrapperLg = mount(Alert, {
+      props: { size: 'lg', variant: 'gold' },
+      slots: { default: 'Alerta destacado' },
+    });
+    expect(wrapperLg.classes()).toContain('text-base');
+    expect(wrapperLg.classes()).toContain('bg-[#29261e]');
+  });
+
+  it('deve renderizar variante destructive para mensagens de erro', async () => {
+    const { Alert } = await import('@/components/ui/alert');
+    const wrapper = mount(Alert, {
+      props: { variant: 'destructive' },
+      slots: { default: 'Erro ao conectar' },
+    });
+
+    expect(wrapper.classes()).toContain('bg-status-red-bg');
+    expect(wrapper.classes()).toContain('text-status-red');
+  });
+});
+
 

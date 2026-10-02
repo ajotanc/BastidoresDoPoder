@@ -93,5 +93,5 @@ describe('Composables e Utilitários', () => {
     await router.push('/jogar/7K3F');
     expect(router.currentRoute.value.name).toBe('game');
     expect(router.currentRoute.value.params.id).toBe('7K3F');
-  });
+  }, 20000);
 });

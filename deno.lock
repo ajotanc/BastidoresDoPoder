@@ -12,6 +12,9 @@
     "packageJson": {
       "dependencies": [
         "npm:@eslint/js@^9.39.5",
+        "npm:@fontsource-variable/cinzel@^5.3.0",
+        "npm:@fontsource-variable/plus-jakarta-sans@^5.3.0",
+        "npm:@lucide/vue@^1.49.0",
         "npm:@playwright/test@^1.63.0",
         "npm:@types/node@^22.13.0",
         "npm:@vite-pwa/assets-generator@2",
@@ -24,7 +27,6 @@
         "npm:eslint@^9.39.5",
         "npm:html-to-image@^1.11.13",
         "npm:jsdom@^30.1.1",
-        "npm:lucide-vue-next@0.475",
         "npm:peerjs@^1.5.5",
         "npm:pinia@^4.0.3",
         "npm:postcss@^8.5.1",
@@ -37,7 +39,9 @@
         "npm:vite-plugin-pwa@~0.21.1",
         "npm:vite@^6.2.0",
         "npm:vitest@^5.0.1",
+        "npm:vue-confetti@^2.3.0",
         "npm:vue-router@^4.6.4",
+        "npm:vue-sonner@^2.0.9",
         "npm:vue-tsc@^2.2.0",
         "npm:vue@^3.5.13",
         "npm:workbox-window@7.4.1"

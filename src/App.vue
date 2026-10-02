@@ -12,6 +12,8 @@ import AppFooter from '@/components/layout/AppFooter.vue';
 import CardLightboxModal from '@/components/game/CardLightboxModal.vue';
 import CoinLightboxModal from '@/components/game/CoinLightboxModal.vue';
 import { Sonner } from '@/components/ui/sonner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Sparkles, Info } from '@lucide/vue';
 
 const game = useGameStore();
 const sessionActive = computed(() => ['creating', 'joining', 'lobby', 'playing'].includes(game.mode) && game.gameState?.phase !== 'FINISHED');
@@ -77,13 +79,24 @@ const handleNavbarNavigate = (sectionId: string): void => {
         isOnlineActive ? 'px-3 sm:px-6 py-3 sm:py-6' : 'px-4 sm:px-8 py-8 sm:py-12'
       ]"
     >
-      <div v-if="updateAvailable && !sessionActive" role="status" class="mb-4 rounded border border-gold/30 bg-surface p-4 text-sm text-ink-muted">
-        Uma nova versão está pronta. Ela será aplicada quando todas as abas do jogo forem fechadas e você abrir novamente.
-      </div>
-      <div v-if="sessionActive && !isOnlineActive && game.currentRoomCode" class="mb-4 rounded border border-gold/30 bg-surface p-4 text-sm text-ink-muted">
-        Sua mesa continua aberta.
-        <RouterLink :to="`/game/${game.currentRoomCode}`" class="ml-2 inline-flex min-h-11 items-center font-semibold text-gold">Voltar à mesa</RouterLink>
-      </div>
+      <!-- Alerta de Atualização de Versão PWA -->
+      <Alert v-if="updateAvailable && !sessionActive" variant="warning" size="md" class="mb-4">
+        <Sparkles class="h-4 w-4" />
+        <AlertDescription>
+          Uma nova versão está pronta. Ela será aplicada quando todas as abas do jogo forem fechadas e você abrir novamente.
+        </AlertDescription>
+      </Alert>
+
+      <!-- Alerta de Mesa Ativa -->
+      <Alert v-if="sessionActive && !isOnlineActive && game.currentRoomCode" variant="gold" size="md" class="mb-4 justify-between">
+        <div class="flex items-center gap-2.5">
+          <Info class="h-4 w-4" />
+          <AlertDescription>
+            Sua mesa continua aberta.
+          </AlertDescription>
+        </div>
+        <RouterLink :to="`/game/${game.currentRoomCode}`" class="inline-flex min-h-11 items-center font-semibold text-gold hover:underline">Voltar à mesa</RouterLink>
+      </Alert>
       <RouterView />
     </main>
 

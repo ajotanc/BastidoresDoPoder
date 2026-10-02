@@ -15,7 +15,7 @@ defineProps<Props>();
       <span class="text-[0.65rem] text-gold-dark" aria-hidden="true">◆</span>
       <span>{{ label }}</span>
     </div>
-    <h2 :id="id" class="font-serif font-normal text-3xl sm:text-4xl text-[#f4eddf] tracking-tight leading-snug mb-3">
+    <h2 :id="id" class="font-serif font-bold text-3xl sm:text-4xl text-[#f4eddf] tracking-tight leading-snug mb-3">
       {{ title }}
     </h2>
     <p v-if="description" class="text-ink-muted text-base max-w-3xl leading-relaxed">

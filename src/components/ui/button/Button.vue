@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { cn } from '@/utils/cn';
 import { scrollToSection } from '@/utils/navigation';
 
-export interface Props {
+export interface ButtonProps {
   variant?: 'primary' | 'gold' | 'outline' | 'ghost' | 'secondary' | 'transparent';
   size?: 'sm' | 'md' | 'lg';
   href?: string;
@@ -13,11 +13,9 @@ export interface Props {
   class?: string;
 }
 
-export type ButtonProps = Props;
-
 defineOptions({ name: 'AppButton' });
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<ButtonProps>(), {
   variant: 'gold',
   size: 'md',
   href: undefined,
@@ -47,7 +45,7 @@ const buttonClasses = computed(() => {
   const base =
     'app-button font-sans inline-flex items-center justify-center text-center gap-2.5 rounded-md font-bold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none leading-none';
 
-  const variants: Record<NonNullable<Props['variant']>, string> = {
+  const variants: Record<NonNullable<ButtonProps['variant']>, string> = {
     gold: 'bg-gold text-surface-elevated hover:bg-gold-light border border-gold shadow-sm active:scale-[0.98]',
     primary:
       'bg-surface-elevated text-gold-light border border-gold-dark hover:border-gold hover:bg-surface-hover shadow-sm active:scale-[0.98]',
@@ -61,7 +59,7 @@ const buttonClasses = computed(() => {
       'bg-transparent text-ink-muted hover:text-gold hover:bg-transparent border-0 border-transparent shadow-none active:scale-[0.98]',
   };
 
-  const sizes: Record<NonNullable<Props['size']>, string> = {
+  const sizes: Record<NonNullable<ButtonProps['size']>, string> = {
     sm: 'text-sm min-h-11 px-3 py-2.5',
     md: 'text-sm min-h-11 px-3 py-2.5',
     lg: 'text-sm min-h-11 px-3 py-2.5',

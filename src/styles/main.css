@@ -109,8 +109,8 @@ button:focus-visible,
   .online-dialog { display: flex; flex-direction: column; max-height: calc(100dvh - 1.5rem); }
   .dialog-actions { padding-bottom: max(.75rem, env(safe-area-inset-bottom)); }
   .online-ui { overflow-wrap: break-word; }
-  .online-ui button:not(.app-checkbox):not(.app-switch) { min-height: 44px; }
-  .online-dialog button:not(.app-checkbox):not(.app-switch) { min-height: 44px; }
+  .online-ui button:not(.app-checkbox):not(.app-switch):not(.alert-action):not([role="alert"] button) { min-height: 44px; }
+  .online-dialog button:not(.app-checkbox):not(.app-switch):not(.alert-action):not([role="alert"] button) { min-height: 44px; }
   .online-ui button[title] { min-width: 44px; }
   .online-ui button svg { flex-shrink: 0; }
   .online-ui input { font-size: 16px; }
@@ -122,14 +122,14 @@ button[class], .app-button {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 14px;
 }
-button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-checkbox):not(.app-switch):not([data-close-button]):not([data-sonner-toast] button), .app-button {
+button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-checkbox):not(.app-switch):not([data-close-button]):not([data-sonner-toast] button):not(.alert-action):not([role="alert"] button), .app-button {
   min-height: 44px;
   padding: 10px 12px;
   border-width: 1px;
   font-weight: 600;
   line-height: 1.4;
 }
-button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-select-trigger):not(.rules-action):not(:has(.block)):not(.app-switch):not([data-close-button]):not([data-sonner-toast] button) {
+button:not(:has(.game-card)):not(.profile-option):not(.action-option):not(.app-select-trigger):not(.rules-action):not(:has(.block)):not(.app-switch):not([data-close-button]):not([data-sonner-toast] button):not(.alert-action):not([role="alert"] button) {
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -166,7 +166,8 @@ button[title="Copiar link da mesa"], button[title="Ampliar carta e ver regras co
 button.bg-gold, .online-primary, .app-button.bg-gold { border-color: var(--gold); }
 button.bg-status-red { border-color: var(--red); }
 button.bg-surface-elevated, button.bg-surface, .app-button.bg-surface-elevated { border-color: var(--surface); }
-button.text-ink-muted, button.text-ink-subtle, .online-icon-button, .secondary-tabs button { border-color: transparent; }
+button.text-ink-muted, button.text-ink-subtle, .online-icon-button, .secondary-tabs button, button.alert-action, [role="alert"] button { border-color: transparent; }
+button.alert-action, [role="alert"] button { min-height: 0; padding: 4px 8px; border-width: 0; }
 button.random-name-button, button.profile-photo-button { border-color: rgb(230 191 115 / 40%); }
 button.remove-photo-button { border-color: var(--red); }
 .rivals-carousel { grid-auto-columns: calc((100% - .75rem) / 2); }
@@ -213,3 +214,4 @@ button.app-select-trigger { justify-content: space-between; min-height: 44px; }
 input[type='number'] { appearance: textfield; -moz-appearance: textfield; }
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+

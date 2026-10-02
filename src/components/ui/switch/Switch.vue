@@ -15,7 +15,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
 
 <template>
   <SwitchRoot v-bind="forwarded" :class="cn('app-switch group relative inline-flex shrink-0 items-center disabled:cursor-not-allowed disabled:opacity-50', props.class)">
-    <span class="switch-track pointer-events-none flex items-center border border-line-gold bg-paper-deep p-[3px] transition-colors group-data-[state=checked]:border-gold group-data-[state=checked]:bg-gold/20">
+    <span class="switch-track pointer-events-none flex items-center border border-line bg-paper-deep p-[3px] transition-colors group-data-[state=checked]:border-gold group-data-[state=checked]:bg-gold/20">
       <SwitchThumb class="switch-thumb block size-5 bg-ink-subtle transition-[transform,background-color] duration-200 data-[state=checked]:translate-x-5 data-[state=checked]:bg-gold motion-reduce:transition-none" />
     </span>
   </SwitchRoot>

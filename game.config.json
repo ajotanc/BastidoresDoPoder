@@ -1,6 +1,6 @@
 {
   "name": "Bastidores do Poder",
-  "minPlayers": 3,
+  "minPlayers": 2,
   "maxPlayers": 8,
   "gameplay": {
     "actionTimeoutSeconds": 600,
@@ -8,8 +8,8 @@
     "initialCoins": 2
   },
   "bots": {
-    "defaultCount": 3,
-    "decisionDelaySeconds": 5.0,
+    "defaultCount": 2,
+    "decisionDelaySeconds": 6,
     "bluffWillingness": 0.45,
     "riskTolerance": 0.9,
     "decisionVariation": 0.18

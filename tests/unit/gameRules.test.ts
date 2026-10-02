@@ -54,8 +54,8 @@ describe('Constantes e Regras do Jogo', () => {
     expect(actionNames).toContain('Impeachment definitivo');
   });
 
-  it('deve cobrir a tabela de configuração de 3 a 8 jogadores', () => {
-    expect(SETUP_PLAYERS_TABLE.length).toBe(6);
+  it('deve cobrir a tabela de configuração de 2 a 8 jogadores', () => {
+    expect(SETUP_PLAYERS_TABLE.length).toBe(7);
     for (const row of SETUP_PLAYERS_TABLE) {
       expect(row.totalDeckCards).toBe(SUPPORT_CARDS_LENGTH);
       expect(row.initialCoins).toBe(2);

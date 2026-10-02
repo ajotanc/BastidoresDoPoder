@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import DiscordConversation from './DiscordConversation.vue';
+import { Toggle } from '@/components/ui/toggle';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tag } from '@/components/ui/tag';
+import AppButton from '@/components/ui/AppButton.vue';
 import { toast } from '@/components/ui/sonner';
 import { playerAvatar } from "@/utils/playerProfile";
 import { GAME_NAME } from "@/constants/gameConfig";
@@ -92,12 +96,10 @@ const handleShare = async (): Promise<void> => {
       class="bg-surface border border-line-gold/50 rounded p-4 sm:p-8 shadow-card flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6"
     >
       <div class="space-y-2 text-center md:text-left">
-        <span
-          class="inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold bg-gold/15 text-gold-light border border-gold/30"
-        >
+        <Tag variant="primary" size="sm" class="gap-1.5 font-semibold">
           <span class="h-2 w-2 rounded bg-status-green animate-pulse"></span>
           Convide seus amigos
-        </span>
+        </Tag>
         <h1 class="font-serif text-2xl sm:text-3xl font-bold text-ink tracking-tight">
           Sala de Articulação Política
         </h1>
@@ -117,10 +119,11 @@ const handleShare = async (): Promise<void> => {
           {{ roomCode }}
         </div>
         <div class="w-full flex items-center gap-2 mt-1">
-          <button
-            type="button"
+          <AppButton
+            variant="gold"
+            size="sm"
+            class="flex-1"
             @click="handleShare"
-            class="flex-1 px-3 py-2 rounded bg-gold hover:bg-gold-light text-paper-deep font-sans font-bold text-xs tracking-normal transition-all flex items-center justify-center gap-1.5 shadow-sm"
           >
             <template v-if="copiedNotice">
               <Check class="w-3.5 h-3.5 text-paper-deep" aria-hidden="true" />
@@ -130,7 +133,7 @@ const handleShare = async (): Promise<void> => {
               <Share2 class="w-3.5 h-3.5" aria-hidden="true" />
               <span>Convidar</span>
             </template>
-          </button>
+          </AppButton>
           <button
             type="button"
             @click="copyRoomLink"
@@ -194,9 +197,9 @@ const handleShare = async (): Promise<void> => {
           <h2 class="game-section-title flex min-w-0 flex-1 items-center gap-2">
             <Users class="size-4 shrink-0 text-gold-light" aria-hidden="true" />Mesa de negociação
           </h2>
-          <span class="shrink-0 whitespace-nowrap text-sm px-2 py-1 rounded bg-surface-elevated text-gold font-semibold">
+          <Tag variant="primary" size="sm" class="shrink-0 font-semibold">
             {{ playerList.length }} / {{ MAX_PLAYERS_PER_ROOM }}
-          </span>
+          </Tag>
         </div>
         <p class="text-xs leading-relaxed text-ink-muted">
           Mínimo de {{ MIN_PLAYERS_TO_START }} participantes para iniciar
@@ -204,11 +207,12 @@ const handleShare = async (): Promise<void> => {
       </div>
 
       <!-- Alerta de Quórum Mínimo Atingido -->
-      <div v-if="canStart"
-        class="p-3 bg-status-green-bg/80 border border-status-green/50 rounded flex items-center gap-2 text-xs text-status-green font-medium">
+      <Alert v-if="canStart" variant="success" size="sm">
         <CheckCircle2 class="w-4 h-4 shrink-0" aria-hidden="true" />
-        <span>Quórum mínimo atingido ({{ playerList.length }} participantes na mesa). O anfitrião já pode dar início à partida!</span>
-      </div>
+        <AlertDescription class="font-medium">
+          Quórum mínimo atingido ({{ playerList.length }} participantes na mesa). O anfitrião já pode dar início à partida!
+        </AlertDescription>
+      </Alert>
 
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <article v-for="(player, idx) in playerList" :key="player.id" class="lobby-player flex items-start gap-4 rounded border bg-paper-deep/60 p-4" :class="player.id === myPlayerId ? 'border-gold/40' : 'border-line'">
@@ -238,16 +242,20 @@ const handleShare = async (): Promise<void> => {
           <span>Abandonar Gabinete</span>
         </button>
         <!-- Botão de Pronto para jogadores comuns -->
-        <button v-if="!isHost" type="button" @click="emit('set-ready', !myPlayer?.isReady)"
+        <Toggle
+          v-if="!isHost"
+          :pressed="!!myPlayer?.isReady"
           class="order-1 min-h-11 w-full sm:order-2 sm:w-auto px-6 py-3 rounded font-sans font-bold text-xs tracking-normal transition-all border flex items-center justify-center gap-1.5"
           :class="[
             myPlayer?.isReady
-              ? 'bg-status-green-bg border-status-green text-status-green hover:bg-status-green-bg/80'
-              : 'bg-surface-elevated border-gold/40 text-gold-light hover:bg-surface-hover'
-          ]">
+              ? '!bg-status-green-bg !border-status-green !text-status-green hover:!bg-status-green-bg/80'
+              : '!bg-surface-elevated !border-gold/40 !text-gold-light hover:!bg-surface-hover'
+          ]"
+          @update:pressed="emit('set-ready', $event)"
+        >
           <CheckCircle2 v-if="myPlayer?.isReady" class="w-3.5 h-3.5" aria-hidden="true" />
           <span>{{ myPlayer?.isReady ? 'Pronto · desmarcar' : 'Marcar como Pronto' }}</span>
-        </button>
+        </Toggle>
 
         <!-- Botão de Iniciar para o Host -->
         <button v-if="isHost" type="button" aria-label="Iniciar disputa" :disabled="!canStart" @click="emit('start-game')"

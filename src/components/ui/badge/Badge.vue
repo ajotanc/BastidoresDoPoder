@@ -2,17 +2,15 @@
 import { computed } from 'vue';
 import { cn } from '@/utils/cn';
 
-export interface Props {
+export interface BadgeProps {
   variant?: 'gold' | 'role' | 'muted' | 'outline' | 'green' | 'red';
   customColor?: string;
   class?: string;
 }
 
-export type BadgeProps = Props;
-
 defineOptions({ name: 'AppBadge' });
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<BadgeProps>(), {
   variant: 'gold',
   customColor: undefined,
   class: '',
@@ -21,7 +19,7 @@ const props = withDefaults(defineProps<Props>(), {
 const badgeClasses = computed(() => {
   const base =
     'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold tracking-wider uppercase transition-colors';
-  const variants: Record<NonNullable<Props['variant']>, string> = {
+  const variants: Record<NonNullable<BadgeProps['variant']>, string> = {
     gold: 'bg-gold/15 text-gold-light border border-gold/40',
     role: 'bg-surface-elevated text-ink border border-line-gold',
     muted: 'bg-surface text-ink-muted border border-line',

@@ -71,7 +71,17 @@ describe('Controles online seguem a elegibilidade da engine', () => {
   it('declarante não pode passar a própria alegação e só o respondente recebe controles', async () => {
     const s: GameState = { ...state(), phase: 'WAITING_CHALLENGE_ACTION',
       pendingAction: { actionType: 'execution', sourcePlayerId: 'a', targetPlayerId: 'b', costPaid: 3, claimedRole: 'executor' } };
-    const wrapper = shallowMount(GameBoard, { props: { gameState: s, myPlayerId: 'a', privateView: null, isHost: true } });
+    const wrapper = shallowMount(GameBoard, {
+      props: { gameState: s, myPlayerId: 'a', privateView: null, isHost: true },
+      global: {
+        stubs: {
+          Alert: false,
+          AlertDescription: false,
+          AppAlert: false,
+          AppAlertDescription: false,
+        },
+      },
+    });
     expect(wrapper.text()).not.toContain('Passar / Permitir');
     expect(wrapper.text()).toContain('Aguardando deliberação de Bruno');
     await wrapper.setProps({ myPlayerId: 'b' });

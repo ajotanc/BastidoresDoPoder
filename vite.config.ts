@@ -8,6 +8,7 @@ import packageJson from './package.json';
 const gameConfig = JSON.parse(readFileSync(new URL('./game.config.json', import.meta.url), 'utf8')) as { name: string; minPlayers: number; maxPlayers: number };
 const { name: GAME_NAME, minPlayers: MIN_PLAYERS_TO_START, maxPlayers: MAX_PLAYERS_PER_ROOM } = gameConfig;
 export default defineConfig({
+  envPrefix: ['VITE_', 'DEVELOPMENT_'],
   define: {
     __APP_VERSION__: JSON.stringify(packageJson.version),
   },

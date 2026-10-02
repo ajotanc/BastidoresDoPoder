@@ -4,6 +4,7 @@ import { ref, watch, nextTick } from 'vue';
 import { useLightbox } from '@/composables/useLightbox';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import AppButton from '@/components/ui/AppButton.vue';
+import { Toggle } from '@/components/ui/toggle';
 import { X, Printer, RotateCw } from '@lucide/vue';
 import Card from '@/components/game/Card.vue';
 import { SUPPORT_CARDS_LENGTH } from '@/constants/gameData';
@@ -67,18 +68,15 @@ watch(
     </template>
 
     <div v-if="activeCard" class="flex flex-col items-center justify-center py-4 gap-4">
-      <button
-        type="button"
-        @click="toggleFlip"
-        class="relative block w-full max-w-[400px] cursor-pointer focus-visible:outline-none rounded bg-transparent border-0 p-0 select-none"
-        :aria-pressed="isFlipped"
+      <Toggle
+        :pressed="isFlipped"
+        class="relative block w-full max-w-[400px] cursor-pointer focus-visible:outline-none rounded bg-transparent border-0 p-0 select-none hover:bg-transparent data-[state=on]:bg-transparent"
         :aria-label="isFlipped ? 'Verso da carta exibido. Clique para ver a frente.' : 'Frente da carta exibida. Clique para ver o verso.'"
         :title="isFlipped ? 'Clique para ver a frente' : 'Clique para ver o verso'"
+        @update:pressed="toggleFlip"
       >
         <Card :card="activeCard" :face-down="isFlipped" />
-      </button>
-
-
+      </Toggle>
     </div>
 
     <!-- Rodapé Fixo Separado do Scroll com as Mesmas Cores e Estilo -->

@@ -3,7 +3,7 @@ import vue from 'eslint-plugin-vue';
 import ts from 'typescript-eslint';
 
 export default ts.config(
-  { ignores: ['dist/**', 'node_modules/**', 'dev-dist/**', 'vite.config.js', 'vite.config.d.ts', 'playwright-report/**', 'test-results/**', '.audit-rules.mjs'] },
+  { ignores: ['.netlify/**', 'dist/**', 'node_modules/**', 'dev-dist/**', 'vite.config.js', 'vite.config.d.ts', 'playwright-report/**', 'test-results/**', '.audit-rules.mjs'] },
   js.configs.recommended,
   ...ts.configs.recommended,
   ...vue.configs['flat/essential'],

@@ -13,7 +13,8 @@ import type { RoleSlug } from '@/types/game';
 import { useOnlineGame } from '@/composables/useOnlineGame';
 import { PLAYABLE_ROLES } from '@/game/engine/deck';
 import { getRoleDisplayName } from '@/game/engine/gameEngine';
-import { AlertCircle, PlusCircle, LogIn, ArrowLeft, Camera, Upload, Shuffle, Trash2, Mars, Venus, Users, UserRound, SlidersHorizontal, Clock, Bot } from '@lucide/vue';
+import { AlertCircle, AlertTriangle, PlusCircle, LogIn, ArrowLeft, Camera, Upload, Shuffle, Trash2, Mars, Venus, Users, UserRound, SlidersHorizontal, Clock, Bot } from '@lucide/vue';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import LobbyRoom from './LobbyRoom.vue';
 import GameBoard from './GameBoard.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
@@ -198,24 +199,46 @@ const handleJoin = async (): Promise<void> => {
 
 <template>
   <div class="online-ui w-full min-w-0 space-y-6">
-    <div v-if="connectionStatus !== 'connected'" role="status" class="rounded border border-gold/40 bg-surface p-4 text-sm text-ink-muted">
-      <p class="font-serif font-bold text-gold-light">{{ connectionStatus === 'reconnecting' ? 'Reconectando à mesa' : 'Conexão interrompida' }}</p>
-      <AppButton v-if="connectionStatus === 'disconnected'" class="mt-3" @click="retryConnection">Tentar reconectar</AppButton>
-      <p class="mt-1">{{ connectionStatus === 'reconnecting' ? `Tentativa ${reconnectAttempt} de ${MAX_RECONNECT_ATTEMPTS}. Aguarde a confirmação do anfitrião.` : 'Aguarde o anfitrião retomar a mesa e tente conectar novamente.' }}</p>
-    </div>
-    <p v-if="recoveryWarning" role="status" class="rounded border border-gold/40 bg-surface p-4 text-sm text-gold-light">{{ recoveryWarning }}</p>
-    <!-- Notificação de Erro Flutuante -->
-    <div v-if="errorMessage"
-      class="p-4 bg-status-red-bg border border-status-red/50 rounded text-status-red flex items-center justify-between gap-3 shadow-lg animate-fadeIn"
-      role="alert">
-      <div class="flex items-center gap-2 text-xs font-medium">
-        <AlertCircle class="w-4 h-4 text-status-red shrink-0" aria-hidden="true" />
-        <span>{{ errorMessage }}</span>
+    <!-- Alerta de Conexão com o Servidor (Reconectando / Conexão Interrompida) -->
+    <Alert v-if="connectionStatus !== 'connected'" variant="warning" class="items-start">
+      <AlertTriangle class="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
+      <div class="min-w-0 flex-1">
+        <AlertTitle>{{ connectionStatus === 'reconnecting' ? 'Reconectando à mesa' : 'Conexão interrompida' }}</AlertTitle>
+        <AlertDescription>
+          <p>{{ connectionStatus === 'reconnecting' ? `Tentativa ${reconnectAttempt} de ${MAX_RECONNECT_ATTEMPTS}. Aguarde a confirmação do anfitrião.` : 'Aguarde o anfitrião retomar a mesa e tente conectar novamente.' }}</p>
+          <AppButton v-if="connectionStatus === 'disconnected'" size="sm" class="mt-3" @click="retryConnection">Tentar reconectar</AppButton>
+        </AlertDescription>
       </div>
-      <button type="button" @click="clearError" class="text-xs font-bold text-status-red hover:underline">
+    </Alert>
+
+    <!-- Alerta de Recuperação de Sessão -->
+    <Alert v-if="recoveryWarning" variant="warning" size="sm">
+      <AlertTriangle class="h-4 w-4 shrink-0" aria-hidden="true" />
+      <div class="min-w-0 flex-1">
+        <AlertTitle>Aviso de recuperação</AlertTitle>
+        <AlertDescription>{{ recoveryWarning }}</AlertDescription>
+      </div>
+    </Alert>
+
+    <!-- Notificação de Erro Flutuante (100% da largura disponível com botão pequeno) -->
+    <Alert
+      v-if="errorMessage"
+      variant="destructive"
+      size="sm"
+      class="shadow-card animate-fadeIn justify-between gap-3 border-status-red/40 bg-status-red-bg/95"
+    >
+      <div class="flex items-center gap-2.5 min-w-0">
+        <AlertCircle class="h-4 w-4 text-status-red shrink-0" aria-hidden="true" />
+        <span class="text-xs font-medium text-status-red leading-normal">{{ errorMessage }}</span>
+      </div>
+      <button
+        type="button"
+        @click="clearError"
+        class="alert-action text-xs font-semibold text-status-red/80 hover:text-status-red hover:underline shrink-0 transition-colors"
+      >
         Dispensar
       </button>
-    </div>
+    </Alert>
 
     <div v-if="mode === 'idle' || mode === 'creating' || mode === 'joining'"
       class="online-entry pt-12 mx-auto max-w-xl space-y-6 sm:space-y-8">
@@ -315,7 +338,10 @@ const handleJoin = async (): Promise<void> => {
               <p v-if="!avatarImage" class="mt-2 text-center text-[11px] text-ink-subtle">JPG, PNG ou WebP · até 10 MB
               </p>
             </div>
-            <p v-if="profileError" role="alert" class="text-sm text-status-red">{{ profileError }}</p>
+            <Alert v-if="profileError" variant="destructive" size="sm">
+              <AlertCircle class="h-4 w-4" />
+              <AlertDescription>{{ profileError }}</AlertDescription>
+            </Alert>
             <div class="grid grid-cols-4 gap-3">
               <button v-for="role in filteredRoles" :key="role" type="button"
                 @click="selectedAvatar = role; avatarImage = undefined" :aria-label="getRoleDisplayName(role)"
@@ -379,7 +405,10 @@ const handleJoin = async (): Promise<void> => {
               </div>
               <p class="text-xs leading-relaxed text-ink-muted">Deixe em branco para usar o padrão. Respostas incluem
                 bloqueios, contestações e escolhas de cartas.</p>
-              <p v-if="timingError" id="timing-error" role="alert" class="text-xs text-status-red">{{ timingError }}</p>
+              <Alert v-if="timingError" id="timing-error" variant="destructive" size="sm">
+                <AlertCircle class="h-4 w-4" />
+                <AlertDescription>{{ timingError }}</AlertDescription>
+              </Alert>
             </div>
             <div class="space-y-4 border-t border-line/70 py-4">
               <h4 class="flex items-center gap-2 font-serif text-sm font-bold text-gold-light">

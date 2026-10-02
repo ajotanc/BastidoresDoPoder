@@ -7,7 +7,8 @@ import type { ActionType, PublicPlayerState } from '@/game/models/gameState';
 import type { ActionIntent } from '@/game/models/commands';
 import { PLAYABLE_ROLES } from '@/game/engine/deck';
 import { getActionCost, getRoleDisplayName } from '@/game/engine/gameEngine';
-import { X } from '@lucide/vue';
+import { X, AlertCircle } from '@lucide/vue';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Props {
   isOpen: boolean;
@@ -266,9 +267,15 @@ const filteredActions = computed(() => {
       </div>
 
       <div class="space-y-3">
-        <p v-if="isMustImpeach" class="rounded border border-status-red/40 bg-status-red-bg p-3 text-sm text-status-red">
-          Com C$ 10 ou mais, você precisa declarar Impeachment Definitivo.
-        </p>
+        <Alert v-if="isMustImpeach" variant="destructive" size="sm">
+          <AlertCircle class="h-4 w-4 shrink-0" />
+          <AlertDescription>
+            Com C$ 10 ou mais, você precisa declarar Impeachment Definitivo.
+          </AlertDescription>
+        </Alert>
+
+
+
         <article
           v-for="action in filteredActions"
           :key="action.type"
@@ -283,7 +290,7 @@ const filteredActions = computed(() => {
             class="action-option w-full p-3.5 text-left disabled:opacity-40 cursor-pointer"
           >
             <span class="flex items-start justify-between gap-3">
-              <span class="min-w-0 font-serif text-base font-semibold text-ink">
+              <span class="min-w-0 font-serif text-base font-bold text-ink">
                 {{ action.name }}
                 <span v-if="action.roleClaim" class="mt-0.5 block font-sans text-xs font-normal text-gold-muted">
                   {{ action.roleClaim }}
