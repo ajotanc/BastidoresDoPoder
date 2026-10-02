@@ -51,7 +51,7 @@ export default async function handler(request: Request): Promise<Response> {
     const escape = (value: string) => value.replace(/([\\`*_~|>[\]#])/g, '\\$1');
     const description = `🏆 **${escape(summary.winnerName)} conquistou o poder!**\nMesa ${summary.roomCode} · ${summary.turns} turnos · ${durationLabel(summary.durationSeconds)}`;
     await discord(`/channels/${destination.id}/messages`, 'POST', {
-      embeds: [{ title: 'Bastidores do Poder · Resultado da mesa', description, color: 0xe8c474, url,
+      embeds: [{ title: 'Bastidores do Poder · Resultado da Mesa', description, color: 0xe8c474, url,
         fields: [
           { name: 'Apoios restantes', value: `${summary.supports} ${summary.supports === 1 ? 'apoio' : 'apoios'}`, inline: true },
           { name: 'Reserva final', value: `C$ ${summary.coins}`, inline: true },

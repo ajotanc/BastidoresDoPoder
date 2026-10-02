@@ -290,7 +290,7 @@ async function generateStoryPreview(): Promise<void> {
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto space-y-4 sm:space-y-6 animate-fadeIn pb-12">
+  <div class="max-w-6xl mx-auto space-y-4 sm:space-y-6 animate-fadeIn">
     <!-- 1. Barra de Status da Mesa (Compacta e Sticky-Friendly) -->
     <header class="game-status overflow-hidden rounded-lg border border-line-gold/50 bg-surface shadow-card">
       <div class="flex items-center justify-between gap-3 gold-divider-bottom relative px-4 py-2.5 sm:px-5">
@@ -665,16 +665,18 @@ async function generateStoryPreview(): Promise<void> {
       </div>
 
       <!-- Container do Conteúdo -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-stretch">
         <!-- Plantão de Notícias (Visível sempre no desktop; no mobile apenas se aba 'plantao' ativa) -->
-        <div aria-label="Histórico da partida" class="lg:col-span-6 w-full"
+        <div aria-label="Histórico da partida" class="lg:col-span-6 w-full lg:relative"
           :class="{ 'hidden lg:block': secondaryMobileTab !== 'plantao' }">
-          <GameNewsFeed :history="gameState.history" :is-finished="isFinished" />
+          <div class="lg:absolute lg:inset-0 h-full">
+            <GameNewsFeed class="h-full" :history="gameState.history" :is-finished="isFinished" />
+          </div>
         </div>
 
         <!-- Painel de Contabilidade de Cartas Descartadas (Visível sempre no desktop; no mobile se 'contabilidade' ativa) -->
         <div
-          class="lg:col-span-6 w-full bg-surface/90 border border-line-gold/40 rounded sm:rounded p-4 sm:p-5 shadow-card space-y-3"
+          class="lg:col-span-6 w-full flex flex-col bg-surface/90 border border-line-gold/40 rounded sm:rounded p-4 sm:p-5 shadow-card space-y-3"
           :class="{ 'hidden lg:block': secondaryMobileTab !== 'contabilidade' }">
           <header class="mb-4 flex flex-wrap items-center justify-between gap-2 gold-divider-bottom relative pb-2.5">
             <div class="flex items-center gap-2">
