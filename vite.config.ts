@@ -89,6 +89,20 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (!id.includes('node_modules')) return undefined;
+          if (id.includes('peerjs') || id.includes('webrtc-adapter') || id.includes('sdp')) return 'vendor-peer';
+          if (id.includes('radix-vue') || id.includes('@floating-ui') || id.includes('@internationalized')) return 'vendor-ui';
+          if (id.includes('html-to-image') || id.includes('vue-confetti') || id.includes('canvas-confetti')) return 'vendor-extras';
+          if (['vue', '@vue', 'vue-router', 'pinia'].some((pkg) => id.replaceAll('\\', '/').includes(`/node_modules/${pkg}/`))) return 'vendor-vue';
+          return undefined;
+        }
+      }
+    }
+  },
   server: {
     port: 5173,
     host: true,
