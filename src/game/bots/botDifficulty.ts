@@ -17,8 +17,8 @@ export const BOT_DIFFICULTY_TAG_CLASSES: Record<BotDifficulty, string> = {
 };
 
 export const BOT_DIFFICULTY_PROFILES = {
-  easy: { ...BOT_STRATEGY, decisionVariation: 3, bluffWillingness: 0.3, riskTolerance: 1.2, historyDepth: 0, threatWeight: 0.3, planningWeight: 0, retaliationWeight: 0 },
-  intermediate: { ...BOT_STRATEGY, historyDepth: 12, threatWeight: 1, planningWeight: 0, retaliationWeight: 0 },
-  hard: { ...BOT_STRATEGY, decisionVariation: 0.05, historyDepth: 50, threatWeight: 1.3, planningWeight: 1, retaliationWeight: 0 },
-  pro: { ...BOT_STRATEGY, decisionVariation: 0.02, bluffWillingness: 0.55, riskTolerance: 0.85, historyDepth: 50, threatWeight: 1.4, planningWeight: 1.2, retaliationWeight: 1 },
+  easy: { ...BOT_STRATEGY, challengeBase: 0.12, challengeEvidence: 0, honestyEvidence: 0, bluffScrutiny: 1, bluffPenalty: 1, decisionVariation: 3, bluffWillingness: 0.3, riskTolerance: 1.2, historyDepth: 0, threatWeight: 0.3, planningWeight: 0, retaliationWeight: 0 },
+  intermediate: { ...BOT_STRATEGY, challengeBase: 0.12, challengeEvidence: 0, honestyEvidence: 0, bluffScrutiny: 1, bluffPenalty: 1, historyDepth: 12, threatWeight: 1, planningWeight: 0, retaliationWeight: 0 },
+  hard: { ...BOT_STRATEGY, challengeBase: 0.3, challengeEvidence: 0, honestyEvidence: 0, bluffScrutiny: 1, bluffPenalty: 2, decisionVariation: 0.05, historyDepth: 50, threatWeight: 1.3, planningWeight: 0.5, retaliationWeight: 0 },
+  pro: { ...BOT_STRATEGY, challengeBase: 0.55, challengeEvidence: 12, honestyEvidence: 12, bluffScrutiny: 2, bluffPenalty: 5, decisionVariation: 0.02, bluffWillingness: 0.55, riskTolerance: 0.85, historyDepth: 50, threatWeight: 1.4, planningWeight: 0.5, retaliationWeight: 1 },
 } satisfies Record<BotDifficulty, object>;

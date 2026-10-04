@@ -87,7 +87,7 @@ export function chooseBotCommand(state: GameState, view: PrivatePlayerView, rand
         }
         safety = profile.retaliationWeight * (currentExposure - exposure);
       }
-      const score = certainWin ? 1000 - cost : preparation + safety + benefit * success - cost * 0.8 - caught * riskCost + variation();
+      const score = certainWin ? 1000 - cost : preparation + safety + benefit * success - cost * 0.8 - caught * riskCost * profile.bluffPenalty + variation();
       candidates.push({ intent: { actionType, ...(targetPlayerId ? { targetPlayerId } : {}), ...(namedRole ? { namedRole } : {}) }, score });
     };
     add('salary', coinGain(1));

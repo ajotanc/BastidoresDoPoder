@@ -181,3 +181,41 @@ describe('Inferências apenas com informação pública', () => {
     expect(suspicious).toBeGreaterThan(usual);
   });
 });
+
+describe('Leitura adaptativa de contestações', () => {
+  const adaptive = { ...BOT_DIFFICULTY_PROFILES.pro, challengeEvidence: 4 };
+  const claim = (i: number) => ({ ...event('ACTION_DECLARED', 'me', 'executor'), id: `claim-${i}` });
+  const challenge = (i: number) => ({ ...event('CHALLENGE_DECLARED', 'r0', 'baron'), id: `challenge-${i}` });
+  const risk = (history: GameEvent[], profile = adaptive) => {
+    const { state, view } = table();
+    return evaluateTable({ ...state, history }, view, profile).challengeRisk('baron');
+  };
+  it('perde a desconfiança inicial diante de quem nunca contesta', () => {
+    const passive = risk(Array.from({ length: 10 }, (_, i) => claim(i)));
+    expect(passive).toBeLessThan(risk([]) - 0.2);
+  });
+  it('mantém o risco alto diante de quem contesta quase sempre', () => {
+    const history = Array.from({ length: 8 }, (_, i) => [challenge(i), claim(i)]).flat();
+    expect(risk(history)).toBeGreaterThan(risk([]));
+  });
+  it('sem evidência configurada, mantém o cálculo antigo', () => {
+    const history = Array.from({ length: 10 }, (_, i) => claim(i));
+    expect(risk(history, { ...adaptive, challengeEvidence: 0 })).toBe(risk([], { ...adaptive, challengeEvidence: 0 }));
+  });
+});
+
+describe('Leitura adaptativa de honestidade', () => {
+  const adaptive = { ...BOT_DIFFICULTY_PROFILES.pro, honestyEvidence: 6 };
+  const belief = (history: GameEvent[], profile = adaptive) => {
+    const { state, view } = table();
+    return evaluateTable({ ...state, history }, view, profile).probability('r0', 'baron', true);
+  };
+  const exposed = (i: number) => ({ ...event('BLUFF_EXPOSED', 'r0', 'baron'), id: `exposed-${i}` });
+  const proved = (i: number) => ({ ...event('PROVED_CARD_REPLACED', 'r0'), id: `proved-${i}` });
+  it('confia menos em quem foi pego blefando e mais em quem comprovou os cargos', () => {
+    const liar = belief([exposed(0), exposed(1), exposed(2)]);
+    const honest = belief([proved(0), proved(1), proved(2)]);
+    expect(liar).toBeLessThan(belief([]));
+    expect(honest).toBeGreaterThan(belief([]));
+  });
+});

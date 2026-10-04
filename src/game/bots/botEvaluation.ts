@@ -3,6 +3,7 @@ import type { GameState, PrivatePlayerView, SupportCard } from '../models/gameSt
 import type { RoleSlug } from '@/types/game';
 import { PLAYABLE_ROLES, SUPPORT_CARDS_PER_ROLE } from '@/constants/gameData';
 
+const HONESTY_PRIOR = 0.7;
 export const clamp = (value: number, min = 0, max = 1) => Math.max(min, Math.min(max, value));
 
 /** Beliefs are reconstructed from the recent public feed, never from host secrets. */
@@ -22,6 +23,12 @@ export function evaluateTable(state: GameState, view: PrivatePlayerView, profile
     }
     return result;
   };
+  // Share of challenged claims that held up, pulled toward a prior until the player has been tested.
+  const honesty = (id: string) => {
+    const tested = recent(id).filter(e => e.type === 'PROVED_CARD_REPLACED' || e.type === 'BLUFF_EXPOSED');
+    const lies = tested.filter(e => e.type === 'BLUFF_EXPOSED').length;
+    return (tested.length - lies + profile.honestyEvidence * HONESTY_PRIOR) / (tested.length + profile.honestyEvidence);
+  };
   const probability = (id: string, role: RoleSlug, claimed = false): number => {
     const copies = remaining(role);
     if (!copies) return 0;
@@ -31,10 +38,11 @@ export function evaluateTable(state: GameState, view: PrivatePlayerView, profile
     const history = claims(id);
     const count = history.filter(r => r === role).length;
     let belief = 1 - miss;
-    if (claimed || count) belief = Math.max(belief, 0.56 + Math.min(count, 3) * 0.09);
+    const adaptive = profile.honestyEvidence > 0;
+    if (claimed || count) belief = Math.max(belief, (0.56 + Math.min(count, 3) * 0.09) * (adaptive ? honesty(id) / HONESTY_PRIOR : 1));
     if (new Set(history).size > supports) belief *= 0.72;
     const lies = recent(id).filter(e => e.type === 'BLUFF_EXPOSED').length;
-    belief *= Math.pow(0.72, Math.min(lies, 3));
+    if (!adaptive) belief *= Math.pow(0.72, Math.min(lies, 3));
     return clamp(belief, 0, 0.95);
   };
   const threat = (id: string) => {
@@ -67,16 +75,24 @@ export function evaluateTable(state: GameState, view: PrivatePlayerView, profile
       + (coins >= 7 && after < 7 ? 2 : 0)
       + (coins >= 3 && after < 3 ? probability(id, 'executor') * 2 : 0);
   };
+  // Observed challenge frequency, pulled toward the profile prior until enough claims were seen.
+  const observedChallengeRate = (id: string) => {
+    const window = state.history.slice(0, profile.historyDepth);
+    const chances = window.filter(e => e.role && e.playerId !== id && ['ACTION_DECLARED', 'BLOCK_DECLARED'].includes(e.type)).length;
+    const challenges = window.filter(e => e.playerId === id && e.type === 'CHALLENGE_DECLARED').length;
+    return (Math.min(challenges, chances) * profile.bluffScrutiny + profile.challengeEvidence * profile.challengeBase) / (chances + profile.challengeEvidence);
+  };
   const challengeRisk = (role: RoleSlug, eligibleIds = rivals.map(p => p.id)) => {
     if (state.discard.filter(c => c.roleSlug === role).length >= SUPPORT_CARDS_PER_ROLE) return 1;
     let unchallenged = 1;
     for (const rival of rivals) {
       if (!eligibleIds.includes(rival.id)) continue;
       const challenges = recent(rival.id).filter(e => e.type === 'CHALLENGE_DECLARED').length;
+      const base = profile.challengeEvidence ? observedChallengeRate(rival.id) : profile.challengeBase + challenges * 0.09;
       const myLies = recent(me.id).filter(e => e.type === 'BLUFF_EXPOSED').length;
       const consistent = claims(me.id).includes(role) ? -0.04 : 0;
       const contradictory = new Set([...claims(me.id), role]).size > me.activeSupportCount;
-      const rate = clamp(0.12 + challenges * 0.09 + myLies * 0.1 + consistent + (remaining(role) === 1 ? 0.1 : 0)
+      const rate = clamp(base + myLies * 0.1 + consistent + (remaining(role) === 1 ? 0.1 : 0)
         + profile.planningWeight * (contradictory ? 0.18 : 0), 0.05, 0.75);
       unchallenged *= 1 - rate;
     }
