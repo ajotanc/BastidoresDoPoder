@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface Props {
-  label: string;
+  label?: string;
   title: string;
   description?: string;
   id?: string;
@@ -11,7 +11,7 @@ defineProps<Props>();
 
 <template>
   <header class="mb-8">
-    <div class="text-xs uppercase tracking-[0.16em] text-gold font-bold mb-3 flex items-center gap-2">
+    <div v-if="label" class="text-xs uppercase tracking-[0.16em] text-gold font-bold mb-3 flex items-center gap-2">
       <span class="text-[0.65rem] text-gold-dark" aria-hidden="true">◆</span>
       <span>{{ label }}</span>
     </div>

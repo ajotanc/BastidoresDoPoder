@@ -7,7 +7,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/
 import AppButton from '@/components/ui/AppButton.vue';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from '@/components/ui/sonner';
-import GameEventMessage from './GameEventMessage.vue';
+import GameEventTimeline from './GameEventTimeline.vue';
 import GameResultSummary from '@/components/game/GameResultSummary.vue';
 import type { GameState } from '@/game/models/gameState';
 
@@ -59,13 +59,10 @@ const finalEvents = computed(() => {
       <AccordionItem value="final-sequence" class="border-line bg-paper/40">
         <AccordionTrigger class="result-history-trigger text-sm font-semibold text-gold-light">
           Ver sequência final
+          <span class="ml-2 text-xs font-normal text-ink-subtle">{{ finalEvents.length }} {{ finalEvents.length === 1 ? 'lance' : 'lances' }}</span>
         </AccordionTrigger>
-        <AccordionContent class="px-4 pb-4 pt-1 before:hidden">
-          <ol class="list-decimal space-y-3 pl-5 text-sm leading-relaxed text-ink-muted">
-            <li v-for="event in finalEvents" :key="event.id" class="break-words">
-              <GameEventMessage :message="event.message" />
-            </li>
-          </ol>
+        <AccordionContent class="px-4 pb-5 pt-2 before:hidden sm:px-5">
+          <GameEventTimeline :events="finalEvents" />
         </AccordionContent>
       </AccordionItem>
     </Accordion>

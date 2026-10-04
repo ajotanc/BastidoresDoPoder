@@ -12,7 +12,7 @@ defineOptions({ name: 'AppAlert' });
 
 const props = withDefaults(defineProps<AlertProps>(), {
   variant: 'default',
-  size: 'md',
+  size: 'sm',
   class: '',
 });
 

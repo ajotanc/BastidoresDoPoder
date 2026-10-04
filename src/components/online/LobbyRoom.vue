@@ -8,6 +8,8 @@ import { toast } from '@/components/ui/sonner';
 import { playerAvatar } from "@/utils/playerProfile";
 import { GAME_NAME } from "@/constants/gameConfig";
 import { ref, computed } from 'vue';
+import { copyText } from '@/utils/clipboard';
+import PlayerName from '@/components/online/PlayerName.vue';
 import { DEFAULT_GAME_SETTINGS } from '@/game/models/gameState';
 import { BOT_DIFFICULTIES, DEFAULT_BOT_DIFFICULTY, BOT_DIFFICULTY_TAG_CLASSES } from '@/game/bots/botDifficulty';
 import { MIN_PLAYERS_TO_START, MAX_PLAYERS_PER_ROOM, type GameState } from '@/game/models/gameState';
@@ -50,13 +52,12 @@ const canStart = computed(() => {
 
 const shareableUrl = computed(() => {
   if (typeof window === 'undefined') return '';
-  return `${window.location.origin}/game/${props.roomCode}`;
+  return `${window.location.origin}/room/${props.roomCode}`;
 });
 
 const copyRoomLink = async (): Promise<void> => {
   try {
-    if (typeof window !== 'undefined' && window.navigator?.clipboard) {
-      await window.navigator.clipboard.writeText(shareableUrl.value);
+    if (await copyText(shareableUrl.value)) {
       toast.success('Convite copiado. Envie para seus amigos.');
       copiedNotice.value = true;
       window.setTimeout(() => {
@@ -134,14 +135,11 @@ const handleShare = async (): Promise<void> => {
               <span>Convidar</span>
             </template>
           </AppButton>
-          <button
-            type="button"
+          <AppButton variant="outline" size="icon"
             @click="copyRoomLink"
-            class="online-icon-button p-2 rounded bg-surface-elevated hover:bg-surface-hover border border-line text-ink transition-colors"
-            title="Copiar link da mesa"
-          >
+            title="Copiar link da mesa">
             <Copy class="w-4 h-4 text-gold-light" aria-hidden="true" />
-          </button>
+          </AppButton>
         </div>
       </div>
     </div>
@@ -207,7 +205,7 @@ const handleShare = async (): Promise<void> => {
       </div>
 
       <!-- Alerta de Quórum Mínimo Atingido -->
-      <Alert v-if="canStart" variant="success" size="sm">
+      <Alert v-if="canStart" variant="success">
         <CheckCircle2 class="w-4 h-4 shrink-0" aria-hidden="true" />
         <AlertDescription class="font-medium">
           Quórum mínimo atingido ({{ playerList.length }} participantes na mesa). O anfitrião já pode dar início à partida!
@@ -218,7 +216,7 @@ const handleShare = async (): Promise<void> => {
         <article v-for="(player, idx) in playerList" :key="player.id" class="lobby-player flex items-start gap-4 rounded border bg-paper-deep/60 p-4" :class="player.id === myPlayerId ? 'border-gold/40' : 'border-line'">
           <img :src="playerAvatar(player)" :alt="player.name" class="h-16 w-16 shrink-0 rounded object-cover object-top" />
           <div class="min-w-0 flex-1">
-            <h3 class="break-words text-sm font-semibold leading-relaxed text-ink">{{ player.name }}</h3>
+            <h3 class="break-words text-sm font-semibold leading-relaxed text-ink"><PlayerName :player="player" /></h3>
             <div class="player-details flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
               <span v-if="!player.avatarImage && player.avatarSlug">{{ getRoleDisplayName(player.avatarSlug) }}</span>
               <span v-if="idx === 0" class="text-gold">Anfitrião</span>
@@ -236,11 +234,10 @@ const handleShare = async (): Promise<void> => {
     <!-- Barra de Controle do Lobby -->
     <div class="flex flex-col items-stretch gap-3 pt-4 gold-divider-top relative">
       <div class="lobby-actions flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <button type="button" @click="emit('leave')"
-          class="order-2 flex min-h-11 w-full items-center gap-2 text-sm font-semibold text-ink-muted transition-colors hover:text-status-red sm:order-1 sm:w-auto">
+        <AppButton variant="ghost" class="order-2 w-full justify-start text-sm font-semibold hover:text-status-red sm:order-1 sm:w-auto" @click="emit('leave')">
           <LogOut class="h-4 w-4" aria-hidden="true" />
           <span>Abandonar Gabinete</span>
-        </button>
+        </AppButton>
         <!-- Botão de Pronto para jogadores comuns -->
         <Toggle
           v-if="!isHost"
@@ -258,16 +255,10 @@ const handleShare = async (): Promise<void> => {
         </Toggle>
 
         <!-- Botão de Iniciar para o Host -->
-        <button v-if="isHost" type="button" aria-label="Iniciar disputa" :disabled="!canStart" @click="emit('start-game')"
-          class="order-1 min-h-11 w-full sm:order-2 sm:w-auto sm:min-w-48 px-6 py-3 rounded font-sans font-bold text-xs tracking-normal transition-all shadow-lg flex items-center justify-center gap-2"
-          :class="[
-            canStart
-              ? 'bg-gold hover:bg-gold-light text-paper-deep hover:shadow-gold/20 active:scale-95'
-              : 'bg-surface-elevated text-ink-subtle cursor-not-allowed border border-line'
-          ]">
+        <AppButton variant="gold" class="order-1 w-full px-6 text-xs sm:order-2 sm:w-auto sm:min-w-48" v-if="isHost" aria-label="Iniciar disputa" :disabled="!canStart" @click="emit('start-game')">
           <span>{{ canStart ? 'Iniciar partida' : playerList.length >= MIN_PLAYERS_TO_START
             ? 'Aguardando todos conectados e prontos…' : `Aguardando quórum (${playerList.length}/${MIN_PLAYERS_TO_START})…` }}</span>
-        </button>
+        </AppButton>
       </div>
     </div>
   </div>

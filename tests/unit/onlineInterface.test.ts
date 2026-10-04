@@ -1,11 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { shallowMount as baseShallowMount } from '@vue/test-utils';
 import GameNewsFeed from '@/components/online/GameNewsFeed.vue';
 import { nextTick } from 'vue';
 import GameBoard from '@/components/online/GameBoard.vue';
 import LobbyRoom from '@/components/online/LobbyRoom.vue';
 import { createInitialAuthoritativeState } from '@/game/engine/gameEngine';
 import type { GameState } from '@/game/models/gameState';
+
+// AppButton precisa ser renderizado de verdade para que os testes enxerguem os botões.
+const shallowMount = ((component: Parameters<typeof baseShallowMount>[0], options: Record<string, unknown> = {}) => {
+  const global = (options.global ?? {}) as { stubs?: Record<string, unknown> };
+  return baseShallowMount(component, { ...options, global: { ...global, stubs: { AppButton: false, ...global.stubs } } } as never);
+}) as typeof baseShallowMount;
 
 vi.mock('@/constants/gameConfig', async importOriginal => ({
   ...await importOriginal<typeof import('@/constants/gameConfig')>(), MIN_PLAYERS_TO_START: 2,

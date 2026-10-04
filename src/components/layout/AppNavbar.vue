@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppButton from '@/components/ui/AppButton.vue';
 import { GAME_NAME, GAME_NAME_FIRST_LINE, GAME_NAME_SECOND_LINE } from "@/constants/gameConfig";
 import { ref, watch } from 'vue';
 import { NAVIGATION_SECTIONS } from '@/constants/gameData';
@@ -33,11 +34,11 @@ const closeMenu = () => { if (menuOpen.value) { menuOpen.value = false; menuButt
         <a v-for="item in NAVIGATION_SECTIONS" :key="item.id" :href="`#${item.id}`" @click="handleNavigate(item.id, $event)" :aria-current="activeSectionId === item.id ? 'location' : undefined" class="rounded-lg px-3 py-3 text-xs whitespace-nowrap hover:bg-surface-elevated" :class="activeSectionId === item.id ? 'text-gold bg-gold/10' : 'text-ink-muted'">{{ item.label }}</a>
       </nav>
       <div class="flex shrink-0 items-center gap-1.5">
-        <button type="button" @click="toggleOnline" class="nav-action flex min-h-11 items-center gap-2 rounded-lg border px-3 text-xs font-semibold" :class="isOnlineActive ? 'border-line-gold text-gold-light hover:bg-surface' : 'border-gold bg-gold text-paper-deep hover:bg-gold-light'">
+        <AppButton :variant="isOnlineActive ? 'outline' : 'gold'" class="nav-action text-xs font-semibold" @click="toggleOnline">
           <BookOpen v-if="isOnlineActive" class="h-4 w-4" aria-hidden="true" /><ArrowUpRight v-else class="h-4 w-4" aria-hidden="true" />
           <span>{{ isOnlineActive ? 'Ver regras' : 'Jogar online' }}</span>
-        </button>
-        <button v-if="isInstallable" type="button" @click="installApp" class="hidden min-h-11 items-center gap-2 rounded-lg border border-line px-3 text-xs font-semibold sm:flex"><Download class="h-4 w-4" aria-hidden="true" />Instalar App</button>
+        </AppButton>
+        <AppButton variant="outline" class="hidden text-xs font-semibold sm:flex" v-if="isInstallable" @click="installApp"><Download class="h-4 w-4" aria-hidden="true" />Instalar App</AppButton>
         <button ref="menuButton" type="button" class="flex h-11 w-11 items-center justify-center rounded-lg border border-line-gold text-gold-light hover:border-gold hover:bg-gold/10 hover:text-gold transition-colors duration-150 lg:hidden" :aria-expanded="menuOpen" aria-controls="mobile-navigation" :aria-label="menuOpen ? 'Fechar menu' : 'Abrir menu'" @click="menuOpen = !menuOpen"><X v-if="menuOpen" class="h-5 w-5" aria-hidden="true" /><Menu v-else class="h-5 w-5" aria-hidden="true" /></button>
       </div>
     </div>
@@ -69,7 +70,7 @@ const closeMenu = () => { if (menuOpen.value) { menuOpen.value = false; menuButt
         </a>
       </div>
       <div v-if="isInstallable" class="mt-3.5 pt-3 border-t border-line/60">
-        <button type="button" @click="installApp" class="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-line-gold/40 bg-surface px-4 text-sm font-semibold text-gold-light hover:bg-surface-elevated hover:border-gold hover:text-gold transition-colors"><Download class="h-4 w-4" aria-hidden="true" /><span>Instalar Aplicativo Oficial</span></button>
+        <AppButton variant="outline" class="w-full border-line-gold/40 text-gold-light" @click="installApp"><Download class="h-4 w-4" aria-hidden="true" /><span>Instalar Aplicativo Oficial</span></AppButton>
       </div>
     </nav>
   </header>

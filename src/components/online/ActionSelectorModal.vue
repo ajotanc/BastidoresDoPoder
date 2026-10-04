@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppButton from '@/components/ui/AppButton.vue';
 import { playerAvatar } from "@/utils/playerProfile";
 import AppDialog from '@/components/ui/AppDialog.vue';
 import { ref, computed, watch } from 'vue';
@@ -240,14 +241,11 @@ const filteredActions = computed(() => {
             Disponível: <strong class="text-gold font-bold">C$ {{ myCoins }}</strong>
           </p>
         </div>
-        <button
-          type="button"
+        <AppButton variant="ghost" size="icon"
           @click="emit('close')"
-          aria-label="Fechar ações"
-          class="p-2 rounded-lg text-ink-muted hover:text-gold-light hover:bg-surface-hover border border-transparent hover:border-line transition-all focus-visible:outline-none flex-shrink-0 cursor-pointer"
-        >
+          aria-label="Fechar ações">
           <X class="w-5 h-5" aria-hidden="true" />
-        </button>
+        </AppButton>
       </div>
     </template>
 
@@ -267,7 +265,7 @@ const filteredActions = computed(() => {
       </div>
 
       <div class="space-y-3">
-        <Alert v-if="isMustImpeach" variant="destructive" size="sm">
+        <Alert v-if="isMustImpeach" variant="destructive">
           <AlertCircle class="h-4 w-4 shrink-0" />
           <AlertDescription>
             Com C$ 10 ou mais, você precisa declarar Impeachment Definitivo.
@@ -361,21 +359,15 @@ const filteredActions = computed(() => {
 
     <template #footer>
       <div class="flex items-center justify-end gap-3 w-full">
-        <button
-          type="button"
-          @click="emit('close')"
-          class="min-h-11 rounded-lg border border-line hover:border-line-gold/50 bg-surface/50 hover:bg-surface-elevated px-5 text-sm font-semibold text-ink-muted hover:text-ink transition-colors cursor-pointer"
-        >
+        <AppButton variant="outline" class="px-5 font-semibold"
+          @click="emit('close')">
           Cancelar
-        </button>
-        <button
-          type="button"
+        </AppButton>
+        <AppButton variant="gold" class="px-6"
           @click="handleConfirm"
-          :disabled="!selectedAction || (requiresTarget && !selectedTargetId)"
-          class="online-primary border border-gold hover:border-gold-light px-6 cursor-pointer"
-        >
+          :disabled="!selectedAction || (requiresTarget && !selectedTargetId)">
           Declarar no Plenário
-        </button>
+        </AppButton>
       </div>
     </template>
   </AppDialog>

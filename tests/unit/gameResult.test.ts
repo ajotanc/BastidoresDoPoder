@@ -66,7 +66,7 @@ describe('Resultado visível na mesa', () => {
     expect(sequence.attributes('aria-expanded')).toBe('false');
     await sequence.trigger('click');
     expect(sequence.attributes('aria-expanded')).toBe('true');
-    expect(wrapper.findAll('li').map(li => li.text())).toEqual([
+    expect(wrapper.findAll('li').map(li => li.findAll('p').at(-1)!.text())).toEqual([
       'Ana declarou Impeachment Definitivo contra Bruno.', 'Bruno perdeu Barão.', 'Bruno perdeu todos os apoios.',
     ]);
     expect(wrapper.text()).not.toContain('Jogada do turno anterior');

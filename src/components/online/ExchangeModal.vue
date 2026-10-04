@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppButton from '@/components/ui/AppButton.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import Card from '@/components/game/Card.vue';
 import { ref, computed, watch } from 'vue';
@@ -94,14 +95,11 @@ watch(() => props.isOpen, () => { selectedToReturn.value = []; });
     <!-- Rodapé -->
     <template #footer>
       <div class="flex justify-end w-full">
-        <button
-          type="button"
+        <AppButton variant="gold" class="w-full sm:w-auto px-6"
           :disabled="selectedToReturn.length !== 2"
-          @click="handleConfirm"
-          class="online-primary w-full sm:w-auto border border-gold hover:border-gold-light px-6 cursor-pointer"
-        >
+          @click="handleConfirm">
           Confirmar Devolução ao Baralho
-        </button>
+        </AppButton>
       </div>
     </template>
   </AppDialog>

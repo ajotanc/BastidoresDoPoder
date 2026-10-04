@@ -48,7 +48,7 @@ watch(
 <template>
   <AppDialog :is-open="isOpen && !!activeCard"
     :aria-label="activeCard ? `Carta ${activeCard.name}` : 'Visualizador de Carta'" :bg-image-src="activeCard?.characterSrc"
-    max-width-class="max-w-2xl" @close="closeCardLightbox">
+    max-width-class="max-w-3xl" @close="closeCardLightbox">
     <!-- Cabeçalho Fixo do Modal -->
     <template #header>
       <div v-if="activeCard" class="card-modal-header grid grid-cols-[40px_minmax(0,1fr)_44px] items-center gap-x-3 gap-y-3">
@@ -59,7 +59,7 @@ watch(
           <span class="block text-[11px] text-gold-muted">Visualização da carta</span>
           <h2 class="app-dialog-title mt-0.5">{{ isFlipped ? 'Verso' : activeCard.name }}</h2>
         </div>
-        <button type="button" @click="closeCardLightbox" class="online-icon-button self-start" aria-label="Fechar visualização"><X class="h-5 w-5" aria-hidden="true" /></button>
+        <AppButton variant="outline" size="icon" class="self-start" @click="closeCardLightbox" aria-label="Fechar visualização"><X class="h-5 w-5" aria-hidden="true" /></AppButton>
         <div class="col-span-3 flex flex-wrap items-center justify-between gap-2 border-t border-line/60 pt-2 text-xs text-ink-muted">
           <span>{{ isFlipped ? 'Verso padrão' : activeCard.category }}</span>
           <span class="text-gold-light">{{ isFlipped ? `${SUPPORT_CARDS_LENGTH} cartas do baralho` : activeCard.copies }}</span>
@@ -70,7 +70,7 @@ watch(
     <div v-if="activeCard" class="flex flex-col items-center justify-center py-4 gap-4">
       <Toggle
         :pressed="isFlipped"
-        class="relative block w-full max-w-[400px] cursor-pointer focus-visible:outline-none rounded bg-transparent border-0 p-0 select-none hover:bg-transparent data-[state=on]:bg-transparent"
+        class="relative block h-auto w-full max-w-[520px] min-w-0 cursor-pointer focus-visible:outline-none rounded bg-transparent border-0 p-0 select-none hover:bg-transparent data-[state=on]:bg-transparent"
         :aria-label="isFlipped ? 'Verso da carta exibido. Clique para ver a frente.' : 'Frente da carta exibida. Clique para ver o verso.'"
         :title="isFlipped ? 'Clique para ver a frente' : 'Clique para ver o verso'"
         @update:pressed="toggleFlip"
@@ -82,10 +82,10 @@ watch(
     <!-- Rodapé Fixo Separado do Scroll com as Mesmas Cores e Estilo -->
     <template #footer>
       <div v-if="activeCard" class="card-modal-actions grid grid-cols-2 gap-2">
-        <AppButton variant="secondary" size="sm" class="w-full" @click="toggleFlip">
+        <AppButton variant="secondary" size="sm" class="w-full !min-h-9 !py-1.5 text-xs" @click="toggleFlip">
           <RotateCw class="h-4 w-4 shrink-0" aria-hidden="true" /><span>{{ isFlipped ? 'Ver frente' : 'Ver verso' }}</span>
         </AppButton>
-        <AppButton variant="gold" size="sm" class="w-full" :disabled="isPrinting" :aria-label="isFlipped ? 'Imprimir verso' : 'Imprimir / Salvar PDF'" @click="printCard">
+        <AppButton variant="gold" size="sm" class="w-full !min-h-9 !py-1.5 text-xs" :disabled="isPrinting" :aria-label="isFlipped ? 'Imprimir verso' : 'Imprimir / Salvar PDF'" @click="printCard">
           <Printer class="h-4 w-4 shrink-0" aria-hidden="true" /><span>Imprimir</span>
         </AppButton>
       </div>

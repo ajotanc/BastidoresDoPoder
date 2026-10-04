@@ -14,7 +14,7 @@ import { ArrowDown, BookOpen } from '@lucide/vue';
       alt="Ilustração dos personagens em torno de uma mesa de cartas nos bastidores de Brasília"
       src="/images/hero-art.webp" loading="eager" />
     <div
-      class="absolute inset-0 z-[1] bg-gradient-to-r from-[#0d1721] via-[#0d1721ee] sm:via-[#0d1721b3] to-transparent pointer-events-none">
+      class="absolute inset-0 z-[1] bg-gradient-to-r from-[#0d1721f2] via-[#0d1721e6] sm:via-[#0d1721b3] to-[#0d172180] sm:to-transparent pointer-events-none">
     </div>
     <div
       class="absolute inset-0 z-[1] bg-gradient-to-t from-[#091117] via-transparent to-transparent pointer-events-none">
@@ -35,11 +35,11 @@ import { ArrowDown, BookOpen } from '@lucide/vue';
       </p>
 
       <div>
-        <span class="block text-xs uppercase tracking-[0.16em] text-gold-light font-bold">
-          Manual Completo · {{ MIN_PLAYERS_TO_START }} a {{ MAX_PLAYERS_PER_ROOM }} jogadores
+        <span class="block text-sm text-gold-light font-semibold">
+          Manual completo para {{ MIN_PLAYERS_TO_START }} a {{ MAX_PLAYERS_PER_ROOM }} jogadores
         </span>
-        <span class="block text-[0.75rem] text-gold-muted/80 tracking-wide">
-          Edição Oficial de Testes
+        <span class="block text-xs text-gold-muted/80">
+          Edição oficial de testes
         </span>
       </div>
 

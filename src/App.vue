@@ -12,6 +12,7 @@ import AppFooter from '@/components/layout/AppFooter.vue';
 import CardLightboxModal from '@/components/game/CardLightboxModal.vue';
 import CoinLightboxModal from '@/components/game/CoinLightboxModal.vue';
 import { Sonner } from '@/components/ui/sonner';
+import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Sparkles, Info } from '@lucide/vue';
 
@@ -27,15 +28,35 @@ const router = useRouter();
 const sectionIds = NAVIGATION_SECTIONS.map((s) => s.id);
 const { activeSectionId, setActiveSection } = useActiveSection(sectionIds);
 
+// Enquanto o chunk da próxima rota carrega, o layout já assume a rota de destino
+// e um indicador de carregamento ocupa o lugar do conteúdo, evitando mostrar a página anterior vazia.
+const pendingRouteName = ref<string | null>(null);
+const showSkeleton = ref(false);
+let skeletonTimer: ReturnType<typeof setTimeout> | undefined;
+const finishNavigation = (): void => {
+  clearTimeout(skeletonTimer);
+  pendingRouteName.value = null;
+  showSkeleton.value = false;
+};
+router.beforeEach((to, from) => {
+  if (to.path === from.path) return;
+  pendingRouteName.value = typeof to.name === 'string' ? to.name : null;
+  clearTimeout(skeletonTimer);
+  skeletonTimer = setTimeout(() => { showSkeleton.value = true; }, 120);
+});
+router.afterEach(finishNavigation);
+router.onError(finishNavigation);
+
 const isOnlineActive = computed(() => {
-  return route.name === 'online' || route.name === 'game';
+  const name = pendingRouteName.value ?? route.name;
+  return name === 'game' || name === 'room';
 });
 
 const handleToggleOnline = (): void => {
   if (isOnlineActive.value) {
     router.push('/');
   } else {
-    router.push('/online');
+    router.push('/game');
   }
 };
 
@@ -80,7 +101,7 @@ const handleNavbarNavigate = (sectionId: string): void => {
       ]"
     >
       <!-- Alerta de Atualização de Versão PWA -->
-      <Alert v-if="updateAvailable && !sessionActive" variant="warning" size="md" class="mb-4">
+      <Alert v-if="updateAvailable && !sessionActive" variant="warning" class="mb-4">
         <Sparkles class="h-4 w-4" />
         <AlertDescription>
           Uma nova versão está pronta. Ela será aplicada quando todas as abas do jogo forem fechadas e você abrir novamente.
@@ -88,16 +109,19 @@ const handleNavbarNavigate = (sectionId: string): void => {
       </Alert>
 
       <!-- Alerta de Mesa Ativa -->
-      <Alert v-if="sessionActive && !isOnlineActive && game.currentRoomCode" variant="gold" size="md" class="mb-4 justify-between">
+      <Alert v-if="sessionActive && !isOnlineActive && game.currentRoomCode" variant="gold" class="mb-4 justify-between">
         <div class="flex items-center gap-2.5">
           <Info class="h-4 w-4" />
           <AlertDescription>
             Sua mesa continua aberta.
           </AlertDescription>
         </div>
-        <RouterLink :to="`/game/${game.currentRoomCode}`" class="inline-flex min-h-11 items-center font-semibold text-gold hover:underline">Voltar à mesa</RouterLink>
+        <RouterLink :to="`/room/${game.currentRoomCode}`" class="inline-flex min-h-11 items-center font-semibold text-gold hover:underline">Voltar à mesa</RouterLink>
       </Alert>
-      <RouterView />
+      <div v-if="showSkeleton" class="flex justify-center pt-24">
+        <Spinner size="xl" variant="gold" label="Carregando…" />
+      </div>
+      <RouterView v-show="!showSkeleton" />
     </main>
 
     <!-- Rodapé (oculto no modo de jogo para foco total no tabuleiro) -->

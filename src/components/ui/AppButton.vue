@@ -4,8 +4,8 @@ import { cn } from '@/utils/cn';
 import { scrollToSection } from '@/utils/navigation';
 
 export interface Props {
-  variant?: 'primary' | 'gold' | 'outline' | 'ghost' | 'secondary' | 'transparent';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: 'primary' | 'gold' | 'outline' | 'ghost' | 'secondary' | 'transparent' | 'danger';
+  size?: 'sm' | 'md' | 'lg' | 'icon';
   href?: string;
   target?: string;
   type?: 'button' | 'submit' | 'reset';
@@ -57,6 +57,8 @@ const buttonClasses = computed(() => {
       'bg-surface-hover text-ink border border-line-subtle hover:bg-surface active:scale-[0.98]',
     ghost:
       'bg-transparent text-ink-muted hover:text-gold-light hover:bg-surface-elevated/60',
+    danger:
+      'bg-status-red text-paper-deep border border-status-red hover:bg-status-red/90 shadow-sm active:scale-[0.98]',
     transparent:
       'bg-transparent text-ink-muted hover:text-gold hover:bg-transparent border-0 border-transparent shadow-none active:scale-[0.98]',
   };
@@ -65,6 +67,7 @@ const buttonClasses = computed(() => {
     sm: 'text-sm min-h-11 px-3 py-2.5',
     md: 'text-sm min-h-11 px-3 py-2.5',
     lg: 'text-sm min-h-11 px-3 py-2.5',
+    icon: 'h-11 w-11 shrink-0 p-0 text-sm',
   };
 
   return cn(base, variants[props.variant], sizes[props.size], props.class);

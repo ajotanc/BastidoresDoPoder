@@ -20,7 +20,7 @@ export function buildResultSummary(state: GameState): ResultSummary | null {
   const end = state.finishedAt ?? events.find(event => event.type === 'GAME_FINISHED')?.timestamp ?? events[0]?.timestamp ?? 0;
   return { gameId: state.gameId, roomCode: state.roomCode, winnerName: winner.name, turns: state.turn,
     durationSeconds: start === undefined ? null : Math.max(0, Math.round((end - start - (state.recoveryPausedMs ?? 0)) / 1000)),
-    decisivePlay: final?.message.replaceAll('**', '') ?? 'Os demais gabinetes perderam seus apoios. Restou apenas o gabinete vencedor. Os demais gabinetes perderam seus apoios. Restou apenas o gabinete vencedor. asdsadasdas',
+    decisivePlay: final?.message.replaceAll('**', '') ?? 'Os demais gabinetes perderam seus apoios. Restou apenas o gabinete vencedor.',
     supports: winner.activeSupportCount, coins: winner.coins, finishedAt: end };
 }
 export function durationLabel(seconds: number | null): string {

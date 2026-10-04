@@ -5,7 +5,7 @@ import { BOT_DIFFICULTIES, BOT_DIFFICULTY_TAG_CLASSES } from '@/game/bots/botDif
 import { loadBotDifficulty, saveBotDifficulty, loadBotsEnabled, saveBotsEnabled } from '@/utils/botPreferences';
 import { createPlayerName, characterGender, type PlayerGender } from '@/utils/playerName';
 import { loadProfile, saveProfile, prepareAvatar } from "@/utils/playerProfile";
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { Switch } from '@/components/ui/switch';
 import DiscordIcon from '@/components/ui/icons/Discord.vue';
 import { ACTION_TIMEOUT_SECONDS, RESPONSE_TIMEOUT_SECONDS, DEFAULT_BOT_COUNT, MAX_BOTS_PER_ROOM, MAX_RECONNECT_ATTEMPTS } from '@/constants/gameConfig';
@@ -19,6 +19,7 @@ import LobbyRoom from './LobbyRoom.vue';
 import GameBoard from './GameBoard.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import AppButton from '@/components/ui/AppButton.vue';
+import AppInput from '@/components/ui/AppInput.vue';
 import AppSectionHeader from '@/components/ui/AppSectionHeader.vue';
 import dayjs from 'dayjs';
 
@@ -116,6 +117,13 @@ watch(
   { immediate: true }
 );
 
+// Ao entrar na mesa (lobby ou partida) a página vinha do formulário, já rolada; volta ao topo.
+watch(mode, (current, previous) => {
+  if ((current === 'lobby' || current === 'playing') && previous !== current) {
+    void nextTick(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }));
+  }
+});
+
 watch(currentRoomCode, (newCode) => {
   if (newCode) {
     emit('room-entered', newCode);
@@ -130,18 +138,6 @@ onMounted(() => {
   if (props.initialRoomId) {
     inputRoomCode.value = props.initialRoomId.toUpperCase();
     activeTab.value = 'join';
-    return;
-  }
-
-  // Lê código da URL se vier como #jogar/XXXX ou #online/XXXX
-  const hash = window.location.hash;
-  if (hash.includes('jogar/') || hash.includes('online/')) {
-    const parts = hash.split('/');
-    const code = parts[1];
-    if (code) {
-      inputRoomCode.value = code.toUpperCase();
-      activeTab.value = 'join';
-    }
   }
 });
 
@@ -212,7 +208,7 @@ const handleJoin = async (): Promise<void> => {
     </Alert>
 
     <!-- Alerta de Recuperação de Sessão -->
-    <Alert v-if="recoveryWarning" variant="warning" size="sm">
+    <Alert v-if="recoveryWarning" variant="warning">
       <AlertTriangle class="h-4 w-4 shrink-0" aria-hidden="true" />
       <div class="min-w-0 flex-1">
         <AlertTitle>Aviso de recuperação</AlertTitle>
@@ -224,25 +220,21 @@ const handleJoin = async (): Promise<void> => {
     <Alert
       v-if="errorMessage"
       variant="destructive"
-      size="sm"
       class="shadow-card animate-fadeIn justify-between gap-3 border-status-red/40 bg-status-red-bg/95"
     >
       <div class="flex items-center gap-2.5 min-w-0">
         <AlertCircle class="h-4 w-4 text-status-red shrink-0" aria-hidden="true" />
         <span class="text-xs font-medium text-status-red leading-normal">{{ errorMessage }}</span>
       </div>
-      <button
-        type="button"
-        @click="clearError"
-        class="alert-action text-xs font-semibold text-status-red/80 hover:text-status-red hover:underline shrink-0 transition-colors"
-      >
+      <AppButton variant="ghost" class="alert-action text-xs font-semibold shrink-0 text-status-red/80 hover:text-status-red"
+        @click="clearError">
         Dispensar
-      </button>
+      </AppButton>
     </Alert>
 
     <div v-if="mode === 'idle' || mode === 'creating' || mode === 'joining'"
-      class="online-entry pt-12 mx-auto max-w-xl space-y-6 sm:space-y-8">
-      <AppSectionHeader label="O poder está à mesa" title="Seu gabinete. Suas alianças."
+      class="online-entry pt-12 mx-auto max-w-xl space-y-6 sm:space-y-8 lg:max-w-4xl">
+      <AppSectionHeader title="Seu gabinete. Suas alianças."
         description="Reúna seus amigos, guarde seus segredos e dispute o poder." />
       <section v-if="savedGames.length" class="space-y-3 rounded border border-gold/40 bg-surface p-4 sm:p-6" aria-label="Partidas salvas">
         <h2 class="font-serif font-bold text-gold-light">Sua mesa está salva</h2>
@@ -273,35 +265,33 @@ const handleJoin = async (): Promise<void> => {
         </div>
         <form @submit.prevent="activeTab === 'create' ? handleCreate() : handleJoin()"
           :aria-busy="isSubmitting">
-          <div class="space-y-6 px-4 py-6 sm:px-7 sm:py-7">
-          <div class="space-y-2">
+          <div class="space-y-6 px-4 py-6 sm:px-7 sm:py-7 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10 lg:gap-y-6 lg:space-y-0">
+          <div class="space-y-2 lg:col-start-1">
             <label for="player-name" class="form-label">Seu codinome político</label>
             <div class="flex items-center gap-2">
-              <input id="player-name" v-model="inputName" type="text" maxlength="60" autocomplete="nickname"
-                placeholder="Como vão chamar você?" required :disabled="isSubmitting" class="online-input flex-1" />
-              <button type="button"
-                class="online-icon-button random-name-button border border-gold/40 bg-surface-elevated text-gold"
+              <AppInput id="player-name" v-model="inputName" type="text" maxlength="60" autocomplete="nickname"
+                placeholder="Como vão chamar você?" required :disabled="isSubmitting" class="flex-1" />
+              <AppButton variant="outline" size="icon" class="random-name-button border-gold/40 text-gold"
                 :disabled="isSubmitting" aria-label="Gerar outro nome" title="Gerar outro nome"
                 @click="generatePlayerName">
                 <Shuffle class="h-4 w-4" aria-hidden="true" />
-              </button>
-              <button type="button"
-                class="online-icon-button random-name-button border border-gold/40 bg-surface-elevated text-gold"
+              </AppButton>
+              <AppButton variant="outline" size="icon" class="random-name-button border-gold/40 text-gold"
                 :disabled="isSubmitting" :aria-label="`Gênero: ${genderLabel}. Alterar filtro`"
                 :title="`Gênero: ${genderLabel}. Alternar todos, masculino e feminino`" @click="cycleGender">
                 <component :is="gender === 'male' ? Mars : gender === 'female' ? Venus : Users" class="h-4 w-4"
                   aria-hidden="true" />
-              </button>
+              </AppButton>
             </div>
             <p class="text-xs text-ink-muted" aria-live="polite">Nomes e personagens: {{ genderLabel }}</p>
           </div>
-          <div v-if="activeTab === 'join'" class="space-y-2">
+          <div v-if="activeTab === 'join'" class="space-y-2 lg:col-start-1">
             <label for="room-code" class="form-label">Código da sala</label>
-            <input id="room-code" v-model="inputRoomCode" type="text" maxlength="6" placeholder="0000" required
+            <AppInput id="room-code" v-model="inputRoomCode" type="text" maxlength="6" placeholder="0000" required
               autocomplete="off" autocapitalize="characters" :spellcheck="false" :disabled="isSubmitting"
-              class="online-input uppercase tracking-[.2em] text-gold" />
+              class="uppercase tracking-[.2em] text-gold" />
           </div>
-          <fieldset :disabled="isSubmitting || isPreparingPhoto" class="min-w-0 space-y-3 border-t border-line/70 pt-5">
+          <fieldset :disabled="isSubmitting || isPreparingPhoto" class="min-w-0 space-y-3 border-t border-line/70 pt-5 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:border-t-0 lg:pt-0">
             <legend class="sr-only">Escolha seu perfil</legend>
             <h3 class="flex items-center gap-2 font-serif text-base font-bold text-gold-light">
               <UserRound class="size-4 shrink-0 text-gold-muted" aria-hidden="true" />Escolha seu perfil
@@ -323,22 +313,20 @@ const handleJoin = async (): Promise<void> => {
               <input ref="photoInput" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only"
                 aria-label="Enviar foto de perfil" @change="uploadPhoto" />
               <div class="mt-3 flex gap-2">
-                <button type="button"
-                  class="profile-photo-button flex min-h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded border border-gold/40 bg-gold/10 text-gold-light hover:bg-gold/20"
+                <AppButton variant="outline" class="profile-photo-button min-w-0 flex-1 border-gold/40 bg-gold/10 text-gold-light hover:bg-gold/20"
                   @click="photoInput?.click()">
                   <Upload class="h-4 w-4 shrink-0" aria-hidden="true" />
                   {{ isPreparingPhoto ? 'Preparando…' : avatarImage ? 'Trocar foto' : 'Escolher foto' }}
-                </button>
-                <button v-if="avatarImage" type="button"
-                  class="online-icon-button remove-photo-button min-h-11 border border-status-red text-status-red hover:bg-status-red/10 hover:text-status-red"
+                </AppButton>
+                <AppButton variant="outline" size="icon" class="remove-photo-button border-status-red text-status-red hover:bg-status-red/10" v-if="avatarImage"
                   aria-label="Remover foto" title="Remover foto" @click="avatarImage = undefined">
                   <Trash2 class="h-4 w-4" aria-hidden="true" />
-                </button>
+                </AppButton>
               </div>
               <p v-if="!avatarImage" class="mt-2 text-center text-[11px] text-ink-subtle">JPG, PNG ou WebP · até 10 MB
               </p>
             </div>
-            <Alert v-if="profileError" variant="destructive" size="sm">
+            <Alert v-if="profileError" variant="destructive">
               <AlertCircle class="h-4 w-4" />
               <AlertDescription>{{ profileError }}</AlertDescription>
             </Alert>
@@ -352,7 +340,7 @@ const handleJoin = async (): Promise<void> => {
               </button>
             </div>
           </fieldset>
-          <fieldset v-if="activeTab === 'create'" class="min-w-0 space-y-1 border-t border-line/70 pt-5"
+          <fieldset v-if="activeTab === 'create'" class="min-w-0 space-y-1 border-t border-line/70 pt-5 lg:col-start-1"
             :disabled="isSubmitting">
             <legend class="sr-only">Configurações da partida</legend>
             <div class="flex items-center gap-3 pb-2">
@@ -374,9 +362,9 @@ const handleJoin = async (): Promise<void> => {
                     class="form-label"><span>Ação<span class="sr-only">
                         (segundos)</span></span></label>
                   <div class="relative">
-                    <input id="action-seconds" v-model.number="actionSeconds" type="number" min="1"
+                    <AppInput id="action-seconds" v-model.number="actionSeconds" type="number" min="1"
                       :max="MAX_ROOM_SECONDS" step="1" inputmode="numeric" :placeholder="String(ACTION_TIMEOUT_SECONDS)"
-                      class="online-input pr-10 font-semibold tabular-nums" aria-label="Tempo da ação (segundos)"
+                      class="pr-10 font-semibold tabular-nums" aria-label="Tempo da ação (segundos)"
                       aria-describedby="action-time-help timing-error" />
                     <span
                       class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-gold-muted"
@@ -390,10 +378,10 @@ const handleJoin = async (): Promise<void> => {
                     class="form-label"><span>Resposta<span class="sr-only">
                         (segundos)</span></span></label>
                   <div class="relative">
-                    <input id="response-seconds" v-model.number="responseSeconds" type="number" min="1"
+                    <AppInput id="response-seconds" v-model.number="responseSeconds" type="number" min="1"
                       :max="MAX_ROOM_SECONDS" step="1" inputmode="numeric"
                       :placeholder="String(RESPONSE_TIMEOUT_SECONDS)"
-                      class="online-input pr-10 font-semibold tabular-nums" aria-label="Tempo da resposta (segundos)"
+                      class="pr-10 font-semibold tabular-nums" aria-label="Tempo da resposta (segundos)"
                       aria-describedby="response-time-help timing-error" />
                     <span
                       class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-gold-muted"
@@ -405,7 +393,7 @@ const handleJoin = async (): Promise<void> => {
               </div>
               <p class="text-xs leading-relaxed text-ink-muted">Deixe em branco para usar o padrão. Respostas incluem
                 bloqueios, contestações e escolhas de cartas.</p>
-              <Alert v-if="timingError" id="timing-error" variant="destructive" size="sm">
+              <Alert v-if="timingError" id="timing-error" variant="destructive">
                 <AlertCircle class="h-4 w-4" />
                 <AlertDescription>{{ timingError }}</AlertDescription>
               </Alert>
@@ -432,9 +420,9 @@ const handleJoin = async (): Promise<void> => {
                     <p id="bot-count-help" class="text-xs leading-relaxed text-ink-subtle">De 1 a {{ MAX_BOTS_PER_ROOM }} bots.
                       As vagas livres ficam para seus amigos.</p>
                   </div>
-                  <input id="bot-count" v-model.number="botCount" type="number" min="1" :max="MAX_BOTS_PER_ROOM"
+                  <AppInput id="bot-count" v-model.number="botCount" type="number" min="1" :max="MAX_BOTS_PER_ROOM"
                     step="1" required inputmode="numeric" :disabled="isSubmitting" :aria-invalid="!validBotCount"
-                    aria-describedby="bot-count-help" class="online-input text-center font-semibold tabular-nums" />
+                    aria-describedby="bot-count-help" class="text-center font-semibold tabular-nums" />
                 </div>
                 <div class="pt-1">
                   <div class="flex items-center justify-between gap-3">
@@ -444,12 +432,13 @@ const handleJoin = async (): Promise<void> => {
                   </div>
                   <Slider v-model="difficultyStep" :min="0" :max="BOT_DIFFICULTIES.length - 1" :step="1" :disabled="isSubmitting"
                     label="Nível dos bots" :value-text="selectedDifficulty.label" class="mt-3" />
-                  <div class="relative mx-3 h-5 text-xs" aria-hidden="true">
-                    <span v-for="(level, index) in BOT_DIFFICULTIES" :key="level.value"
-                      class="absolute top-0 -translate-x-1/2 whitespace-nowrap"
+                  <div class="relative mx-3 h-5 text-xs">
+                    <AppButton v-for="(level, index) in BOT_DIFFICULTIES" :key="level.value" variant="transparent" tabindex="-1"
+                      :disabled="isSubmitting" :aria-pressed="level.value === selectedDifficulty.value" @click="difficultyStep = [index]"
+                      class="absolute top-0 -translate-x-1/2 !min-h-0 !p-0 text-xs font-normal whitespace-nowrap"
                       :style="{ left: `${index / (BOT_DIFFICULTIES.length - 1) * 100}%` }"
-                      :class="level.value === selectedDifficulty.value ? 'font-semibold text-gold' : 'text-ink-subtle'">{{
-                      level.label }}</span>
+                      :class="level.value === selectedDifficulty.value ? '!font-semibold !text-gold' : '!text-ink-subtle'">{{
+                      level.label }}</AppButton>
                   </div>
                   <p class="mt-3 min-h-10 text-xs leading-relaxed text-ink-muted">{{ selectedDifficulty.description }}
                   </p>
@@ -464,7 +453,7 @@ const handleJoin = async (): Promise<void> => {
               <div class="flex min-h-11 items-center gap-3">
                 <label for="enable-discord" class="min-w-0 flex-1 cursor-pointer">
                   <span id="discord-label" class="form-label">Ativar conversa no Discord</span>
-                  <span id="discord-help" class="mt-1 block text-xs leading-relaxed text-ink-muted">Crie uma sala de voz para conversar durante a partida. O anfitrião conecta sua conta Discord.</span>
+                  <span id="discord-help" class="mt-1 block truncate text-xs leading-relaxed text-ink-muted">Sala de voz para conversar durante a partida.</span>
                 </label>
                 <Switch id="enable-discord" v-model:checked="discordEnabled" :disabled="isSubmitting"
                   aria-labelledby="discord-label" aria-describedby="discord-help" />
@@ -483,22 +472,20 @@ const handleJoin = async (): Promise<void> => {
                 <p class="mt-1 break-words text-sm font-semibold text-ink" aria-live="polite">{{ inputName.trim() || 'Informe seu nome' }}</p>
               </div>
             </div>
-            <button type="submit"
+            <AppButton variant="gold" class="w-full" type="submit"
               :disabled="!inputName.trim() || (activeTab === 'create' && (!!timingError || (playAgainstBots && !validBotCount))) || (activeTab === 'join' && !inputRoomCode.trim()) || isSubmitting || isPreparingPhoto"
-              class="online-primary w-full"
               :aria-label="activeTab === 'create' ? 'Criar Nova Partida Online' : 'Entrar na Sala P2P'">
               <component :is="activeTab === 'create' ? PlusCircle : LogIn" v-if="!isSubmitting" class="size-[18px]" aria-hidden="true" />
               <span>{{ isSubmitting ? 'Conectando…' : activeTab === 'create' ? 'Criar minha sala' : 'Entrar na sala'
                 }}</span>
-            </button>
+            </AppButton>
             <p class="text-center text-xs leading-relaxed text-ink-muted">{{ activeTab === 'create' ? 'Crie a sala e convide seus amigos para a mesa.' : 'Entre com o código recebido no convite.' }}</p>
           </div>
         </form>
       </div>
-      <div class="text-center"><button type="button" @click="emit('back-to-manual')"
-          class="inline-flex min-h-11 items-center gap-2 text-sm text-ink-muted hover:text-gold">
+      <div class="text-center"><AppButton variant="transparent" class="gap-2 font-normal text-ink-muted hover:text-gold" @click="emit('back-to-manual')">
           <ArrowLeft class="h-4 w-4" aria-hidden="true" />Consultar regras
-        </button></div>
+        </AppButton></div>
     </div>
 
     <!-- TELA 2: LOBBY DA SALA -->

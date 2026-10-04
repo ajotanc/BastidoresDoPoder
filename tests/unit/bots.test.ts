@@ -26,7 +26,7 @@ describe('Bots: cadastro e limites', () => {
     const state = addBots(initial(), 2);
     const bots = Object.values(state.publicState.players).filter(p => p.isBot);
     expect(bots).toHaveLength(2);
-    expect(bots.every(p => p.isReady && p.isConnected && p.name.endsWith('(Bot)'))).toBe(true);
+    expect(bots.every(p => p.isReady && p.isConnected && p.isBot === true)).toBe(true);
     expect(executeCommand({ ...state, preferredFirstPlayerId: 'host' }, { type: 'START_GAME', payload: {} }, 'host', 'start').rejection).toBeUndefined();
   });
   it.each([-1, 1.5, NaN, Infinity, MAX_BOTS_PER_ROOM + 1])('rejeita quantidade inválida %s', count => {

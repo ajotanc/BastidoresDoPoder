@@ -30,9 +30,9 @@ const description = computed(() => props.conversation?.status === 'loading' ? 'P
     <a v-if="ready" :href="safeUrl" target="_blank" rel="noopener noreferrer" class="online-icon-button shrink-0 text-gold-light" :aria-label="iconLabel" :title="iconLabel">
       <Discord class="size-5" />
     </a>
-    <button v-else type="button" :disabled="!retryAllowed" @click="emit('retry')" class="online-icon-button shrink-0 disabled:opacity-50" :aria-label="iconLabel" :title="iconLabel">
+    <AppButton variant="outline" size="icon" class="shrink-0" v-else :disabled="!retryAllowed" @click="emit('retry')" :aria-label="iconLabel" :title="iconLabel">
       <Discord class="size-5" :class="{ 'motion-safe:animate-pulse': conversation.status === 'loading' }" />
-    </button>
+    </AppButton>
   </template>
   <aside v-else-if="conversation" class="conversation-panel relative overflow-hidden rounded border border-line bg-surface shadow-card" aria-label="Conversa da mesa">
     <div class="relative flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-5 sm:py-5">

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AppButton from '@/components/ui/AppButton.vue';
+import PlayerName from '@/components/online/PlayerName.vue';
 import { useGameSounds } from '@/composables/useGameSounds';
 import { useVictoryCelebration } from '@/composables/useVictoryCelebration';
 import { Volume2, VolumeX, ImageDown } from '@lucide/vue';
@@ -15,6 +17,7 @@ import Card from '@/components/game/Card.vue';
 import { ref, computed, watch } from 'vue';
 import type { RoleCard, RoleSlug } from '@/types/game';
 import type { GameState, PrivatePlayerView, PublicPlayerState } from '@/game/models/gameState';
+import { copyText } from '@/utils/clipboard';
 import { DEFAULT_GAME_SETTINGS } from '@/game/models/gameState';
 import type { ActionIntent, BlockIntent } from '@/game/models/commands';
 import { useGameTimer } from '@/composables/useGameTimer';
@@ -211,9 +214,8 @@ const copiedLinkNotice = ref(false);
 
 const copyGameLink = async (): Promise<void> => {
   try {
-    if (typeof window !== 'undefined' && window.navigator?.clipboard) {
-      const shareUrl = `${window.location.origin}/game/${props.gameState.roomCode}`;
-      await window.navigator.clipboard.writeText(shareUrl);
+    const shareUrl = `${window.location.origin}/room/${props.gameState.roomCode}`;
+    if (await copyText(shareUrl)) {
       copiedLinkNotice.value = true;
       window.setTimeout(() => {
         copiedLinkNotice.value = false;
@@ -304,38 +306,40 @@ async function generateStoryPreview(): Promise<void> {
             :title="sounds.enabled.value ? 'Desativar sons' : 'Ativar sons'" @update:pressed="sounds.toggle">
             <component :is="sounds.enabled.value ? Volume2 : VolumeX" class="h-4 w-4" aria-hidden="true" />
           </Toggle>
-          <button v-if="isDeveloper" type="button" class="online-icon-button" :disabled="isGeneratingPreview"
+          <AppButton variant="transparent" size="icon" v-if="isDeveloper" :disabled="isGeneratingPreview"
             :title="isGeneratingPreview ? 'Gerando Stories...' : 'Gerar imagem do Stories (Preview)'"
             :aria-label="isGeneratingPreview ? 'Gerando Stories...' : 'Gerar imagem do Stories'"
             @click="generateStoryPreview">
             <Spinner v-if="isGeneratingPreview" size="sm" aria-hidden="true" />
             <ImageDown v-else class="h-4 w-4" aria-hidden="true" />
-          </button>
+          </AppButton>
           <DiscordConversation v-if="gameState.discordConversation" :conversation="gameState.discordConversation"
             :can-retry="isHost" @retry="emit('retry-conversation')" compact />
-          <button type="button" @click="copyGameLink" class="online-icon-button"
+          <AppButton variant="transparent" size="icon" @click="copyGameLink"
             :title="copiedLinkNotice ? 'Link copiado' : 'Copiar link direto da partida'"
             :aria-label="copiedLinkNotice ? 'Link copiado' : 'Copiar link direto da partida'">
             <Check v-if="copiedLinkNotice" class="h-4 w-4 text-status-green" aria-hidden="true" />
             <Copy v-else class="h-4 w-4" aria-hidden="true" />
-          </button>
-          <button type="button" @click="emit('leave')" class="online-icon-button" title="Abandonar partida"
+          </AppButton>
+          <AppButton variant="transparent" size="icon" @click="emit('leave')" title="Abandonar partida"
             aria-label="Sair">
             <LogOut class="h-4 w-4" aria-hidden="true" />
-          </button>
+          </AppButton>
         </div>
       </div>
       <!-- Linhas de separação entre Turno e Jogador Ativo -->
-      <div class="grid grid-cols-2 divide-x divide-line">
-        <div class="p-3.5 sm:p-4 flex flex-col justify-center">
+      <div class="grid grid-cols-12 divide-x divide-line">
+        <div class="col-span-4 p-3.5 sm:p-4 flex flex-col justify-center">
           <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gold-muted">Rodada</span>
           <span class="font-serif text-sm sm:text-base font-bold text-gold-light">Turno {{ gameState.turn }}</span>
         </div>
-        <div class="p-3.5 sm:p-4 flex flex-col justify-center min-w-0">
+        <div class="col-span-8 p-3.5 sm:p-4 flex flex-col justify-center min-w-0">
           <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-ink-muted truncate">{{
             isFinished ? 'Resultado final' : isMyTurn ? 'Sua vez de decidir' : 'No comando da rodada' }}</span>
-          <strong class="font-serif text-sm sm:text-base font-bold text-ink break-words block">{{ isFinished ?
-            winner?.name ?? 'Sem vencedor' : activePlayer?.name }}</strong>
+          <strong class="font-serif text-sm sm:text-base font-bold text-ink break-words block">
+            <PlayerName :player="isFinished ? winner : activePlayer"
+              :fallback="isFinished ? 'Sem vencedor' : undefined" />
+          </strong>
         </div>
       </div>
       <!-- Linha de separação e contagem regressiva integrada -->
@@ -394,7 +398,7 @@ async function generateStoryPreview(): Promise<void> {
           </div>
         </div>
 
-        <Alert v-if="respondingPlayer && !isMyResponse" variant="secondary" size="sm">
+        <Alert v-if="respondingPlayer && !isMyResponse" variant="secondary">
           <Clock class="h-4 w-4" />
           <AlertDescription>
             Aguardando deliberação de <strong>{{ respondingPlayer.name }}</strong> na ordem da mesa.
@@ -411,15 +415,14 @@ async function generateStoryPreview(): Promise<void> {
             <span>Você desconfia dessa alegação política?</span>
           </div>
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-            <button v-if="pending.sourcePlayerId !== myPlayerId" type="button" @click="emit('declare-challenge', false)"
-              class="flex-1 py-3 px-4 rounded bg-status-red hover:bg-status-red/90 text-paper-deep font-sans font-black text-xs tracking-normal shadow-lg flex items-center justify-center gap-2 transform active:scale-95 transition-all">
+            <AppButton variant="danger" class="flex-1 text-xs" v-if="pending.sourcePlayerId !== myPlayerId"
+              @click="emit('declare-challenge', false)">
               <Flame class="w-4 h-4" aria-hidden="true" />
               <span>Contestar Alegação (Fake News!)</span>
-            </button>
-            <button type="button" @click="emit('pass-response')"
-              class="py-3 px-5 rounded bg-surface-elevated hover:bg-surface-hover border border-line text-xs font-semibold text-ink-muted hover:text-ink transition-colors text-center">
+            </AppButton>
+            <AppButton variant="secondary" class="text-xs font-semibold" @click="emit('pass-response')">
               Passar / Permitir
-            </button>
+            </AppButton>
           </div>
         </div>
 
@@ -429,14 +432,14 @@ async function generateStoryPreview(): Promise<void> {
             Você tem direito a declarar bloqueio em sua defesa:
           </p>
           <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap">
-            <button v-for="role in possibleBlockRoles" :key="role" type="button" @click="handleDeclareBlock(role)"
-              class="w-full min-h-11 px-4 py-2.5 rounded bg-gold hover:bg-gold-light text-paper-deep font-sans font-bold text-xs tracking-normal transition-all shadow-xs sm:w-auto">
+            <AppButton variant="gold" class="w-full text-xs sm:w-auto" v-for="role in possibleBlockRoles" :key="role"
+              @click="handleDeclareBlock(role)">
               Bloquear como {{ getRoleDisplayName(role) }}
-            </button>
-            <button type="button" @click="emit('pass-response')"
-              class="w-full min-h-11 px-4 py-2.5 rounded bg-surface-elevated hover:bg-surface-hover border border-line text-xs font-semibold text-ink-muted hover:text-ink transition-colors sm:w-auto">
+            </AppButton>
+            <AppButton variant="secondary" class="w-full text-xs font-semibold sm:w-auto"
+              @click="emit('pass-response')">
               Não Bloquear
-            </button>
+            </AppButton>
           </div>
         </div>
 
@@ -447,16 +450,14 @@ async function generateStoryPreview(): Promise<void> {
             Contestar a alegação de defesa do bloqueador?
           </p>
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-            <button v-if="pending.blockedByPlayerId !== myPlayerId" type="button"
-              @click="emit('declare-challenge', true)"
-              class="flex-1 py-3 px-4 rounded bg-status-red hover:bg-status-red/90 text-paper-deep font-sans font-black text-xs tracking-normal shadow-lg flex items-center justify-center gap-2 transform active:scale-95 transition-all">
+            <AppButton variant="danger" class="flex-1 text-xs" v-if="pending.blockedByPlayerId !== myPlayerId"
+              @click="emit('declare-challenge', true)">
               <Flame class="w-4 h-4" aria-hidden="true" />
               <span>Contestar Bloqueio (Fake News!)</span>
-            </button>
-            <button type="button" @click="emit('pass-response')"
-              class="py-3 px-5 rounded bg-surface-elevated hover:bg-surface-hover border border-line text-xs font-semibold text-ink-muted hover:text-ink transition-colors text-center">
+            </AppButton>
+            <AppButton variant="secondary" class="text-xs font-semibold" @click="emit('pass-response')">
               Aceitar Bloqueio
-            </button>
+            </AppButton>
           </div>
         </div>
       </div>
@@ -474,11 +475,10 @@ async function generateStoryPreview(): Promise<void> {
           </p>
         </div>
 
-        <button type="button" @click="isActionModalOpen = true"
-          class="w-full sm:w-auto px-6 sm:px-8 py-3.5 rounded bg-gold hover:bg-gold-light text-paper-deep font-sans font-black text-xs sm:text-sm tracking-normal shadow-lg hover:shadow-gold/30 transition-all transform active:scale-95 flex items-center justify-center gap-2.5 shrink-0">
+        <AppButton variant="gold" class="w-full px-6 sm:w-auto sm:px-8 shrink-0" @click="isActionModalOpen = true">
           <span>Escolher Ação do Turno</span>
           <Gavel class="w-4 h-4" aria-hidden="true" />
-        </button>
+        </AppButton>
       </div>
 
       <!-- Caso C: Sessão em Andamento aguardando outro jogador -->
@@ -523,7 +523,7 @@ async function generateStoryPreview(): Promise<void> {
       </div>
 
       <!-- Suas Cartas de Apoio: Em Mobile 2 colunas lado a lado! Perfeito para caber na tela sem rolagem -->
-      <Alert v-if="privateView?.searchResultNotice" variant="warning" size="sm">
+      <Alert v-if="privateView?.searchResultNotice" variant="warning">
         <Info class="h-4 w-4" />
         <AlertDescription>
           {{ privateView.searchResultNotice }}
@@ -594,14 +594,23 @@ async function generateStoryPreview(): Promise<void> {
           ]">
           <!-- Cabeçalho do Oponente -->
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex flex-col items-start gap-2 min-w-0">
-              <div
-                class="w-8 h-8 rounded bg-surface-elevated border border-gold/40 flex items-center justify-center overflow-hidden shrink-0">
-                <img :src="playerAvatar(opp)" :alt="opp.name" class="w-full h-full object-cover" loading="lazy"
-                  onerror="this.src='/images/icons/guide.webp'" />
+            <div class="flex flex-1 flex-col items-start gap-2">
+              <div class="flex items-center justify-between">
+                <div
+                  class="w-8 h-8 rounded bg-surface-elevated border border-gold/40 flex items-center justify-center overflow-hidden shrink-0">
+                  <img :src="playerAvatar(opp)" :alt="opp.name" class="w-full h-full object-cover" loading="lazy"
+                    onerror="this.src='/images/icons/guide.webp'" />
+                </div>
+                <!-- Moedas do Oponente -->
+                <Tag variant="dark" size="sm" class="shrink-0 gap-1 text-gold font-bold">
+                  <Coins class="w-3.5 h-3.5 text-gold" aria-hidden="true" />
+                  <span>C$ {{ opp.coins }}</span>
+                </Tag>
               </div>
               <div class="min-w-0">
-                <h3 class="w-full font-semibold text-sm text-ink break-words leading-relaxed">{{ opp.name }}</h3>
+                <h3 class="w-full font-semibold text-sm text-ink break-words leading-relaxed">
+                  <PlayerName :player="opp" />
+                </h3>
                 <span v-if="!opp.isConnected && opp.isAlive && gameState.phase !== 'FINISHED'"
                   class="block text-xs text-status-red">Reconectando…</span>
                 <span v-if="!opp.isAlive || (!opp.avatarImage && opp.avatarSlug)"
@@ -610,17 +619,11 @@ async function generateStoryPreview(): Promise<void> {
                 </span>
               </div>
             </div>
-
-            <!-- Moedas do Oponente -->
-            <Tag variant="dark" size="sm" class="shrink-0 gap-1 text-gold font-bold">
-              <Coins class="w-3.5 h-3.5 text-gold" aria-hidden="true" />
-              <span>C$ {{ opp.coins }}</span>
-            </Tag>
           </div>
 
           <div class="mt-auto pt-3 border-t border-line/40 space-y-2">
             <p class="text-xs text-ink-muted">{{ opp.activeSupportCount }} {{ opp.activeSupportCount === 1 ? 'apoio ativo' : 'apoios ativos' }}</p>
-            <div class="grid max-w-48 grid-cols-2 gap-2">
+            <div class="grid max-w-50 grid-cols-2 gap-2">
               <div v-for="slot in 2" :key="slot" class="rival-support"
                 :class="{ 'is-revealed': !!opp.lostCards[slot - 1] }">
                 <div class="rival-support-inner">

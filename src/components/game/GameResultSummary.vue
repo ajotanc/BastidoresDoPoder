@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PlayerName from '@/components/online/PlayerName.vue';
 import { computed } from 'vue';
 import { Trophy, Clock, Users, Globe } from '@lucide/vue';
 import { buildResultSummary, durationLabel, type ResultSummary } from '@/game/resultSummary';
@@ -89,7 +90,7 @@ const siteUrl = computed(() => {
             {{ winner ? 'Vencedor da mesa' : 'Partida encerrada' }}
           </p>
           <h3 class="result-name font-serif font-bold text-gold-light text-2xl md:text-3xl leading-tight my-1 break-words">
-            {{ winner ? winner.name : 'Sessão encerrada sem vencedor' }}
+            <PlayerName :player="winner" fallback="Sessão encerrada sem vencedor" />
           </h3>
           <p v-if="winner" class="text-sm text-ink-muted leading-tight mt-0.5">Conquistou o poder.</p>
         </div>
@@ -99,15 +100,15 @@ const siteUrl = computed(() => {
         class="result-stats grid grid-cols-3 divide-x divide-line rounded-lg border border-line bg-paper/50 text-center">
         <div class="py-2.5 px-1.5 flex flex-col items-center justify-center">
           <dt class="text-[11px] text-ink-muted leading-none">Turnos</dt>
-          <dd class="font-serif text-xl font-semibold tabular-nums text-ink leading-none mt-1">{{ resolvedSummary.turns }}</dd>
+          <dd class="font-serif text-xl font-bold tabular-nums text-ink leading-none mt-1">{{ resolvedSummary.turns }}</dd>
         </div>
         <div class="py-2.5 px-1.5 flex flex-col items-center justify-center">
           <dt class="text-[11px] text-ink-muted leading-none">Apoios</dt>
-          <dd class="font-serif text-xl font-semibold tabular-nums text-ink leading-none mt-1">{{ resolvedSummary.supports }}</dd>
+          <dd class="font-serif text-xl font-bold tabular-nums text-ink leading-none mt-1">{{ resolvedSummary.supports }}</dd>
         </div>
         <div class="py-2.5 px-1.5 flex flex-col items-center justify-center">
           <dt class="text-[11px] text-ink-muted leading-none">Reserva</dt>
-          <dd class="font-serif text-xl font-semibold tabular-nums text-gold leading-none mt-1">C$ {{ resolvedSummary.coins }}</dd>
+          <dd class="font-serif text-xl font-bold tabular-nums text-gold leading-none mt-1">C$ {{ resolvedSummary.coins }}</dd>
         </div>
       </dl>
     </div>
@@ -164,7 +165,7 @@ const siteUrl = computed(() => {
             {{ winner ? 'Vencedor da mesa' : 'Partida encerrada' }}
           </p>
           <h3 class="result-name font-serif font-bold text-gold-light text-2xl my-0.5 whitespace-normal break-normal leading-tight">
-            {{ winner ? winner.name : 'Sessão encerrada' }}
+            <PlayerName :player="winner" fallback="Sessão encerrada" />
           </h3>
           <p v-if="winner" class="text-xs text-ink-muted leading-tight mt-0.5">
             Conquistou o poder.
@@ -176,19 +177,19 @@ const siteUrl = computed(() => {
       <dl v-if="resolvedSummary"
         class="result-stats w-full grid grid-cols-3 divide-x divide-line rounded-lg border border-line bg-paper/50 text-center m-0">
         <div class="flex flex-col items-center justify-center py-3 px-2">
-          <dt class="text-[11px] font-semibold uppercase tracking-wider text-ink-muted leading-none">Turnos</dt>
+          <dt class="text-[11px] font-bold uppercase tracking-wider text-ink-muted leading-none">Turnos</dt>
           <dd class="font-serif text-2xl font-bold tabular-nums text-ink leading-none mt-2">
             {{ resolvedSummary.turns }}
           </dd>
         </div>
         <div class="flex flex-col items-center justify-center py-3 px-2">
-          <dt class="text-[11px] font-semibold uppercase tracking-wider text-ink-muted leading-none">Apoios</dt>
+          <dt class="text-[11px] font-bold uppercase tracking-wider text-ink-muted leading-none">Apoios</dt>
           <dd class="font-serif text-2xl font-bold tabular-nums text-ink leading-none mt-2">
             {{ resolvedSummary.supports }}
           </dd>
         </div>
         <div class="flex flex-col items-center justify-center py-3 px-2">
-          <dt class="text-[11px] font-semibold uppercase tracking-wider text-ink-muted leading-none">Reserva</dt>
+          <dt class="text-[11px] font-bold uppercase tracking-wider text-ink-muted leading-none">Reserva</dt>
           <dd class="font-serif text-2xl font-bold tabular-nums text-gold leading-none mt-2">
             C$ {{ resolvedSummary.coins }}
           </dd>

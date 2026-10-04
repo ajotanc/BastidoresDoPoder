@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppSelect from "@/components/ui/AppSelect.vue";
+import AppInput from "@/components/ui/AppInput.vue";
 import { ref, computed } from 'vue';
 import { ROLE_CARDS } from '@/constants/gameData';
 import type { RoleCard } from '@/types/game';
@@ -88,12 +89,12 @@ const filteredCards = computed<readonly RoleCard[]>(() => {
           class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted/70 pointer-events-none"
           aria-hidden="true"
         />
-        <input
+        <AppInput
           v-model="searchQuery"
           type="search"
           aria-label="Buscar personagem ou poder"
           placeholder="Buscar personagem ou poder..."
-          class="w-full bg-surface border border-line rounded-lg pl-9 pr-3 py-1.5 text-xs sm:text-sm text-ink placeholder:text-ink-muted/60 focus:border-gold focus:outline-none transition-colors"
+          class="pl-9"
         />
       </div>
     </div>

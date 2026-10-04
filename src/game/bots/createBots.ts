@@ -1,3 +1,4 @@
+import { randomUUID } from '@/utils/uuid';
 import { createPlayerName, characterGender } from '@/utils/playerName';
 import { MAX_BOTS_PER_ROOM } from '@/constants/gameConfig';
 import { PLAYABLE_ROLES } from '../engine/deck';
@@ -13,16 +14,16 @@ export function addBots(initial: AuthoritativeGameState, count: number): Authori
   validateBotCount(count);
   let state = initial;
   for (let index = 0; index < count; index++) {
-    const id = `bot-${crypto.randomUUID()}`;
+    const id = `bot-${randomUUID()}`;
     const avatarSlug = PLAYABLE_ROLES[index % PLAYABLE_ROLES.length]!;
     const result = executeCommand(state, { type: 'JOIN_ROOM', payload: {
-      name: `${createPlayerName(characterGender(avatarSlug))} (Bot)`,
-      avatarSlug, reconnectToken: crypto.randomUUID(),
-    } }, id, crypto.randomUUID());
+      name: createPlayerName(characterGender(avatarSlug)),
+      avatarSlug, reconnectToken: randomUUID(),
+    } }, id, randomUUID());
     if (result.rejection) throw new Error(result.rejection.description);
     state = result.nextAuthoritativeState;
     state.publicState.players[id] = { ...state.publicState.players[id]!, isBot: true };
-    state = executeCommand(state, { type: 'SET_READY', payload: { ready: true } }, id, crypto.randomUUID()).nextAuthoritativeState;
+    state = executeCommand(state, { type: 'SET_READY', payload: { ready: true } }, id, randomUUID()).nextAuthoritativeState;
   }
   return state;
 }

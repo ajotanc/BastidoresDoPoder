@@ -67,7 +67,7 @@ const handleOpenLightbox = (): void => {
           <span class="block text-[11px] text-gold-muted">Regras e habilidades</span>
           <h2 class="app-dialog-title mt-0.5">{{ props.card.name }}</h2>
         </div>
-        <button type="button" @click="handleClose" class="online-icon-button self-start" aria-label="Fechar regras"><X class="h-5 w-5" aria-hidden="true" /></button>
+        <AppButton variant="outline" size="icon" class="self-start" @click="handleClose" aria-label="Fechar regras"><X class="h-5 w-5" aria-hidden="true" /></AppButton>
         <div class="col-span-3 flex flex-wrap items-center justify-between gap-2 border-t border-line/60 pt-2 text-xs text-ink-muted">
           <span>{{ props.card.category }}</span>
           <span class="text-gold-light">{{ props.card.copies }}</span>

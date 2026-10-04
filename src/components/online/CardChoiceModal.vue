@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppButton from '@/components/ui/AppButton.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import Card from '@/components/game/Card.vue';
 import { ref, computed, watch } from 'vue';
@@ -84,19 +85,11 @@ watch(() => props.isOpen, () => { selectedCardId.value = ''; });
     <!-- Rodapé -->
     <template #footer>
       <div class="flex justify-end w-full">
-        <button
-          type="button"
+        <AppButton variant="danger" class="w-full sm:w-auto px-6"
           :disabled="!selectedCardId"
-          @click="handleConfirm"
-          class="w-full sm:w-auto min-h-11 px-6 rounded-lg font-sans font-bold text-sm tracking-normal transition-all border"
-          :class="[
-            selectedCardId
-              ? 'bg-status-red hover:bg-status-red/90 text-paper-deep border-status-red shadow-md cursor-pointer'
-              : 'bg-surface-elevated text-ink-subtle border-line cursor-not-allowed'
-          ]"
-        >
+          @click="handleConfirm">
           Confirmar Perda de Apoio
-        </button>
+        </AppButton>
       </div>
     </template>
   </AppDialog>

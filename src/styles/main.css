@@ -103,7 +103,6 @@ button:focus-visible,
 @layer components {
   .entry-tab { @apply flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-lg px-2 text-sm font-semibold; }
   .form-label { @apply block font-serif text-sm font-bold leading-5 text-ink; }
-  .online-input { @apply block min-h-11 w-full min-w-0 rounded-xl border border-line bg-paper-deep px-3 py-3 text-base text-ink outline-none transition-colors focus:border-gold focus:ring-2 focus:ring-gold/20; }
   .online-primary { @apply flex min-h-11 items-center justify-center gap-2 rounded-xl border border-gold bg-gold px-4 py-3 font-sans text-sm font-bold text-paper-deep transition-colors hover:bg-gold-light disabled:cursor-not-allowed disabled:border-line disabled:bg-surface-elevated disabled:text-ink-subtle; }
   .online-icon-button { @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line text-ink-muted hover:bg-surface-elevated hover:text-gold; }
   .online-dialog { display: flex; flex-direction: column; max-height: calc(100dvh - 1.5rem); }
@@ -158,7 +157,6 @@ button[title="Copiar link da mesa"], button[title="Ampliar carta e ver regras co
 
 
 :where(button, .app-button) { border-color: var(--line); }
-.online-input { border-radius: var(--ui-radius); }
 .lobby-player { height: auto; }
 .app-nav button[aria-controls="mobile-navigation"] { width: 44px; height: 44px; padding: 0; flex: 0 0 44px; }
 
@@ -206,7 +204,6 @@ html.modal-scroll-locked { overflow: hidden !important; overscroll-behavior: non
 .modal-scroll-surface [class*="overflow-y-auto"] { overscroll-behavior: contain; }
 
 input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select { min-height: 44px; }
-.online-input { padding-top: 8px; padding-bottom: 8px; }
 button.rules-action { border-color: #8d784f; }
 button.app-select-trigger { justify-content: space-between; min-height: 44px; }
 

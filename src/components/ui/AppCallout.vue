@@ -28,7 +28,7 @@ const alertVariant = computed<'success' | 'warning' | 'destructive'>(() => {
 </script>
 
 <template>
-  <Alert :variant="alertVariant" :class="props.class" class="my-6 items-start">
+  <Alert :variant="alertVariant" size="md" :class="props.class" class="my-6 items-start">
     <div class="min-w-0 flex-1">
       <AlertTitle v-if="props.title" class="mb-2 text-base font-bold text-inherit">
         {{ props.title }}
