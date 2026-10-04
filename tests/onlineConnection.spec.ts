@@ -29,26 +29,30 @@ test('dois navegadores entram na mesma sala pelo PeerServer real', async ({ brow
     await guest.getByRole('button', { name: 'Entrar na Sala P2P', exact: true }).click();
     await expect(guest.getByText('Sala de Articulação Política')).toBeVisible({ timeout: 30000 });
     await expect(host.getByText('Teste Convidado', { exact: true })).toBeVisible();
-    await expect(guest.locator('img[src^="data:image/jpeg;base64,"]')).toHaveCount(1);
+    await expect(guest.locator('img[src^="data:image/webp;base64,"]')).toHaveCount(1);
     await guest.getByRole('button', { name: 'Marcar como pronto' }).click();
     await expect(host.getByRole('button', { name: 'Iniciar disputa', exact: true })).toBeEnabled();
     await host.getByRole('button', { name: 'Iniciar disputa', exact: true }).click();
     await expect(guest.getByText('Seu Gabinete')).toBeVisible();
+    // O sistema sorteia quem começa: age primeiro quem tiver o botão de ação.
+    const choose = (page: typeof host) => page.getByRole('button', { name: 'Escolher ação do turno' });
+    await expect.poll(async () => (await choose(host).isVisible()) || (await choose(guest).isVisible()), { timeout: 15000 }).toBe(true);
+    const [first, second] = (await choose(host).isVisible()) ? [host, guest] : [guest, host];
     // Exercita campos opcionais de ActionIntent também pelo transporte real.
-    for (const page of [host, guest]) {
-      await page.getByRole('button', { name: 'Escolher ação do turno' }).click();
-      await page.getByRole('dialog').getByRole('button', { name: /Salário Oficial/ }).click();
-      await page.getByRole('button', { name: 'Declarar no Plenário' }).click();
+    for (const [actor, other] of [[first, second], [second, first]] as const) {
+      await expect(choose(actor)).toBeVisible();
+      await choose(actor).click();
+      await actor.getByRole('dialog').getByRole('button', { name: /Salário Oficial/ }).click();
+      await actor.getByRole('button', { name: 'Declarar no Plenário' }).click();
+      await expect(choose(actor)).toHaveCount(0);
+      await expect(choose(other)).toBeVisible();
     }
-    await expect(guest.getByRole('button', { name: 'Escolher ação do turno' })).toHaveCount(0);
-    await expect(host.getByRole('button', { name: 'Escolher ação do turno' })).toBeVisible();
     await expect(guest.getByRole('alert')).toHaveCount(0);
     if (testTimeouts) {
     // Depois de uma rodada manual, ambos ficam sem agir: o host deve executar
     // a ação automática e passar o turno, mantendo a sala e o heartbeat ativos.
     await expect(guest.getByRole('button', { name: 'Escolher ação do turno' })).toBeEnabled({ timeout: (ACTION_TIMEOUT_SECONDS + 15) * 1000 });
     await expect(host.getByRole('button', { name: 'Escolher ação do turno' })).toHaveCount(0);
-    await expect(host.getByText('Poder Supremo Conquistado')).toHaveCount(0);
     await expect(host.getByRole('button', { name: 'Escolher ação do turno' })).toBeEnabled({ timeout: (ACTION_TIMEOUT_SECONDS + 15) * 1000 });
     await expect(guest.getByRole('button', { name: 'Escolher ação do turno' })).toHaveCount(0);
     await expect(guest.getByRole('alert')).toHaveCount(0);
@@ -59,13 +63,13 @@ test('dois navegadores entram na mesma sala pelo PeerServer real', async ({ brow
     await expect(guest.getByRole('button', { name: 'Escolher ação do turno' })).toBeVisible({ timeout: (RESPONSE_TIMEOUT_SECONDS + 15) * 1000 });
     }
     await guest.getByRole('button', { name: 'Sair', exact: true }).click();
-    await guest.getByRole('dialog', { name: 'Sair da mesa' }).getByRole('button', { name: 'Sair da Mesa', exact: true }).click();
+    await guest.getByRole('dialog', { name: 'Sair da mesa' }).getByRole('button', { name: 'Sair da mesa', exact: true }).click();
     await expect(guest).toHaveURL(/\/game$/);
     await expect(guest.getByText(/Você foi convidado/)).toHaveCount(0);
-    await expect(host.getByText('Poder Supremo Conquistado')).toBeVisible();
+    await expect(host.getByText('Vencedor da mesa').first()).toBeVisible();
     await expect(host.getByRole('heading', { name: 'Teste Host', exact: true })).toBeVisible();
     await expect(host.getByText('2 / 24', { exact: true })).toBeVisible();
-    const discard = host.locator('section').filter({ has: host.getByText('Últimos Apoios Revelados:', { exact: true }) });
+    const discard = host.locator('section').filter({ has: host.getByText('Últimos apoios revelados', { exact: true }) });
     await expect(discard.getByText('Abandono da partida', { exact: true })).toHaveCount(2);
   } finally {
     await guestContext.close();

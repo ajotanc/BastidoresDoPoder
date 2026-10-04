@@ -106,7 +106,7 @@ import CoinsShowcase from '@/components/game/CoinsShowcase.vue';
             4
           </span>
           <p class="text-ink-muted leading-relaxed mb-0 pt-0.5">
-            Na mesa física, sorteie quem começa e siga em sentido horário. No online, o anfitrião começa e os turnos seguem a ordem de entrada na sala. Jogadores eliminados são pulados.
+            Na mesa física, sorteie quem começa e siga em sentido horário. No online, o sistema sorteia quem começa (na revanche, começa o vencedor da partida anterior) e os turnos seguem a ordem de entrada na sala. Jogadores eliminados são pulados.
           </p>
         </li>
         <li class="flex items-start gap-4 p-4 rounded-md bg-surface-elevated/70 border border-line text-sm leading-relaxed">

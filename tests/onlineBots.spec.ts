@@ -50,7 +50,7 @@ test('sala online com bots joga e devolve o turno ao humano', async ({ page }) =
   }).toPass({ timeout: 30000, intervals: [500] });
   await expect(page.getByRole('alert')).toHaveCount(0);
   await page.getByRole('button', { name: 'Sair', exact: true }).click();
-  await page.getByRole('button', { name: 'Sair da Mesa', exact: true }).click();
+  await page.getByRole('button', { name: 'Encerrar mesa', exact: true }).click();
   await expect(page.getByRole('switch', { name: 'Adicionar bots à mesa' })).toBeVisible();
 });
 

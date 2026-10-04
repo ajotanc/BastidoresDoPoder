@@ -77,7 +77,7 @@ const levelDetails = {
           </span>
         </AccordionTrigger>
       <AccordionContent class="space-y-4">
-        <p><strong class="text-ink">Início:</strong> reúna ao menos {{ MIN_PLAYERS_TO_START }} participantes, contando amigos e bots. Todos devem estar conectados e prontos para o anfitrião iniciar. O anfitrião joga primeiro.</p>
+        <p><strong class="text-ink">Início:</strong> reúna ao menos {{ MIN_PLAYERS_TO_START }} participantes, contando amigos e bots. Todos devem estar conectados e prontos para o anfitrião iniciar. O sistema sorteia quem joga primeiro.</p>
         <p><strong class="text-ink">Conexão:</strong> mantenha a aba da partida aberta. O navegador do anfitrião mantém a mesa funcionando; fechar ou atualizar essa aba interrompe a sala.</p>
         <p><strong class="text-ink">Tempo para decidir:</strong> o anfitrião pode definir os tempos em “Configurações da partida”. Sem alterações, cada turno permite até {{ ACTION_TIMEOUT_SECONDS }} segundos para declarar a ação e cada resposta permite até {{ RESPONSE_TIMEOUT_SECONDS }} segundos. Os tempos escolhidos valem para todos e aparecem na sala de espera. Sem resposta, o jogo passa a oportunidade; sem ação no prazo, aplica Salário Oficial ou, com C$ 10 ou mais, Impeachment definitivo contra o próximo adversário vivo.</p>
         <p><strong class="text-ink">Escolha de cartas:</strong> se o prazo terminar, o jogo escolhe o primeiro apoio ativo para a perda. Na troca, devolve as duas cartas recém-compradas, mantendo a mão anterior.</p>
