@@ -80,8 +80,36 @@ export async function listCheckpoints(): Promise<HostCheckpoint[]> {
   }
   return valid.sort((a,b) => b.savedAt - a.savedAt);
 }
+const FALLBACK_LOCK_TTL_MS = 6000;
+const FALLBACK_LOCK_BEAT_MS = 2000;
+// navigator.locks só existe em contextos seguros (HTTPS/localhost). Em HTTP, por exemplo ao testar
+// pelo IP da rede local, um bloqueio por localStorage com batimento cobre o caso de duas abas.
+function acquireFallbackLock(roomCode: string): () => void {
+  const key = `bdp-host-lock-${roomCode}`;
+  const owner = Math.random().toString(36).slice(2);
+  try {
+    const current = JSON.parse(localStorage.getItem(key) ?? 'null') as { owner?: string; beat?: number } | null;
+    if (current?.owner && current.owner !== owner && typeof current.beat === 'number' && Date.now() - current.beat < FALLBACK_LOCK_TTL_MS) {
+      throw new Error('Esta mesa já está aberta em outra aba. Volte à aba do anfitrião.');
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith('Esta mesa')) throw error;
+  }
+  const beat = (): void => {
+    try { localStorage.setItem(key, JSON.stringify({ owner, beat: Date.now() })); } catch { /* sem armazenamento: segue sem bloqueio */ }
+  };
+  beat();
+  const timer = setInterval(beat, FALLBACK_LOCK_BEAT_MS);
+  return () => {
+    clearInterval(timer);
+    try {
+      const current = JSON.parse(localStorage.getItem(key) ?? 'null') as { owner?: string } | null;
+      if (current?.owner === owner) localStorage.removeItem(key);
+    } catch { /* nada a liberar */ }
+  };
+}
 export async function acquireHostLock(roomCode: string): Promise<() => void> {
-  if (!navigator.locks) throw new Error('Este navegador não oferece a proteção necessária para hospedar e recuperar mesas. Use uma versão atualizada.');
+  if (!navigator.locks) return acquireFallbackLock(roomCode);
   return new Promise((resolve, reject) => {
     void navigator.locks.request(`bdp-host-${roomCode}`, { ifAvailable: true }, lock => {
       if (!lock) { reject(new Error('Esta mesa já está aberta em outra aba. Volte à aba do anfitrião.')); return; }

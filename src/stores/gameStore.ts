@@ -1,3 +1,4 @@
+import { randomUUID } from '@/utils/uuid';
 import { listCheckpoints, persistCheckpoint, deleteCheckpoint, acquireHostLock, type HostCheckpoint } from '@/online/room/hostRecovery';
 import { connectDiscordAccount } from '@/online/room/discordConversation';
 import type { RoomTimingInput } from '@/game/models/roomSettings';
@@ -104,8 +105,8 @@ export const useGameStore = defineStore('game', () => {
       connectionStatus.value = 'connected';
 
       const roomCode = checkpoint?.roomCode ?? generateRoomCode();
-      const playerId = checkpoint?.hostPlayerId ?? `player-${crypto.randomUUID()}`;
-      const reconnectToken = checkpoint?.state.reconnectTokens[playerId] ?? `token-${crypto.randomUUID()}`;
+      const playerId = checkpoint?.hostPlayerId ?? `player-${randomUUID()}`;
+      const reconnectToken = checkpoint?.state.reconnectTokens[playerId] ?? `token-${randomUUID()}`;
       releaseHostLock = await acquireHostLock(roomCode);
 
       myPlayerId.value = playerId;
@@ -197,8 +198,8 @@ export const useGameStore = defineStore('game', () => {
       clientInstance.value?.destroy();
       const saved = loadPlayerSession(roomCode);
       if (saved?.isHost) throw new Error('Use Retomar partida para recuperar sua mesa salva neste navegador.');
-      const playerId = saved?.playerId ?? `player-${crypto.randomUUID()}`;
-      const reconnectToken = saved?.reconnectToken ?? `token-${crypto.randomUUID()}`;
+      const playerId = saved?.playerId ?? `player-${randomUUID()}`;
+      const reconnectToken = saved?.reconnectToken ?? `token-${randomUUID()}`;
 
       myPlayerId.value = playerId;
       myPlayerName.value = playerName;

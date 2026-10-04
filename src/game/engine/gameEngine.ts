@@ -1,3 +1,4 @@
+import { randomUUID } from '@/utils/uuid';
 import { GAME_NAME } from '@/constants/gameConfig';
 import dayjs from 'dayjs';
 import type { RoleSlug } from '@/types/game';
@@ -90,7 +91,7 @@ export const createInitialAuthoritativeState = (
 
   const publicState: GameState = {
     settings: { ...settings },
-    gameId: crypto.randomUUID(),
+    gameId: randomUUID(),
     roomCode: roomCode.toUpperCase(),
     revision: 1,
     phase: 'LOBBY',

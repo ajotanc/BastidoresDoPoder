@@ -1,3 +1,4 @@
+import { randomUUID } from '@/utils/uuid';
 import { describe, it, expect, vi } from 'vitest';
 import { createInitialAuthoritativeState, executeCommand, executeTimeout, finishTurn, type AuthoritativeGameState } from '@/game/engine/gameEngine';
 import { createInitialDeck, PLAYABLE_ROLES } from '@/game/engine/deck';
@@ -11,7 +12,7 @@ vi.mock('@/constants/gameConfig', async importOriginal => ({
 }));
 
 const run = (s: AuthoritativeGameState, command: ClientCommand, id = 'a') => {
-  const result = executeCommand(s, command, id, crypto.randomUUID());
+  const result = executeCommand(s, command, id, randomUUID());
   expect(result.rejection).toBeUndefined();
   return result.nextAuthoritativeState;
 };

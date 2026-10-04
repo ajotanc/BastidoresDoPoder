@@ -1,3 +1,4 @@
+import { randomUUID } from '@/utils/uuid';
 import { buildResultSummary } from '@/game/resultSummary';
 import { validCheckpoint, type HostCheckpoint } from '../room/hostRecovery';
 import { createDiscordConversation } from '../room/discordConversation';
@@ -54,7 +55,7 @@ export class PeerHost {
       return;
     }
     const command = chooseBotCommand(state.publicState, { playerId: id, supports: state.privateHands[id] ?? [] }, Math.random, this.botDifficulty);
-    if (command) this.applyResult(executeCommand(state, command, id, crypto.randomUUID()));
+    if (command) this.applyResult(executeCommand(state, command, id, randomUUID()));
   });
 
   constructor(
@@ -87,7 +88,7 @@ export class PeerHost {
     }
   }
 
-  private conversationSessionId: string = crypto.randomUUID();
+  private conversationSessionId: string = randomUUID();
 
   public async prepareConversation(): Promise<void> {
     const conversationState = this.authoritativeState.publicState.discordConversation;
@@ -301,7 +302,7 @@ export class PeerHost {
     sendPeerMessage(conn, { type: 'COMMAND_ACK', messageId, revision: this.authoritativeState.publicState.revision });
   }
 
-  public executeLocalHostCommand(command: ClientCommand, messageId = crypto.randomUUID()): void {
+  public executeLocalHostCommand(command: ClientCommand, messageId = randomUUID()): void {
     if (this.destroyed) return;
     const deadline = this.authoritativeState.publicState.deadlineAt;
     if (deadline !== null && dayjs().valueOf() >= deadline) { this.handleTimeoutExpiry(); return; }
@@ -373,7 +374,7 @@ export class PeerHost {
       players: Object.fromEntries(Object.entries(pub.players).map(([id, player]) => [id, { ...player, isConnected: id === this.hostPlayerId || !!player.isBot }])),
       deadlineAt: pub.deadlineAt === null ? null : now + grace + pub.deadlineAt,
       ...(conversation?.status === 'loading' ? { discordConversation: { status: 'error' as const } } : {}),
-      history: [{ id: crypto.randomUUID(), timestamp: now, type: 'ROOM_RESTORED', importance: 'normal' as const, message: humans.length ? 'Mesa retomada pelo anfitrião. Prazo de reconexão reaberto; o tempo restante da decisão foi preservado.' : 'Mesa retomada pelo anfitrião. O tempo restante da decisão foi preservado.' }, ...pub.history].slice(0, 50),
+      history: [{ id: randomUUID(), timestamp: now, type: 'ROOM_RESTORED', importance: 'normal' as const, message: humans.length ? 'Mesa retomada pelo anfitrião. Prazo de reconexão reaberto; o tempo restante da decisão foi preservado.' : 'Mesa retomada pelo anfitrião. O tempo restante da decisão foi preservado.' }, ...pub.history].slice(0, 50),
     };
     this.schedulePhaseTimeout();
     this.resumeTimer = setTimeout(() => { if (!this.destroyed) this.bots.update(this.authoritativeState.publicState); }, grace);

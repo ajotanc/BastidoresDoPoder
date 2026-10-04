@@ -1,3 +1,4 @@
+import { randomUUID } from '@/utils/uuid';
 import dayjs from 'dayjs';
 const CHUNK_SIZE = 6000;
 const MAX_CHUNKS = 200;
@@ -7,7 +8,7 @@ export function sendPeerMessage(connection: Sender, message: unknown): void {
   if (json.length <= CHUNK_SIZE) { connection.send(message); return; }
   const total = Math.ceil(json.length / CHUNK_SIZE);
   if (total > MAX_CHUNKS) throw new Error('Mensagem da sala excedeu o limite de tamanho.');
-  const id = crypto.randomUUID();
+  const id = randomUUID();
   for (let index = 0; index < total; index++) {
     connection.send({ type: 'BDP_JSON_CHUNK', id, index, total, text: json.slice(index * CHUNK_SIZE, (index + 1) * CHUNK_SIZE) });
   }
