@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "dev", "runtimeExecutable": "pnpm", "runtimeArgs": ["dev", "--port", "4317"], "port": 4317 }
+  ]
+}
