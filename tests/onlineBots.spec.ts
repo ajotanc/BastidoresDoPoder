@@ -38,10 +38,10 @@ test('sala online com bots joga e devolve o turno ao humano', async ({ page }) =
   await expect(page.getByText('Sala de Articulação Política')).toBeVisible({ timeout: 30000 });
   await expect(page.locator('.lobby-player').filter({ hasText: 'Bot:' })).toHaveCount(DEFAULT_BOT_COUNT);
   await page.getByRole('button', { name: 'Iniciar disputa', exact: true }).click();
-  await page.getByRole('button', { name: 'Escolher Ação do Turno' }).click();
+  await page.getByRole('button', { name: 'Escolher ação do turno' }).click();
   await page.getByRole('dialog').getByRole('button', { name: /Salário Oficial/ }).click();
   await page.getByRole('button', { name: 'Declarar no Plenário' }).click();
-  const choose = page.getByRole('button', { name: 'Escolher Ação do Turno' });
+  const choose = page.getByRole('button', { name: 'Escolher ação do turno' });
   await expect(choose).toHaveCount(0);
   await expect(async () => {
     const pass = page.getByRole('button', { name: /Passar \/ Permitir|Não Bloquear|Aceitar Bloqueio/ });

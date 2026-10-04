@@ -7,8 +7,8 @@ import { UserCheck, UserX } from '@lucide/vue';
 
 <template>
   <section id="investigation" class="pt-12 border-t border-line/70">
-    <AppSectionHeader label="Mandado de Busca" title="O personagem pode ser blefe. O resultado, não."
-      description="O Investigador permite vasculhar a mão de um adversário por um personagem específico com um mandado judicial implacável." />
+    <AppSectionHeader label="Mandado de Busca" title="O blefe vale até o mandado ser conferido."
+      description="O Investigador permite vasculhar a mão de um adversário por um personagem específico." />
 
     <p class="text-sm text-ink-muted leading-relaxed mb-6">
       Declare tudo antes de abrir para contestações ou defesas:
@@ -20,7 +20,7 @@ import { UserCheck, UserX } from '@lucide/vue';
 
     <!-- Comparativo de Resultado -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
-      <AppPanel title="Encontrou o Personagem Procurado">
+      <AppPanel title="Encontrou o personagem">
         <div class="flex items-start gap-3">
           <UserCheck class="w-6 h-6 text-status-green flex-shrink-0 mt-1" aria-hidden="true" />
           <p class="text-sm text-ink-muted leading-relaxed mb-0">
@@ -30,7 +30,7 @@ import { UserCheck, UserX } from '@lucide/vue';
         </div>
       </AppPanel>
 
-      <AppPanel title="Não Encontrou Nada na Mão">
+      <AppPanel title="Não encontrou nada">
         <div class="flex items-start gap-3">
           <UserX class="w-6 h-6 text-status-red flex-shrink-0 mt-1" aria-hidden="true" />
           <p class="text-sm text-ink-muted leading-relaxed mb-0">
@@ -42,7 +42,7 @@ import { UserCheck, UserX } from '@lucide/vue';
     </div>
 
     <!-- Regra Digital vs Física -->
-    <AppCallout variant="green" title="Versão Digital vs Cartas Físicas:">
+    <AppCallout variant="green" title="Versão digital e cartas físicas:">
       <div class="space-y-3 text-sm leading-relaxed">
         <p>
           <strong class="text-ink">No jogo digital:</strong> a verificação é feita automaticamente e em segredo

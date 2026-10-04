@@ -268,7 +268,7 @@ export const useGameStore = defineStore('game', () => {
       if (err instanceof Error) {
         errorMessage.value = `Falha ao entrar na sala: ${err.message}`;
       } else {
-        errorMessage.value = 'Não foi possível conectar ao Host.';
+        errorMessage.value = 'Não foi possível conectar ao anfitrião.';
       }
       throw err;
     }

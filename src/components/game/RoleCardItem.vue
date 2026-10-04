@@ -58,7 +58,7 @@ const handleShowRules = (): void => {
               class="inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-surface-elevated/95 text-gold-light border border-gold-dark shadow-md text-center z-[30]"
             >
               <ZoomIn class="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
-              <span>Ampliar Carta</span>
+              <span>Ampliar carta</span>
             </span>
           </div>
         </button>

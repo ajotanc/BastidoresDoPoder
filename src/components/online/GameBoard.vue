@@ -246,7 +246,7 @@ const previewGameState = computed<GameState>(() => {
     ],
     history: props.gameState.history.length > 0 ? props.gameState.history : [
       { id: 'preview-h-1', type: 'GAME_FINISHED', message: 'Partida finalizada com sucesso.', timestamp: Date.now(), importance: 'alert' },
-      { id: 'preview-h-2', type: 'ACTION_DECLARED', message: 'Golpe decisivo consolidado no plenário.', timestamp: Date.now(), importance: 'normal' },
+      { id: 'preview-h-2', type: 'ACTION_DECLARED', message: 'Último ataque da partida.', timestamp: Date.now(), importance: 'normal' },
     ],
   };
 });
@@ -262,7 +262,7 @@ const previewSummary = computed<ResultSummary>(() => {
     supports: 2,
     coins: props.gameState.players[props.myPlayerId]?.coins ?? 5,
     durationSeconds: 245,
-    decisivePlay: 'Impeachment Definitivo desarticulou o último gabinete adversário.',
+    decisivePlay: 'Impeachment definitivo desarticulou o último gabinete adversário.',
   };
 });
 
@@ -307,8 +307,8 @@ async function generateStoryPreview(): Promise<void> {
             <component :is="sounds.enabled.value ? Volume2 : VolumeX" class="h-4 w-4" aria-hidden="true" />
           </Toggle>
           <AppButton variant="transparent" size="icon" v-if="isDeveloper" :disabled="isGeneratingPreview"
-            :title="isGeneratingPreview ? 'Gerando Stories...' : 'Gerar imagem do Stories (Preview)'"
-            :aria-label="isGeneratingPreview ? 'Gerando Stories...' : 'Gerar imagem do Stories'"
+            :title="isGeneratingPreview ? 'Gerando Stories…' : 'Gerar imagem do Stories (Preview)'"
+            :aria-label="isGeneratingPreview ? 'Gerando Stories…' : 'Gerar imagem do Stories'"
             @click="generateStoryPreview">
             <Spinner v-if="isGeneratingPreview" size="sm" aria-hidden="true" />
             <ImageDown v-else class="h-4 w-4" aria-hidden="true" />
@@ -362,7 +362,7 @@ async function generateStoryPreview(): Promise<void> {
     </header>
 
     <!-- 2. PALCO PRINCIPAL DE DELIBERAÇÃO / SUA VEZ (Topo no mobile para máxima usabilidade!) -->
-    <section aria-label="Deliberações e Ações da Mesa" class="space-y-3">
+    <section aria-label="Ações e deliberações da mesa" class="space-y-3">
       <GameResultBanner v-if="isFinished" :game-state="gameState" :is-host="isHost" @play-again="emit('play-again')" />
       <!-- Caso A: Quando há Ação Declarada em Aberto -->
       <div v-else-if="pending"
@@ -418,7 +418,7 @@ async function generateStoryPreview(): Promise<void> {
             <AppButton variant="danger" class="flex-1 text-xs" v-if="pending.sourcePlayerId !== myPlayerId"
               @click="emit('declare-challenge', false)">
               <Flame class="w-4 h-4" aria-hidden="true" />
-              <span>Contestar Alegação (Fake News!)</span>
+              <span>Contestar alegação (Fake News!)</span>
             </AppButton>
             <AppButton variant="secondary" class="text-xs font-semibold" @click="emit('pass-response')">
               Passar / Permitir
@@ -453,7 +453,7 @@ async function generateStoryPreview(): Promise<void> {
             <AppButton variant="danger" class="flex-1 text-xs" v-if="pending.blockedByPlayerId !== myPlayerId"
               @click="emit('declare-challenge', true)">
               <Flame class="w-4 h-4" aria-hidden="true" />
-              <span>Contestar Bloqueio (Fake News!)</span>
+              <span>Contestar bloqueio (Fake News!)</span>
             </AppButton>
             <AppButton variant="secondary" class="text-xs font-semibold" @click="emit('pass-response')">
               Aceitar Bloqueio
@@ -476,19 +476,19 @@ async function generateStoryPreview(): Promise<void> {
         </div>
 
         <AppButton variant="gold" class="w-full px-6 sm:w-auto sm:px-8 shrink-0" @click="isActionModalOpen = true">
-          <span>Escolher Ação do Turno</span>
+          <span>Escolher ação do turno</span>
           <Gavel class="w-4 h-4" aria-hidden="true" />
         </AppButton>
       </div>
 
-      <!-- Caso C: Sessão em Andamento aguardando outro jogador -->
+      <!-- Caso C: Partida em andamento aguardando outro jogador -->
       <div v-else
         class="bg-surface border border-line border-l-4 border-l-gold/50 rounded p-4 sm:p-5 text-left flex items-center justify-between gap-3">
         <div class="flex items-center gap-2.5">
           <div>
             <div class="flex items-center gap-2 mb-1">
               <Clock class="w-4 h-4 text-gold-light shrink-0" aria-hidden="true" />
-              <h3 class="game-section-title">Sessão em Andamento</h3>
+              <h3 class="game-section-title">Partida em andamento</h3>
             </div>
             <p class="text-xs sm:text-sm text-ink-muted">
               Aguardando deliberação de <strong class="text-ink">{{ activePlayer?.name }}</strong>.
@@ -499,7 +499,7 @@ async function generateStoryPreview(): Promise<void> {
     </section>
 
     <!-- 3. SEU GABINETE PESSOAL & APOIOS SECRETOS (Dossiê Confidencial - Cartas Lado a Lado no Mobile) -->
-    <section aria-label="Seu Gabinete Pessoal"
+    <section aria-label="Seu gabinete"
       class="bg-surface border border-line-gold/50 rounded p-4 sm:p-6 shadow-card space-y-3.5 relative overflow-hidden"
       :class="{ 'cabinet-winner': isFinished && gameState.winnerPlayerId === myPlayerId }">
       <div class="flex items-center justify-between gap-3 gold-divider-bottom relative pb-3">
@@ -516,7 +516,7 @@ async function generateStoryPreview(): Promise<void> {
         <Tag variant="dark-gold" size="md" class="gap-2 shrink-0">
           <Coins class="w-4 h-4 text-gold" aria-hidden="true" />
           <div class="flex flex-col">
-            <span class="text-[9px] uppercase tracking-wider text-ink-subtle font-semibold leading-none">Reserva</span>
+            <span class="text-[10px] uppercase tracking-wider text-ink-subtle font-semibold leading-none">Reserva</span>
             <span class="font-bold text-sm text-gold leading-none">C$ {{ myPublicPlayer?.coins ?? 0 }}</span>
           </div>
         </Tag>
@@ -557,7 +557,7 @@ async function generateStoryPreview(): Promise<void> {
     </section>
 
     <!-- 4. GABINETES RIVAIS (Adversários: Faixa Horizontal Rolável no Mobile, Grid no Desktop) -->
-    <section aria-label="Gabinetes Adversários" class="space-y-2.5">
+    <section aria-label="Gabinetes adversários" class="space-y-2.5">
       <div class="flex flex-wrap items-center justify-between gap-2 px-1">
         <div class="flex items-center gap-2">
           <Users class="w-4 h-4 text-gold-light shrink-0" aria-hidden="true" />
@@ -614,7 +614,7 @@ async function generateStoryPreview(): Promise<void> {
                 <span v-if="!opp.isConnected && opp.isAlive && gameState.phase !== 'FINISHED'"
                   class="block text-xs text-status-red">Reconectando…</span>
                 <span v-if="!opp.isAlive || (!opp.avatarImage && opp.avatarSlug)"
-                  class="text-[10px] text-ink-muted block truncate">
+                  class="text-xs text-ink-muted block truncate">
                   {{ opp.isAlive && opp.avatarSlug ? getRoleDisplayName(opp.avatarSlug) : 'CASSADO' }}
                 </span>
               </div>
@@ -642,7 +642,7 @@ async function generateStoryPreview(): Promise<void> {
     </section>
 
     <!-- 5. PAINEL SECUNDÁRIO: PLANTÃO & CONTABILIDADE (Abas no Mobile para economia vertical, Lado a Lado no Desktop) -->
-    <section aria-label="Histórico e Contabilidade" class="space-y-3">
+    <section aria-label="Histórico e contabilidade" class="space-y-3">
       <!-- Abas no Mobile -->
       <div class="secondary-tabs flex lg:hidden items-center gap-1 bg-paper-deep rounded p-1">
         <button type="button" @click="secondaryMobileTab = 'plantao'"

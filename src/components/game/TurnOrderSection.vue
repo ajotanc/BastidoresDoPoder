@@ -10,16 +10,16 @@ import { CheckCircle2, AlertOctagon } from '@lucide/vue';
     <AppSectionHeader
       label="Ordem da jogada"
       title="Declare. Resolva. Só então aplique."
-      description="Cada rodada segue uma sequência rigorosa de etapas. Respeitar essa ordem garante que contestações, blefes e bloqueios funcionem com total clareza matemática e estratégica."
+      description="Cada rodada segue uma sequência rigorosa de etapas. Seguir essa ordem evita discussão sobre quem contesta ou bloqueia primeiro."
     />
 
     <!-- Alerta crítico de custos -->
-    <AppCallout variant="red" title="Regra Universal de Pagamento:">
+    <AppCallout variant="red" title="Regra de pagamento:">
       <div class="flex items-start gap-3">
         <AlertOctagon class="w-5 h-5 text-status-red flex-shrink-0 mt-0.5" aria-hidden="true" />
         <p class="text-sm leading-relaxed mb-0">
           <strong class="text-ink">Todo custo é pago no momento da declaração e NUNCA é devolvido</strong>.
-          Isso inclui ataque bloqueado, personagem desmascarado, palpite errado no Mandado, defesa falsa do Intocável ou alvo eliminado antes do ataque. Se não houver saldo suficiente na mão no momento da declaração, a jogada é ilegal.
+          Isso inclui ataque bloqueado, personagem desmascarado, palpite errado no Mandado, defesa falsa do Intocável ou alvo eliminado antes do ataque. Se não houver saldo suficiente no momento da declaração, a jogada é ilegal.
         </p>
       </div>
     </AppCallout>

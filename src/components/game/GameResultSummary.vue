@@ -241,7 +241,7 @@ const siteUrl = computed(() => {
 
     <!-- 3. Rodapé Oficial da Mesa (Chamada oficial colada no padding inferior) -->
     <footer class="gold-divider-top relative pt-4 pb-0 flex flex-col shrink-0 w-full [&>header]:mb-0">
-      <AppSectionHeader label="Nova Sessão" title="A próxima mesa é sua?"
+      <AppSectionHeader label="Nova sessão" title="A próxima mesa é sua?"
         description="Convoque seus amigos e dispute o controle político."
         class="mb-0">
         <div class="mt-4 flex">

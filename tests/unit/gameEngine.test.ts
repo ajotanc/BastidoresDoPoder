@@ -87,7 +87,7 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
     expect(nextState.publicState.turn).toBe(2);
   });
 
-  it('deve forçar Impeachment Definitivo se o jogador começar o turno com C$ 10 ou mais', () => {
+  it('deve forçar Impeachment definitivo se o jogador começar o turno com C$ 10 ou mais', () => {
     let state = createInitialAuthoritativeState('7k3f', 'host-1', 'Presidente', 'colonel', 'token-1');
     state = executeCommand(
       state,
@@ -165,7 +165,7 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
     expect(challengeState.publicState.cardChoicePlayerId).toBe('host-1');
   });
 
-  it('deve processar Impeachment Comum (C$ 7) sem bloqueio fazendo o alvo perder apoio e avançando o turno sem loop', () => {
+  it('deve processar Impeachment comum (C$ 7) sem bloqueio fazendo o alvo perder apoio e avançando o turno sem loop', () => {
     let state = createInitialAuthoritativeState('7k3f', 'host-1', 'Presidente', 'colonel', 'token-1');
     state = executeCommand(
       state,
@@ -184,7 +184,7 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
     // A vítima tem saldo para a defesa, mas escolhe não bloquear.
     state.publicState.players['player-2'] = { ...state.publicState.players['player-2']!, coins: 3 };
 
-    // Host declara Impeachment Comum de C$ 7 contra player-2
+    // Host declara Impeachment comum de C$ 7 contra player-2
     state = executeCommand(
       state,
       {
@@ -234,7 +234,7 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
     expect(state.publicState.pendingAction).toBeNull();
   });
 
-  it('deve permitir que o Intocável bloqueie o Impeachment Comum pagando C$ 3', () => {
+  it('deve permitir que o Intocável bloqueie o Impeachment comum pagando C$ 3', () => {
     let state = createInitialAuthoritativeState('7k3f', 'host-1', 'Presidente', 'colonel', 'token-1');
     state = executeCommand(
       state,
@@ -253,7 +253,7 @@ describe('GameEngine - Engine Autoritativa de Bastidores do Poder', () => {
       state.publicState.players['player-2'] = { ...p2, coins: 3 };
     }
 
-    // Host declara Impeachment Comum contra player-2
+    // Host declara Impeachment comum contra player-2
     state = executeCommand(
       state,
       {

@@ -13,7 +13,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
     />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
-      <AppPanel title="Apoio e Eliminação">
+      <AppPanel title="Apoio e eliminação">
         <p class="text-sm text-ink-muted leading-relaxed mb-3">
           Cada carta virada para baixo representa um <strong class="text-ink">apoio vivo</strong>.
           Você começa com dois apoios secretos. Ao perder um apoio por ataque ou contestação, escolha qual carta ativa revelar. A exceção é o Mandado de Busca: se encontrar o personagem procurado, é uma carta desse personagem que será perdida.
@@ -23,7 +23,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
         </p>
       </AppPanel>
 
-      <AppPanel title="Blefe é Regra, não Trapaça">
+      <AppPanel title="Blefar faz parte do jogo">
         <p class="text-sm text-ink-muted leading-relaxed mb-3">
           Você pode reivindicar os poderes de qualquer personagem que quiser, no momento em que a ação for permitida — mesmo que não tenha a respectiva carta na mão!
         </p>
@@ -33,7 +33,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
       </AppPanel>
     </div>
 
-    <AppCallout variant="gold" title="Atenção à Regra de Ouro:">
+    <AppCallout variant="gold" title="Regra de ouro:">
       <p class="text-sm leading-relaxed mb-0">
         Durante a partida, mantenha seus apoios em segredo. Revele uma carta somente para comprovar uma alegação contestada ou ao perder esse apoio. No online, depois do encerramento, os apoios restantes do vencedor podem ser virados para consulta.
       </p>

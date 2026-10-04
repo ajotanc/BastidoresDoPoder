@@ -38,14 +38,14 @@ const closeMenu = () => { if (menuOpen.value) { menuOpen.value = false; menuButt
           <BookOpen v-if="isOnlineActive" class="h-4 w-4" aria-hidden="true" /><ArrowUpRight v-else class="h-4 w-4" aria-hidden="true" />
           <span>{{ isOnlineActive ? 'Ver regras' : 'Jogar online' }}</span>
         </AppButton>
-        <AppButton variant="outline" class="hidden text-xs font-semibold sm:flex" v-if="isInstallable" @click="installApp"><Download class="h-4 w-4" aria-hidden="true" />Instalar App</AppButton>
+        <AppButton variant="outline" class="hidden text-xs font-semibold sm:flex" v-if="isInstallable" @click="installApp"><Download class="h-4 w-4" aria-hidden="true" />Instalar app</AppButton>
         <button ref="menuButton" type="button" class="flex h-11 w-11 items-center justify-center rounded-lg border border-line-gold text-gold-light hover:border-gold hover:bg-gold/10 hover:text-gold transition-colors duration-150 lg:hidden" :aria-expanded="menuOpen" aria-controls="mobile-navigation" :aria-label="menuOpen ? 'Fechar menu' : 'Abrir menu'" @click="menuOpen = !menuOpen"><X v-if="menuOpen" class="h-5 w-5" aria-hidden="true" /><Menu v-else class="h-5 w-5" aria-hidden="true" /></button>
       </div>
     </div>
     <div v-if="menuOpen" class="fixed inset-0 top-16 bg-black/30 lg:hidden" aria-hidden="true" @click="closeMenu"></div>
     <nav v-if="menuOpen" id="mobile-navigation" aria-label="Menu mobile" class="gold-divider-bottom absolute z-10 inset-x-0 top-full bg-paper shadow-modal max-h-[75dvh] overflow-y-auto border-t border-line-gold/40 px-3.5 py-4 lg:hidden">
       <div class="flex items-center justify-between border-b border-line-gold/30 px-1 pb-3 mb-3">
-        <h2 class="game-section-title text-base">Manual de Regras</h2>
+        <h2 class="game-section-title text-base">Manual de regras</h2>
         <span class="text-[10px] font-sans font-semibold uppercase tracking-wider text-gold-muted">Capítulos</span>
       </div>
       <div class="grid grid-cols-2 gap-1.5 sm:gap-2">
@@ -70,7 +70,7 @@ const closeMenu = () => { if (menuOpen.value) { menuOpen.value = false; menuButt
         </a>
       </div>
       <div v-if="isInstallable" class="mt-3.5 pt-3 border-t border-line/60">
-        <AppButton variant="outline" class="w-full border-line-gold/40 text-gold-light" @click="installApp"><Download class="h-4 w-4" aria-hidden="true" /><span>Instalar Aplicativo Oficial</span></AppButton>
+        <AppButton variant="outline" class="w-full border-line-gold/40 text-gold-light" @click="installApp"><Download class="h-4 w-4" aria-hidden="true" /><span>Instalar o aplicativo</span></AppButton>
       </div>
     </nav>
   </header>

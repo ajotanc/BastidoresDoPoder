@@ -30,33 +30,33 @@ test('dois navegadores entram na mesma sala pelo PeerServer real', async ({ brow
     await expect(guest.getByText('Sala de Articulação Política')).toBeVisible({ timeout: 30000 });
     await expect(host.getByText('Teste Convidado', { exact: true })).toBeVisible();
     await expect(guest.locator('img[src^="data:image/jpeg;base64,"]')).toHaveCount(1);
-    await guest.getByRole('button', { name: 'Marcar como Pronto' }).click();
+    await guest.getByRole('button', { name: 'Marcar como pronto' }).click();
     await expect(host.getByRole('button', { name: 'Iniciar disputa', exact: true })).toBeEnabled();
     await host.getByRole('button', { name: 'Iniciar disputa', exact: true }).click();
     await expect(guest.getByText('Seu Gabinete')).toBeVisible();
     // Exercita campos opcionais de ActionIntent também pelo transporte real.
     for (const page of [host, guest]) {
-      await page.getByRole('button', { name: 'Escolher Ação do Turno' }).click();
+      await page.getByRole('button', { name: 'Escolher ação do turno' }).click();
       await page.getByRole('dialog').getByRole('button', { name: /Salário Oficial/ }).click();
       await page.getByRole('button', { name: 'Declarar no Plenário' }).click();
     }
-    await expect(guest.getByRole('button', { name: 'Escolher Ação do Turno' })).toHaveCount(0);
-    await expect(host.getByRole('button', { name: 'Escolher Ação do Turno' })).toBeVisible();
+    await expect(guest.getByRole('button', { name: 'Escolher ação do turno' })).toHaveCount(0);
+    await expect(host.getByRole('button', { name: 'Escolher ação do turno' })).toBeVisible();
     await expect(guest.getByRole('alert')).toHaveCount(0);
     if (testTimeouts) {
     // Depois de uma rodada manual, ambos ficam sem agir: o host deve executar
     // a ação automática e passar o turno, mantendo a sala e o heartbeat ativos.
-    await expect(guest.getByRole('button', { name: 'Escolher Ação do Turno' })).toBeEnabled({ timeout: (ACTION_TIMEOUT_SECONDS + 15) * 1000 });
-    await expect(host.getByRole('button', { name: 'Escolher Ação do Turno' })).toHaveCount(0);
+    await expect(guest.getByRole('button', { name: 'Escolher ação do turno' })).toBeEnabled({ timeout: (ACTION_TIMEOUT_SECONDS + 15) * 1000 });
+    await expect(host.getByRole('button', { name: 'Escolher ação do turno' })).toHaveCount(0);
     await expect(host.getByText('Poder Supremo Conquistado')).toHaveCount(0);
-    await expect(host.getByRole('button', { name: 'Escolher Ação do Turno' })).toBeEnabled({ timeout: (ACTION_TIMEOUT_SECONDS + 15) * 1000 });
-    await expect(guest.getByRole('button', { name: 'Escolher Ação do Turno' })).toHaveCount(0);
+    await expect(host.getByRole('button', { name: 'Escolher ação do turno' })).toBeEnabled({ timeout: (ACTION_TIMEOUT_SECONDS + 15) * 1000 });
+    await expect(guest.getByRole('button', { name: 'Escolher ação do turno' })).toHaveCount(0);
     await expect(guest.getByRole('alert')).toHaveCount(0);
-    await host.getByRole('button', { name: 'Escolher Ação do Turno' }).click();
+    await host.getByRole('button', { name: 'Escolher ação do turno' }).click();
     await host.getByRole('dialog').getByRole('button', { name: /Vaquinha Virtual/ }).click();
     await host.getByRole('button', { name: 'Declarar no Plenário' }).click();
     // Sem resposta à Vaquinha, a janela expira e a ação também deve concluir.
-    await expect(guest.getByRole('button', { name: 'Escolher Ação do Turno' })).toBeVisible({ timeout: (RESPONSE_TIMEOUT_SECONDS + 15) * 1000 });
+    await expect(guest.getByRole('button', { name: 'Escolher ação do turno' })).toBeVisible({ timeout: (RESPONSE_TIMEOUT_SECONDS + 15) * 1000 });
     }
     await guest.getByRole('button', { name: 'Sair', exact: true }).click();
     await guest.getByRole('dialog', { name: 'Sair da mesa' }).getByRole('button', { name: 'Sair da Mesa', exact: true }).click();

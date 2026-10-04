@@ -244,7 +244,7 @@ export class PeerHost {
     const { playerId: id, messageId, data: command } = envelope;
     const reject = (reason: CommandReject['reason'], description: string) => this.reject(conn, messageId, reason, description);
     if (envelope.roomCode.toUpperCase() !== this.roomCode.toUpperCase()) return reject('UNAUTHORIZED', 'Sala incorreta.');
-    if (id === this.hostPlayerId) return reject('UNAUTHORIZED', 'A identidade do host é local.');
+    if (id === this.hostPlayerId) return reject('UNAUTHORIZED', 'A identidade do anfitrião é local.');
     const boundId = [...this.playerConnections].find(([, connection]) => connection === conn)?.[0];
     if (boundId && boundId !== id) return reject('UNAUTHORIZED', 'Conexão vinculada a outro jogador.');
 

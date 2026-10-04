@@ -12,7 +12,7 @@ const { openCoinLightbox } = useCoinLightbox();
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
       <div>
         <h3 class="font-serif text-lg sm:text-xl font-bold text-gold-light tracking-tight">
-          Moedas Oficiais · Contos (C$)
+          Moedas oficiais: Contos (C$)
         </h3>
         <p class="text-xs sm:text-sm text-ink-muted leading-relaxed mb-0">
           A moeda que financia golpes e alianças nos bastidores. Clique em qualquer moeda para examiná-la em alta resolução:

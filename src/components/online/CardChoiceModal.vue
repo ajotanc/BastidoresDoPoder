@@ -50,7 +50,7 @@ watch(() => props.isOpen, () => { selectedCardId.value = ''; });
             Escolha o Apoio Perdido
           </h2>
           <p class="text-xs text-status-red">
-            {{ reason || 'Selecione qual Apoio você deve sacrificar' }}
+            {{ reason || 'Escolha qual apoio perder' }}
           </p>
         </div>
       </div>

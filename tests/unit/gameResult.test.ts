@@ -18,7 +18,7 @@ function finished(): GameState {
     event('win', 'GAME_FINISHED', 'Ana venceu'),
     event('out', 'PLAYER_ELIMINATED', 'Bruno perdeu todos os apoios.'),
     event('loss', 'SUPPORT_LOST', 'Bruno perdeu Barão.'),
-    event('action', 'ACTION_DECLARED', 'Ana declarou Impeachment Definitivo contra Bruno.'),
+    event('action', 'ACTION_DECLARED', 'Ana declarou Impeachment definitivo contra Bruno.'),
     event('turn', 'TURN_CHANGED', 'Turno 10'),
     event('old', 'ACTION_RESOLVED', 'Jogada do turno anterior'),
   ] };
@@ -67,7 +67,7 @@ describe('Resultado visível na mesa', () => {
     await sequence.trigger('click');
     expect(sequence.attributes('aria-expanded')).toBe('true');
     expect(wrapper.findAll('li').map(li => li.findAll('p').at(-1)!.text())).toEqual([
-      'Ana declarou Impeachment Definitivo contra Bruno.', 'Bruno perdeu Barão.', 'Bruno perdeu todos os apoios.',
+      'Ana declarou Impeachment definitivo contra Bruno.', 'Bruno perdeu Barão.', 'Bruno perdeu todos os apoios.',
     ]);
     expect(wrapper.text()).not.toContain('Jogada do turno anterior');
     expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
@@ -91,10 +91,10 @@ describe('Resultado visível na mesa', () => {
     await wrapper.setProps({ gameState: end });
     expect(wrapper.findComponent(GameResultBanner).exists()).toBe(true);
     expect(wrapper.find('app-modal-overlay-stub').exists()).toBe(false);
-    expect(wrapper.find('[aria-label="Seu Gabinete Pessoal"]').exists()).toBe(true);
+    expect(wrapper.find('[aria-label="Seu gabinete"]').exists()).toBe(true);
     expect(wrapper.findComponent(GameNewsFeed).props('history')).toEqual(end.history);
-    expect(wrapper.text()).not.toContain('Sessão em Andamento');
-    expect(wrapper.text()).not.toContain('Escolher Ação do Turno');
+    expect(wrapper.text()).not.toContain('Partida em andamento');
+    expect(wrapper.text()).not.toContain('Escolher ação do turno');
     expect(wrapper.emitted('leave')).toBeUndefined();
     wrapper.unmount();
   });

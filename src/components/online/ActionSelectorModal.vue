@@ -123,7 +123,7 @@ const actionOptions: ActionOption[] = [
     costLabel: '+C$ 1',
     costType: 'positive',
     description: 'Pegue C$ 1 do cofre.',
-    defenseInfo: 'Ação direta irrestrita. Não pode ser contestada nem bloqueada.',
+    defenseInfo: 'Não pode ser contestada nem bloqueada.',
   },
   {
     type: 'crowdfunding',
@@ -142,7 +142,7 @@ const actionOptions: ActionOption[] = [
     costLabel: '+C$ 3',
     costType: 'positive',
     description: 'Pegue C$ 3 do cofre central.',
-    defenseInfo: 'Desafiável como blefe (Fake News!). Sem bloqueio.',
+    defenseInfo: 'Pode ser contestada. Não pode ser bloqueada.',
   },
   {
     type: 'extortion',
@@ -161,7 +161,7 @@ const actionOptions: ActionOption[] = [
     roleClaim: 'Executor',
     costLabel: '-C$ 3',
     costType: 'negative',
-    description: 'Pague C$ 3 para forçar um rival a perder 1 Apoio.',
+    description: 'Pague C$ 3 para forçar um rival a perder 1 apoio.',
     defenseInfo: 'Bloqueável pela vítima alegando possuir a Advogada.',
   },
   {
@@ -191,26 +191,26 @@ const actionOptions: ActionOption[] = [
     roleClaim: 'Articuladora',
     costLabel: '+C$ 2 / +C$ 1',
     costType: 'positive',
-    description: 'Ganhe C$ 2 e conceda C$ 1 para um aliado (ambos do cofre).',
+    description: 'Ganhe C$ 2 e dê C$ 1 a outro jogador (ambos do cofre).',
     defenseInfo: 'Qualquer adversário vivo pode contestar a alegação de Articuladora. Não pode ser bloqueado.',
   },
   {
     type: 'commonImpeachment',
     category: 'coups',
-    name: 'Impeachment Comum',
+    name: 'Impeachment comum',
     costLabel: '-C$ 7',
     costType: 'negative',
-    description: 'Pague C$ 7 para cassar 1 Apoio político de um adversário.',
+    description: 'Pague C$ 7. O alvo perde 1 apoio.',
     defenseInfo: 'Só o alvo pode alegar Intocável e pagar C$ 3 para bloquear. A ação não pode ser contestada; a alegação de Intocável pode.',
   },
   {
     type: 'definitiveImpeachment',
     category: 'coups',
-    name: 'Impeachment Definitivo',
+    name: 'Impeachment definitivo',
     costLabel: '-C$ 10',
     costType: 'negative',
-    description: 'Pague C$ 10. Elimina 1 Apoio de um rival sem apelação!',
-    defenseInfo: 'Golpe constitucional absoluto: sem bloqueio e sem contestação.',
+    description: 'Pague C$ 10. O alvo perde 1 apoio.',
+    defenseInfo: 'Não pode ser bloqueado nem contestado.',
   },
 ];
 
@@ -268,7 +268,7 @@ const filteredActions = computed(() => {
         <Alert v-if="isMustImpeach" variant="destructive">
           <AlertCircle class="h-4 w-4 shrink-0" />
           <AlertDescription>
-            Com C$ 10 ou mais, você precisa declarar Impeachment Definitivo.
+            Com C$ 10 ou mais, você precisa declarar Impeachment definitivo.
           </AlertDescription>
         </Alert>
 
@@ -314,7 +314,7 @@ const filteredActions = computed(() => {
           <div v-if="selectedAction === action.type && requiresTarget" class="space-y-4 border-t border-gold/30 p-3.5">
             <fieldset>
               <legend class="mb-2 font-serif text-sm font-bold text-gold-light">
-                {{ action.type === 'backroomDeal' ? 'Escolha seu aliado' : 'Escolha o alvo' }}
+                {{ action.type === 'backroomDeal' ? 'Escolha quem recebe C$ 1' : 'Escolha o alvo' }}
               </legend>
               <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <button

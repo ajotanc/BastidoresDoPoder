@@ -47,11 +47,11 @@ import { ArrowDown, BookOpen } from '@lucide/vue';
       <div class="flex flex-wrap items-center gap-3">
         <AppButton variant="gold" size="md" href="#cards">
           <BookOpen class="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-          <span class="leading-none">Ver as Cartas</span>
+          <span class="leading-none">Ver as cartas</span>
         </AppButton>
         <AppButton variant="primary" size="md" href="#actions">
           <ArrowDown class="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-          <span class="leading-none">Ações do Turno</span>
+          <span class="leading-none">Ações do turno</span>
         </AppButton>
       </div>
     </div>

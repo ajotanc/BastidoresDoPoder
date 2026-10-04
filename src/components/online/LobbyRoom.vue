@@ -128,7 +128,7 @@ const handleShare = async (): Promise<void> => {
           >
             <template v-if="copiedNotice">
               <Check class="w-3.5 h-3.5 text-paper-deep" aria-hidden="true" />
-              <span>Link Copiado!</span>
+              <span>Link copiado</span>
             </template>
             <template v-else>
               <Share2 class="w-3.5 h-3.5" aria-hidden="true" />
@@ -236,7 +236,7 @@ const handleShare = async (): Promise<void> => {
       <div class="lobby-actions flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <AppButton variant="ghost" class="order-2 w-full justify-start text-sm font-semibold hover:text-status-red sm:order-1 sm:w-auto" @click="emit('leave')">
           <LogOut class="h-4 w-4" aria-hidden="true" />
-          <span>Abandonar Gabinete</span>
+          <span>Abandonar gabinete</span>
         </AppButton>
         <!-- Botão de Pronto para jogadores comuns -->
         <Toggle
@@ -251,7 +251,7 @@ const handleShare = async (): Promise<void> => {
           @update:pressed="emit('set-ready', $event)"
         >
           <CheckCircle2 v-if="myPlayer?.isReady" class="w-3.5 h-3.5" aria-hidden="true" />
-          <span>{{ myPlayer?.isReady ? 'Pronto · desmarcar' : 'Marcar como Pronto' }}</span>
+          <span>{{ myPlayer?.isReady ? 'Pronto · desmarcar' : 'Marcar como pronto' }}</span>
         </Toggle>
 
         <!-- Botão de Iniciar para o Host -->

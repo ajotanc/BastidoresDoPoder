@@ -73,10 +73,10 @@ test('dismissed installation hides consumed prompt until a new event', async ({ 
     window.dispatchEvent(event);
   });
   await dispatch();
-  await page.getByRole('button', { name: 'Instalar App' }).click();
-  await expect(page.getByRole('button', { name: 'Instalar App' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Instalar app' }).click();
+  await expect(page.getByRole('button', { name: 'Instalar app' })).toHaveCount(0);
   await dispatch();
-  await expect(page.getByRole('button', { name: 'Instalar App' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Instalar app' })).toBeVisible();
 });
 
  test('switching from rules to art preserves the original trigger', async ({ page }) => {

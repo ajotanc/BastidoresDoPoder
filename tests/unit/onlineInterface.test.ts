@@ -92,7 +92,7 @@ describe('Controles online seguem a elegibilidade da engine', () => {
     expect(wrapper.text()).toContain('Aguardando deliberação de Bruno');
     await wrapper.setProps({ myPlayerId: 'b' });
     expect(wrapper.text()).toContain('Passar / Permitir');
-    expect(wrapper.text()).toContain('Contestar Alegação');
+    expect(wrapper.text()).toContain('Contestar alegação');
     wrapper.unmount();
   });
 

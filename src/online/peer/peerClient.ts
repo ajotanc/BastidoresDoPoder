@@ -41,7 +41,7 @@ export class PeerClient {
       this.peer = peer;
       const connectionTimeout = setTimeout(() => {
         this.destroy();
-        reject(new Error('O host não respondeu à conexão.'));
+        reject(new Error('O anfitrião não respondeu à conexão.'));
       }, CONNECTION_TIMEOUT_MS);
 
       this.cancelConnect = () => { clearTimeout(connectionTimeout); reject(new Error('Conexão encerrada.')); };
@@ -106,7 +106,7 @@ export class PeerClient {
 
         conn.on('error', (err) => {
           clearTimeout(connectionTimeout);
-          const message = err.message || 'Erro de conexão com o Host da sala';
+          const message = err.message || 'Erro de conexão com o anfitrião da sala';
           this.callbacks.onError(message);
           conn.close();
           reject(err);
@@ -124,7 +124,7 @@ export class PeerClient {
 
   public sendCommand(command: ClientCommand): void {
     if (!this.connection || !this.connection.open) {
-      this.callbacks.onError('Sem conexão ativa com o Host da sala.');
+      this.callbacks.onError('Sem conexão ativa com o anfitrião da sala.');
       return;
     }
 

@@ -9,7 +9,7 @@ const routes: RouteRecordRaw[] = [
     name: 'home',
     component: ManualView,
     meta: {
-      title: `${GAME_NAME  } — Manual de Regras`,
+      title: `${GAME_NAME  } — Manual de regras`,
     },
   },
   {
@@ -17,7 +17,7 @@ const routes: RouteRecordRaw[] = [
     name: 'rules',
     component: ManualView,
     meta: {
-      title: `${GAME_NAME  } — Manual de Regras`,
+      title: `${GAME_NAME  } — Manual de regras`,
     },
   },
   {

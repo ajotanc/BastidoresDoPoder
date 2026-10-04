@@ -189,9 +189,9 @@ export const getActionDisplayName = (actionType: ActionType): string => {
     case 'backroomDeal':
       return 'Acordo de Bastidor (+C$ 2 / +C$ 1)';
     case 'commonImpeachment':
-      return 'Impeachment Comum (C$ 7)';
+      return 'Impeachment comum (C$ 7)';
     case 'definitiveImpeachment':
-      return 'Impeachment Definitivo (C$ 10)';
+      return 'Impeachment definitivo (C$ 10)';
   }
 };
 
@@ -472,11 +472,11 @@ export const executeCommand = (
       const intent = command.payload as ActionIntent;
       const cost = getActionCost(intent.actionType);
 
-      // Regra de ouro: se começou o turno com 10 ou mais contos, é obrigatório Impeachment Definitivo
+      // Regra de ouro: se começou o turno com 10 ou mais contos, é obrigatório Impeachment definitivo
       if (player.coins >= 10 && intent.actionType !== 'definitiveImpeachment') {
         return createRejection(
           'MUST_IMPEACH_OVER_10',
-          'Com C$ 10 ou mais, é obrigatório declarar Impeachment Definitivo!'
+          'Com C$ 10 ou mais, é obrigatório declarar Impeachment definitivo!'
         );
       }
 
@@ -542,12 +542,12 @@ export const executeCommand = (
         return advanceAfterActionChallengeWindow(state);
       }
 
-      // Se é Impeachment Comum (C$ 7), abre janela de bloqueio exclusivo para o alvo alegar Intocável (pagando C$ 3)
+      // Se é Impeachment comum (C$ 7), abre janela de bloqueio exclusivo para o alvo alegar Intocável (pagando C$ 3)
       if (intent.actionType === 'commonImpeachment') {
         return advanceAfterActionChallengeWindow(state);
       }
 
-      // Ações sem contestação nem bloqueio (Salário Oficial, Impeachment Definitivo) resolvem imediatamente
+      // Ações sem contestação nem bloqueio (Salário Oficial, Impeachment definitivo) resolvem imediatamente
       return resolveApprovedAction(state);
     }
 
@@ -613,7 +613,7 @@ export const executeCommand = (
         };
 
         // O desafiante perde 1 apoio
-        addEvent(`${challenger.name} falhou na contestação e perderá 1 Apoio!`, 'alert', 'CHALLENGE_FAILED');
+        addEvent(`${challenger.name} falhou na contestação e perderá 1 apoio!`, 'alert', 'CHALLENGE_FAILED');
 
         if (isBlockChallenge) {
           // Se o bloqueio era verdadeiro, o bloqueio teve sucesso. O impeachment/ataque foi evitado!

@@ -525,7 +525,7 @@ export const RESOLUTION_RULES: readonly string[] = [
   'Uma contestação por alegação: a ação pode ter um desafio e o bloqueio pode ter outro. Uma alegação já resolvida não é contestada novamente.',
   'Uma tentativa de bloqueio por ação: se for desmascarada, ninguém apresenta uma segunda defesa, nem mesmo usando outro personagem.',
   'Com ou sem alvo, qualquer outro jogador vivo pode contestar a alegação de ação ou bloqueio. A prioridade é em sentido horário; depois que todos passam, a janela fecha. O Impeachment definitivo não admite bloqueio nem contestação.',
-  'Sem voltar no tempo: não se contesta depois de resolvido o efeito; o Marqueteira só olha as novas cartas quando sua ação já foi validada.',
+  'Sem voltar no tempo: não se contesta depois de resolvido o efeito; a Marqueteira só olha as novas cartas quando sua ação já foi validada.',
   'Alvo eliminado em desafio: o ataque ou roubo termina sem novo alvo e sem devolução de custo.',
   'Vitória imediata: ao restar apenas um jogador vivo, encerra-se a partida imediatamente sem resolver efeitos pendentes.'
 ] as const;
@@ -537,7 +537,7 @@ export const GAME_EXAMPLES: readonly GameExample[] = [
   {
     id: 'ex-1',
     title: 'Intocável + Advogada',
-    description: 'Bruno tem essa dupla. Pode bloquear Executor gratuitamente com Advogada. Se Ana pagar C$ 7 pelo Impeachment comum, Bruno pode pagar C$ 3 com Intocável para bloquear. Mas se Ana pagar C$ 10 pelo Impeachment definitivo, Bruno é obrigado a perder um de seus apoios. A dupla é forte, mas não é imune.',
+    description: 'Bruno tem essa dupla. Pode bloquear Executor gratuitamente com Advogada. Se Ana pagar C$ 7 pelo Impeachment comum, Bruno pode pagar C$ 3 com Intocável para bloquear. Mas se Ana pagar C$ 10 pelo Impeachment definitivo, Bruno é obrigado a perder um de seus apoios.',
     highlight: 'A dupla é forte, mas não é imune.'
   },
   {

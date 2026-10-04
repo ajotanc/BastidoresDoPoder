@@ -123,7 +123,7 @@ const handleOpenLightbox = (): void => {
       <!-- Jurisprudência e Nota Oficial de Regra -->
       <div v-if="props.card.officialRuleNotice"
         class="p-3 rounded-lg bg-surface/60 border border-gold-dark/40 text-xs text-ink-subtle italic leading-relaxed">
-        <strong class="not-italic font-bold text-gold-light block mb-0.5">Nota Oficial da Mesa:</strong>
+        <strong class="not-italic font-bold text-gold-light block mb-0.5">Nota da mesa:</strong>
         {{ props.card.officialRuleNotice }}
       </div>
     </div>
