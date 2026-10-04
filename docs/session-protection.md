@@ -2,7 +2,7 @@
 
 O anfitrião salva automaticamente o estado completo em IndexedDB após mudanças: cartas privadas, baralho, decisões pendentes, configurações, respostas já recebidas, IDs de comandos processados e credenciais de reconexão. Nenhum desses dados privados é enviado no snapshot público.
 
-Em `/online` ou ao reabrir o link da mesa, **Retomar partida** recupera a mesa no mesmo navegador, perfil e origem. Os saves usam um formato versionado; registros incompatíveis, corrompidos, encerrados ou expirados são removidos. A validade é configurada por `recovery.saveTtlHours` em `game.config.json` (24 horas desde o último checkpoint). Sair explicitamente ou descartar o save o exclui; fechar/recarregar a aba preserva o último checkpoint confirmado.
+Em `/game` ou ao reabrir o link da mesa, **Retomar partida** recupera a mesa no mesmo navegador, perfil e origem. Os saves usam um formato versionado; registros incompatíveis, corrompidos, encerrados ou expirados são removidos. A validade é configurada por `recovery.saveTtlHours` em `game.config.json` (24 horas desde o último checkpoint). Sair explicitamente ou descartar o save o exclui; fechar/recarregar a aba preserva o último checkpoint confirmado.
 
 O código da mesa, as credenciais e a identidade da conversa Discord são preservados. Web Locks impedem duas abas da mesma origem de hospedar a mesma mesa. Se o PeerServer ainda estiver liberando o código anterior, aguarde e tente novamente; não é gerado outro código durante a recuperação. Uma falha ao retomar mantém o save.
 

@@ -78,20 +78,16 @@ describe('Composables e Utilitários', () => {
     expect(ROLE_DISPLAY_NAMES.guide).toBe('Guia de Mesa');
   });
 
-  it('Vue Router deve resolver rotas de manual (/), online (/online) e sala (/game/:id)', async () => {
+  it('Vue Router deve resolver rotas de manual (/), lobby (/game) e sala (/room/:id)', async () => {
     const router = (await import('@/router')).default;
     await router.push('/');
     expect(router.currentRoute.value.name).toBe('home');
 
-    await router.push('/online');
-    expect(router.currentRoute.value.name).toBe('online');
-
-    await router.push('/game/7K3F');
+    await router.push('/game');
     expect(router.currentRoute.value.name).toBe('game');
-    expect(router.currentRoute.value.params.id).toBe('7K3F');
 
-    await router.push('/jogar/7K3F');
-    expect(router.currentRoute.value.name).toBe('game');
+    await router.push('/room/7K3F');
+    expect(router.currentRoute.value.name).toBe('room');
     expect(router.currentRoute.value.params.id).toBe('7K3F');
   }, 20000);
 });

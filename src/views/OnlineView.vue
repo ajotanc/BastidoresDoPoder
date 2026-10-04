@@ -27,13 +27,13 @@ const handleBackToManual = (): void => {
 
 const handleRoomEntered = (roomCode: string): void => {
   if (route.params.id !== roomCode) {
-    router.replace({ name: 'game', params: { id: roomCode } });
+    router.replace({ name: 'room', params: { id: roomCode } });
   }
 };
 
 const handleRoomLeft = (): void => {
-  if (route.name !== 'online') {
-    router.replace('/online');
+  if (route.name !== 'game') {
+    router.replace('/game');
   }
 };
 </script>

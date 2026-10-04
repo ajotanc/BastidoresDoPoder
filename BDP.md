@@ -23,9 +23,9 @@ A engine não depende de Vue, PeerJS ou DOM. Ainda utiliza Date.now e Math.rando
 
 ## 2. Sala e início
 
-O código gera o peerId determinístico do host por roomCodeToPeerId. O link atual é /game/:id; /play/:id e /jogar/:id redirecionam para essa rota.
+O código gera o peerId determinístico do host por roomCodeToPeerId. O link atual é /room/:id. O lobby fica em /game.
 
-Ao criar sala, colisões de identificador recebem até cinco tentativas com novos códigos. Ao entrar, o jogador recebe uma identidade local e um token aleatório gerados com crypto.randomUUID. A conexão passa a ser vinculada à identidade somente após JOIN_ROOM aceito pelo host. Uma conexão não pode assumir outra identidade sem autenticação de reconexão.
+Ao criar sala, colisões de identificador recebem até cinco tentativas com novos códigos. Ao entrar, o jogador recebe uma identidade local e um token aleatório gerados com randomUUID (src/utils/uuid.ts, que cai para getRandomValues em contexto não seguro). A conexão passa a ser vinculada à identidade somente após JOIN_ROOM aceito pelo host. Uma conexão não pode assumir outra identidade sem autenticação de reconexão.
 
 São aceitos de dois a oito jogadores. Somente o host inicia. Todos devem estar conectados e prontos. Cada jogador recebe dois apoios secretos e C$2; o restante fica no baralho privado do host.
 
@@ -102,17 +102,19 @@ A Marqueteira compra duas cartas somente após a alegação ser validada. WAITIN
 
 ## 9. Prazos e ações automáticas
 
-O host agenda e decide o vencimento usando deadlineAt absoluto. Clientes apenas exibem a contagem. Valores em DEFAULT_GAME_SETTINGS:
+O host agenda e decide o vencimento usando deadlineAt absoluto. Clientes apenas exibem a contagem. Valores padrão em DEFAULT_GAME_SETTINGS:
 
-| Situação | Prazo | Ação automática |
+| Situação | Prazo padrão | Ação automática |
 | --- | --- | --- |
-| Decidir ação | 45 s | Salário; com C$10+, definitivo contra o próximo adversário vivo |
-| Oportunidade de bloqueio | 12 s por jogador | Passa somente esse jogador |
-| Oportunidade de desafio | 12 s por jogador | Passa somente esse jogador |
-| Escolher perda | 12 s | Primeiro apoio ativo na ordem da mão |
-| Escolher devolução | 12 s | Devolve as duas cartas recém-compradas |
+| Decidir ação | 600 s | Salário; com C$10+, definitivo contra o próximo adversário vivo |
+| Oportunidade de bloqueio | 30 s por jogador | Passa somente esse jogador |
+| Oportunidade de desafio | 30 s por jogador | Passa somente esse jogador |
+| Escolher perda | 30 s | Primeiro apoio ativo na ordem da mão |
+| Escolher devolução | 30 s | Devolve as duas cartas recém-compradas |
 
-Os tempos são configurados em segundos por `ACTION_TIMEOUT_SECONDS` e `RESPONSE_TIMEOUT_SECONDS`, em `src/game/models/gameState.ts`. A engine converte esses valores para milissegundos; a barra de tempo acompanha a duração da fase.
+O anfitrião pode alterar o prazo de ação e o de resposta ao criar a sala. Os padrões vêm de `gameplay` em `game.config.json`.
+
+Os tempos padrão são `ACTION_TIMEOUT_SECONDS` e `RESPONSE_TIMEOUT_SECONDS` (de `game.config.json`, reexportados por `src/game/models/gameState.ts`). A engine converte esses valores para milissegundos; a barra de tempo acompanha a duração da fase.
 
 Cada nova fase ou respondente recebe novo prazo, e o host reagenda também após ações automáticas. Timeout não é comando de rede; apenas o host chama executeTimeout. Jogadores ausentes continuam sujeitos a essas escolhas padrão.
 

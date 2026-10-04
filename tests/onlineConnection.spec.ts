@@ -14,7 +14,7 @@ test('dois navegadores entram na mesma sala pelo PeerServer real', async ({ brow
       page.on('pageerror', error => console.log(name, 'pageerror', error.message));
       page.on('console', message => { if (message.type() === 'error' || message.type() === 'warning') console.log(name, message.type(), message.text()); });
     }
-    await host.goto('http://127.0.0.1:4174/online');
+    await host.goto('http://127.0.0.1:4174/game');
     await host.getByLabel('Seu Codinome Político').fill('Teste Host');
     await host.getByLabel('Enviar foto de perfil').setInputFiles('public/images/characters/colonel.webp');
     await expect(host.getByAltText('Sua foto de perfil')).toBeVisible();
@@ -60,7 +60,7 @@ test('dois navegadores entram na mesma sala pelo PeerServer real', async ({ brow
     }
     await guest.getByRole('button', { name: 'Sair', exact: true }).click();
     await guest.getByRole('dialog', { name: 'Sair da mesa' }).getByRole('button', { name: 'Sair da Mesa', exact: true }).click();
-    await expect(guest).toHaveURL(/\/online$/);
+    await expect(guest).toHaveURL(/\/game$/);
     await expect(guest.getByText(/Você foi convidado/)).toHaveCount(0);
     await expect(host.getByText('Poder Supremo Conquistado')).toBeVisible();
     await expect(host.getByRole('heading', { name: 'Teste Host', exact: true })).toBeVisible();

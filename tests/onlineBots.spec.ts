@@ -4,7 +4,7 @@ import { DEFAULT_BOT_COUNT, MAX_BOTS_PER_ROOM } from '../src/constants/gameConfi
 test.use({ viewport: { width: 390, height: 844 } });
 
 test('opção de bots acessível, quantidade padrão e limites', async ({ page }) => {
-  await page.goto('/online');
+  await page.goto('/game');
   const toggle = page.getByRole('switch', { name: 'Adicionar bots à mesa' });
   const count = page.getByRole('spinbutton', { name: 'Quantidade de bots' });
   await expect(toggle).not.toBeChecked();
@@ -32,11 +32,11 @@ test('opção de bots acessível, quantidade padrão e limites', async ({ page }
 test('sala online com bots joga e devolve o turno ao humano', async ({ page }) => {
   test.skip(process.env.BDP_LIVE_PEER_TEST !== '1', 'Usa o PeerServer real.');
   test.setTimeout(90000);
-  await page.goto('/online');
+  await page.goto('/game');
   await page.getByRole('switch', { name: 'Adicionar bots à mesa' }).check();
   await page.getByRole('button', { name: 'Criar Nova Partida Online' }).click();
   await expect(page.getByText('Sala de Articulação Política')).toBeVisible({ timeout: 30000 });
-  await expect(page.locator('.lobby-player').filter({ hasText: '(Bot)' })).toHaveCount(DEFAULT_BOT_COUNT);
+  await expect(page.locator('.lobby-player').filter({ hasText: 'Bot:' })).toHaveCount(DEFAULT_BOT_COUNT);
   await page.getByRole('button', { name: 'Iniciar disputa', exact: true }).click();
   await page.getByRole('button', { name: 'Escolher Ação do Turno' }).click();
   await page.getByRole('dialog').getByRole('button', { name: /Salário Oficial/ }).click();
@@ -57,7 +57,7 @@ test('sala online com bots joga e devolve o turno ao humano', async ({ page }) =
  test('Discord é opcional e não consulta Functions durante a configuração', async ({ page }) => {
   const requests: string[] = [];
   page.on('request', request => { if (request.url().includes('/.netlify/functions/')) requests.push(request.url()); });
-  await page.goto('/online');
+  await page.goto('/game');
   const toggle = page.getByRole('switch', { name: 'Ativar conversa no Discord' });
   await expect(toggle).not.toBeChecked();
   await page.locator('label[for="enable-discord"]').click();

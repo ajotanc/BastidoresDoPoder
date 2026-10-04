@@ -22,7 +22,7 @@ test('convite direto carrega a entrada sem carregar o manual', async ({ page }) 
   page.on('request', request => {
     if (request.resourceType() === 'script') scripts.push(request.url());
   });
-  await page.goto('/game/TEST');
+  await page.goto('/room/TEST');
   await expect(page.getByLabel('Código da sala', { exact: true })).toHaveValue('TEST');
   expect(scripts.some(url => /\/ManualView-[^/]+\.js/.test(url))).toBe(false);
 });

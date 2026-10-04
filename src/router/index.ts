@@ -21,31 +21,21 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/online',
-    name: 'online',
+    path: '/game',
+    name: 'game',
     component: OnlineView,
     meta: {
       title: `${GAME_NAME  } — Gabinete Online`,
     },
   },
   {
-    path: '/game/:id',
-    name: 'game',
+    path: '/room/:id',
+    name: 'room',
     component: OnlineView,
     props: true,
     meta: {
       title: `${GAME_NAME  } — Mesa de Jogo`,
     },
-  },
-  // Redirecionamento amigável em inglês (/play/:id -> /game/:id)
-  {
-    path: '/play/:id',
-    redirect: (to) => ({ name: 'game', params: { id: to.params.id } }),
-  },
-  // Retrocompatibilidade com links antigos /jogar/:id
-  {
-    path: '/jogar/:id',
-    redirect: (to) => ({ name: 'game', params: { id: to.params.id } }),
   },
   {
     path: '/:pathMatch(.*)*',
@@ -69,7 +59,7 @@ const router = createRouter({
 
 router.afterEach((to) => {
   if (typeof document !== 'undefined') {
-    if (to.name === 'game' && to.params.id) {
+    if (to.name === 'room' && to.params.id) {
       const roomId = String(to.params.id).toUpperCase();
       document.title = `${GAME_NAME} — Mesa ${roomId}`;
     } else if (typeof to.meta.title === 'string') {

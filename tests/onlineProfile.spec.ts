@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.use({ viewport: { width: 390, height: 844 } });
 
 test('nome aleatório em inglês, regeneração e perfil salvo', async ({ page }) => {
-  await page.goto('/online');
+  await page.goto('/game');
   const name = page.getByLabel('Seu Codinome Político');
   await expect(name).not.toHaveValue('');
   const first = await name.inputValue();

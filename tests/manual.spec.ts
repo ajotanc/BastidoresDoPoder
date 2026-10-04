@@ -5,7 +5,10 @@ test('search ignores accents and filters expose their state', async ({ page }) =
   await page.getByRole('searchbox').fill('barao');
   await expect(page.locator('#cards article')).toHaveCount(1);
   await expect(page.locator('#cards article').getByRole('heading', { name: 'Barão', exact: true })).toBeVisible();
-  await page.getByRole('combobox', { name: 'Categoria das cartas' }).click();
+  const category = page.getByRole('combobox', { name: 'Categoria das cartas' });
+  // O scroll suave do site deixava a lista aberta fora da área visível; centraliza sem animação antes de abrir.
+  await category.evaluate(element => element.scrollIntoView({ block: 'center', behavior: 'instant' }));
+  await category.click();
   await page.getByRole('option', { name: 'Economia & Negociação' }).click();
   await expect(page.getByRole('combobox', { name: 'Categoria das cartas' })).toHaveText('Economia & Negociação');
 });
@@ -43,7 +46,7 @@ for (const width of [320, 360, 375, 1280]) {
   });
 }
 
-for (const route of ['/', '/online']) {
+for (const route of ['/', '/game']) {
   test(`skip link moves keyboard focus to main content on ${route}`, async ({ page }) => {
     await page.goto(route);
     await page.keyboard.press('Tab');

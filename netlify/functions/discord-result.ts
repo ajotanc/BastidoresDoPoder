@@ -34,7 +34,7 @@ export default async function handler(request: Request): Promise<Response> {
     const destination = list.find(item => item.id === destinationId && item.type === 0);
     if (!destination) throw new Error('INVALID_RESULTS_CHANNEL');
     const nonce = createHash('sha256').update(`${summary.roomCode}:${summary.gameId}`).digest('hex').slice(0, 24);
-    const url = `${new URL(request.url).origin}/game/${summary.roomCode}#resultado-${nonce}`;
+    const url = `${new URL(request.url).origin}/room/${summary.roomCode}#resultado-${nonce}`;
     const bot = await discord('/users/@me') as { id: string };
     let before = '';
     // Fail closed if the bounded history scan cannot prove this result is new.
