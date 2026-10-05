@@ -159,7 +159,7 @@ export const useGameStore = defineStore('game', () => {
       if (err instanceof Error) {
         errorMessage.value = `Erro ao criar sala: ${err.message}`;
       } else {
-        errorMessage.value = 'Falha desconhecida ao inicializar Host P2P.';
+        errorMessage.value = 'Não foi possível abrir a mesa por um erro desconhecido.';
       }
       throw err;
     }

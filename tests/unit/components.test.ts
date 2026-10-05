@@ -194,9 +194,9 @@ describe('Testes de Componentes com @vue/test-utils e jsdom', () => {
     expect(wrapperStory.text().toUpperCase()).toContain('BASTIDORES');
     expect(wrapperStory.text().toUpperCase()).toContain('DO PODER');
     expect(wrapperStory.text()).toContain('Deputado Alerson');
-    expect(wrapperStory.text()).toContain('Nova sessão');
-    expect(wrapperStory.text()).toContain('A próxima mesa é sua?');
-    expect(wrapperStory.text()).toContain('dispute o controle político');
+    expect(wrapperStory.text()).toContain('Nova partida');
+    expect(wrapperStory.text()).toContain('Quem joga a próxima?');
+    expect(wrapperStory.text()).toContain('Chame os amigos para uma nova partida');
   });
 });
 

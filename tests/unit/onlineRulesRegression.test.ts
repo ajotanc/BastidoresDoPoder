@@ -371,7 +371,7 @@ describe('Regressões das regras online', () => {
     expect(s.publicState.players.a!.coins).toBe(2);
     const notice = s.privateNotices.a!;
     expect(s.publicState.history.some(event => event.message === notice)).toBe(true);
-    expect(notice).toContain(discardRole === 'untouchable' ? 'já perdeu Intocável na contestação anterior' : 'além do apoio perdido na contestação');
+    expect(notice).toContain(discardRole === 'untouchable' ? 'já tinha perdido Intocável na contestação' : 'além do apoio perdido na contestação');
     expect(notice).not.toContain('infrutífero');
     if (!remaining) expect(s.publicState.history.some(event => event.type === 'PLAYER_ELIMINATED' && event.playerId === 'b')).toBe(true);
   });

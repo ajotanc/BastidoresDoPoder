@@ -17,7 +17,7 @@ import RoleIcon from '@/components/game/RoleIcon.vue';
     <AppSectionHeader
       label="Consulta rápida"
       title="O que bloqueia o quê?"
-      description="Consulte rapidamente os bloqueios permitidos, os defensores elegíveis e se cabe contestação em cada ação durante a partida."
+      description="Veja o que bloqueia cada ação, quem pode bloquear e se a ação pode ser contestada."
     />
 
     <!-- Legenda de Ícones dos Personagens -->
@@ -105,12 +105,12 @@ import RoleIcon from '@/components/game/RoleIcon.vue';
 
     <AppCallout variant="gold" title="Antes de começar a partida:">
       <p class="text-sm text-ink-muted leading-relaxed mb-0">
-        Todos os jogadores devem estar cientes de que há exatamente {{ SUPPORT_CARDS_PER_ROLE }} cópias de cada personagem no baralho, que custos de ataque ou mandado nunca são reembolsados, que um blefe defensivo mal calculado pode eliminar dois apoios de uma vez só e que C$ 10 no início do turno obriga a execução do Impeachment definitivo.
+        Cada personagem tem {{ SUPPORT_CARDS_PER_ROLE }} cópias no baralho. Custos de ataque e de mandado nunca são devolvidos. Um blefe de defesa que dá errado pode custar dois apoios de uma vez. Com C$ 10 no início do turno, o Impeachment definitivo é obrigatório.
       </p>
     </AppCallout>
 
     <p class="text-sm text-ink-muted leading-relaxed italic border-l-2 border-line pl-3 py-1 mt-4">
-      Esta versão consolida as regras oficiais do protótipo com os {{ CARDS_LENGTH }} personagens em testes de equilíbrio para {{ MIN_PLAYERS_TO_START }} a {{ MAX_PLAYERS_PER_ROOM }} jogadores.
+      Versão de testes de equilíbrio, com {{ CARDS_LENGTH }} personagens, para {{ MIN_PLAYERS_TO_START }} a {{ MAX_PLAYERS_PER_ROOM }} jogadores.
     </p>
   </section>
 </template>

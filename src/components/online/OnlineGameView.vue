@@ -234,8 +234,8 @@ const handleJoin = async (): Promise<void> => {
 
     <div v-if="mode === 'idle' || mode === 'creating' || mode === 'joining'"
       class="online-entry pt-12 mx-auto max-w-xl space-y-6 sm:space-y-8 lg:max-w-4xl">
-      <AppSectionHeader title="Seu gabinete. Suas alianças."
-        description="Reúna seus amigos, guarde seus segredos e dispute o poder." />
+      <AppSectionHeader title="Jogue online"
+        description="Crie uma sala para jogar com amigos, com bots ou com os dois." />
       <section v-if="savedGames.length" class="space-y-3 rounded border border-gold/40 bg-surface p-4 sm:p-6" aria-label="Partidas salvas">
         <h2 class="font-serif font-bold text-gold-light">Sua mesa está salva</h2>
         <p class="text-xs leading-relaxed text-ink-muted">Retome neste navegador. Os convidados podem voltar pelo mesmo código.</p>

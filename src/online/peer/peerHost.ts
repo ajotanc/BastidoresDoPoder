@@ -374,7 +374,7 @@ export class PeerHost {
       players: Object.fromEntries(Object.entries(pub.players).map(([id, player]) => [id, { ...player, isConnected: id === this.hostPlayerId || !!player.isBot }])),
       deadlineAt: pub.deadlineAt === null ? null : now + grace + pub.deadlineAt,
       ...(conversation?.status === 'loading' ? { discordConversation: { status: 'error' as const } } : {}),
-      history: [{ id: randomUUID(), timestamp: now, type: 'ROOM_RESTORED', importance: 'normal' as const, message: humans.length ? 'Mesa retomada pelo anfitrião. Prazo de reconexão reaberto; o tempo restante da decisão foi preservado.' : 'Mesa retomada pelo anfitrião. O tempo restante da decisão foi preservado.' }, ...pub.history].slice(0, 50),
+      history: [{ id: randomUUID(), timestamp: now, type: 'ROOM_RESTORED', importance: 'normal' as const, message: humans.length ? 'Mesa retomada pelo anfitrião. A reconexão foi reaberta e o tempo restante da decisão foi mantido.' : 'Mesa retomada pelo anfitrião. O tempo restante da decisão foi mantido.' }, ...pub.history].slice(0, 50),
     };
     this.schedulePhaseTimeout();
     this.resumeTimer = setTimeout(() => { if (!this.destroyed) this.bots.update(this.authoritativeState.publicState); }, grace);

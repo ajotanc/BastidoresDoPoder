@@ -77,7 +77,7 @@ const handleShare = async (): Promise<void> => {
     try {
       await window.navigator.share({
         title: `${GAME_NAME  } — Mesa Online`,
-        text: `Participe da minha mesa política em ${GAME_NAME}! Código: ${props.roomCode}`,
+        text: `Entra na minha mesa de ${GAME_NAME}! Código: ${props.roomCode}`,
         url: shareableUrl.value,
       });
       return;
@@ -151,7 +151,7 @@ const handleShare = async (): Promise<void> => {
         <h2 id="lobby-settings-title" class="game-section-title flex min-h-8 items-center gap-2">
           <SlidersHorizontal class="size-4 shrink-0 text-gold-light" aria-hidden="true" />Configurações da partida
         </h2>
-        <p class="text-xs leading-relaxed text-ink-muted">Definidas pelo anfitrião. As mesmas regras para toda a mesa.</p>
+        <p class="text-xs leading-relaxed text-ink-muted">O anfitrião define e elas valem para toda a mesa.</p>
       </div>
       <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
         <div class="min-w-0">

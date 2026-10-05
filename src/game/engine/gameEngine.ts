@@ -1,5 +1,4 @@
 import { randomUUID } from '@/utils/uuid';
-import { GAME_NAME } from '@/constants/gameConfig';
 import dayjs from 'dayjs';
 import type { RoleSlug } from '@/types/game';
 import type {
@@ -85,7 +84,7 @@ export const createInitialAuthoritativeState = (
     id: `ev-${dayjs().valueOf()}-init`,
     timestamp: dayjs().valueOf(),
     type: 'ROOM_CREATED',
-    message: `Gabinete oficial da sala ${roomCode.toUpperCase()} estabelecido por ${hostName}.`,
+    message: `${hostName} criou a sala ${roomCode.toUpperCase()}.`,
     importance: 'normal',
   };
 
@@ -279,7 +278,7 @@ export const executeCommand = (
   if (!isClientCommand(command)) return createRejection('INVALID_COMMAND', 'Comando inválido.');
   if (['DECLARE_CHALLENGE', 'DECLARE_BLOCK', 'PASS_RESPONSE'].includes(command.type) &&
       state.publicState.responsePlayerIds[0] !== senderPlayerId) {
-    return createRejection('NOT_ELIGIBLE_TO_REACT', 'Aguarde sua oportunidade de resposta em sentido horário.');
+    return createRejection('NOT_ELIGIBLE_TO_REACT', 'Espere sua vez de responder. A ordem é em sentido horário.');
   }
 
   switch (command.type) {
@@ -447,7 +446,7 @@ export const executeCommand = (
       };
 
       const firstPlayer = state.publicState.players[firstPlayerId];
-      addEvent(`A disputa pelo poder começou! Turno 1 aberto com ${firstPlayer?.name || 'Primeiro Jogador'}.`, 'breaking', 'GAME_STARTED');
+      addEvent(`A partida começou. O primeiro turno é de ${firstPlayer?.name || 'Primeiro Jogador'}.`, 'breaking', 'GAME_STARTED');
 
       return {
         nextAuthoritativeState: state,
@@ -642,7 +641,7 @@ export const executeCommand = (
             },
           };
           state.lossContinuation = { next: 'resolve' };
-          return prepareCardLoss(state, suspectPlayerId, 'Tentativa de bloqueio ilegítima desmascarada');
+          return prepareCardLoss(state, suspectPlayerId, 'Bloqueio desmascarado');
         } else {
           // Se era a ação principal que era blefe, a ação é totalmente anulada!
           state.publicState = {
@@ -776,7 +775,7 @@ export const executeCommand = (
           revision: state.publicState.revision + 1,
         };
         addWinnerRevealNotice(state);
-        addEvent(`VITÓRIA POLÍTICA! ${winnerName} assumiu o controle absoluto de ${GAME_NAME}!`, 'breaking', 'GAME_FINISHED');
+        addEvent(`VITÓRIA POLÍTICA! ${winnerName} ficou com o poder.`, 'breaking', 'GAME_FINISHED');
         state.lossContinuation = undefined;
         return engineResult(state);
       }
@@ -1016,8 +1015,8 @@ const resolveApprovedAction = (state: AuthoritativeGameState): EngineExecutionRe
         const resultMessage = hasNamedRole
           ? `Mandado concluído: ${target?.name} perdeu 1 apoio de ${roleName}${priorLosses.length ? ', além do apoio perdido na contestação' : ''}.`
           : lostNamedRole
-            ? `Mandado concluído: ${target?.name} já perdeu ${roleName} na contestação anterior. Nenhuma cópia ativa desse personagem restou para o Mandado; nenhum apoio adicional foi perdido.`
-            : `Mandado concluído: ${roleName} não foi encontrado entre os apoios ativos de ${target?.name}. Nenhum apoio foi perdido pelo Mandado.`;
+            ? `Mandado concluído: ${target?.name} já tinha perdido ${roleName} na contestação, então o Mandado não tirou outro apoio.`
+            : `Mandado concluído: ${target?.name} não tinha ${roleName} e não perdeu apoio.`;
         state.privateNotices[pending.sourcePlayerId] = resultMessage;
 
         if (hasNamedRole) {

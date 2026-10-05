@@ -18,7 +18,7 @@ for (const width of [320, 390, 1280]) {
     await expect(slider).toHaveAttribute('aria-valuetext', 'Difícil');
     await page.goto('/');
     const section = page.locator('#online-mode');
-    await expect(section.getByRole('heading', { name: 'A mesma mesa. Quatro desafios.' })).toBeVisible();
+    await expect(section.getByRole('heading', { name: 'Quatro níveis de bot' })).toBeVisible();
     await expect(section.getByRole('heading', { name: 'Pro', exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });

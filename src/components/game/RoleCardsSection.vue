@@ -76,8 +76,8 @@ const filteredCards = computed<readonly RoleCard[]>(() => {
   <section id="cards" class="pt-12 border-t border-line/70">
     <AppSectionHeader
       label="Cartas e guia de ajuda"
-      title="Oito personagens. Um guia de mesa."
-      description="Cada personagem possui sua própria identidade e poderes secretos. Toque na carta para ampliar e abra as regras para consultar os detalhes. A nona carta é o Guia de Mesa e não entra no baralho de apoio."
+      title="Os oito personagens e o guia de mesa"
+      description="Toque na carta para ampliar e abra as regras para ver os detalhes. A nona carta é o Guia de Mesa e não entra no baralho de apoio."
     />
 
     <!-- Controles de filtro e busca -->

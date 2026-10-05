@@ -92,7 +92,7 @@ const siteUrl = computed(() => {
           <h3 class="result-name font-serif font-bold text-gold-light text-2xl md:text-3xl leading-tight my-1 break-words">
             <PlayerName :player="winner" fallback="Sessão encerrada sem vencedor" />
           </h3>
-          <p v-if="winner" class="text-sm text-ink-muted leading-tight mt-0.5">Conquistou o poder.</p>
+          <p v-if="winner" class="text-sm text-ink-muted leading-tight mt-0.5">Ficou com o poder.</p>
         </div>
       </div>
 
@@ -168,7 +168,7 @@ const siteUrl = computed(() => {
             <PlayerName :player="winner" fallback="Sessão encerrada" />
           </h3>
           <p v-if="winner" class="text-xs text-ink-muted leading-tight mt-0.5">
-            Conquistou o poder.
+            Ficou com o poder.
           </p>
         </div>
       </div>
@@ -235,14 +235,14 @@ const siteUrl = computed(() => {
       </div>
 
       <div v-else class="text-xs text-ink-muted py-4 text-center">
-        Gabinete consolidado sem apoios remanescentes.
+        Sem apoios restantes.
       </div>
     </div>
 
     <!-- 3. Rodapé Oficial da Mesa (Chamada oficial colada no padding inferior) -->
     <footer class="gold-divider-top relative pt-4 pb-0 flex flex-col shrink-0 w-full [&>header]:mb-0">
-      <AppSectionHeader label="Nova sessão" title="A próxima mesa é sua?"
-        description="Convoque seus amigos e dispute o controle político."
+      <AppSectionHeader label="Nova partida" title="Quem joga a próxima?"
+        description="Chame os amigos para uma nova partida."
         class="mb-0">
         <div class="mt-4 flex">
           <Tag variant="primary" size="md" class="gap-2 px-3.5 py-1.5 border-gold-dark shadow-sm">

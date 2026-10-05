@@ -143,7 +143,7 @@ import CoinsShowcase from '@/components/game/CoinsShowcase.vue';
           em desafios mantêm a contagem de cartas vivas.
         </p>
         <p class="text-sm text-ink-muted leading-relaxed mb-0">
-          Acordos de boca são permitidos, mas não obrigatórios. É expressamente proibido doar ou emprestar Contos ou
+          Acordos de boca são permitidos, mas não obrigatórios. Não é permitido doar nem emprestar Contos ou
           apoios entre jogadores.
         </p>
       </AppPanel>

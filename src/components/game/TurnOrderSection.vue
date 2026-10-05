@@ -9,8 +9,8 @@ import { CheckCircle2, AlertOctagon } from '@lucide/vue';
   <section id="turn-order" class="pt-12 border-t border-line/70">
     <AppSectionHeader
       label="Ordem da jogada"
-      title="Declare. Resolva. Só então aplique."
-      description="Cada rodada segue uma sequência rigorosa de etapas. Seguir essa ordem evita discussão sobre quem contesta ou bloqueia primeiro."
+      title="A ordem de cada turno"
+      description="Todo turno segue as mesmas etapas, na mesma ordem. Assim ninguém discute quem contesta ou bloqueia primeiro."
     />
 
     <!-- Alerta crítico de custos -->
@@ -18,7 +18,7 @@ import { CheckCircle2, AlertOctagon } from '@lucide/vue';
       <div class="flex items-start gap-3">
         <AlertOctagon class="w-5 h-5 text-status-red flex-shrink-0 mt-0.5" aria-hidden="true" />
         <p class="text-sm leading-relaxed mb-0">
-          <strong class="text-ink">Todo custo é pago no momento da declaração e NUNCA é devolvido</strong>.
+          <strong class="text-ink">Todo custo é pago no momento da declaração e nunca é devolvido</strong>.
           Isso inclui ataque bloqueado, personagem desmascarado, palpite errado no Mandado, defesa falsa do Intocável ou alvo eliminado antes do ataque. Se não houver saldo suficiente no momento da declaração, a jogada é ilegal.
         </p>
       </div>

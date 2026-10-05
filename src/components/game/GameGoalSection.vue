@@ -8,8 +8,8 @@ import AppCallout from '@/components/ui/AppCallout.vue';
   <section id="game" class="pt-12 border-t border-line/70">
     <AppSectionHeader
       label="O jogo"
-      title="Seu poder está nas cartas secretas."
-      description="Você é uma figura poderosa disputando a hegemonia nos bastidores da política nacional. O objetivo é eliminar todos os apoios dos seus adversários e ser o único sobrevivente à mesa."
+      title="Seus apoios são cartas secretas."
+      description="Você disputa o poder nos bastidores da política nacional. Ganha quem eliminar todos os apoios dos adversários e sobrar sozinho na mesa."
     />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
@@ -25,7 +25,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
 
       <AppPanel title="Blefar faz parte do jogo">
         <p class="text-sm text-ink-muted leading-relaxed mb-3">
-          Você pode reivindicar os poderes de qualquer personagem que quiser, no momento em que a ação for permitida — mesmo que não tenha a respectiva carta na mão!
+          Você pode reivindicar os poderes de qualquer personagem que quiser, quando a ação for permitida, mesmo sem ter a carta na mão.
         </p>
         <p class="text-sm text-ink-muted leading-relaxed mb-0">
           Seus adversários precisam decidir se acreditam em você ou se arriscam uma <strong class="text-gold">contestação</strong>. Quem contesta e erra, perde apoio. Quem blefa e é pego, também perde apoio.
@@ -33,7 +33,7 @@ import AppCallout from '@/components/ui/AppCallout.vue';
       </AppPanel>
     </div>
 
-    <AppCallout variant="gold" title="Regra de ouro:">
+    <AppCallout variant="gold" title="Segredo:">
       <p class="text-sm leading-relaxed mb-0">
         Durante a partida, mantenha seus apoios em segredo. Revele uma carta somente para comprovar uma alegação contestada ou ao perder esse apoio. No online, depois do encerramento, os apoios restantes do vencedor podem ser virados para consulta.
       </p>

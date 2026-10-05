@@ -15,7 +15,7 @@ const { openCoinLightbox } = useCoinLightbox();
           Moedas oficiais: Contos (C$)
         </h3>
         <p class="text-xs sm:text-sm text-ink-muted leading-relaxed mb-0">
-          A moeda que financia golpes e alianças nos bastidores. Clique em qualquer moeda para examiná-la em alta resolução:
+          Os Contos são o dinheiro do jogo. Clique em uma moeda para vê-la em alta resolução:
         </p>
       </div>
     </div>

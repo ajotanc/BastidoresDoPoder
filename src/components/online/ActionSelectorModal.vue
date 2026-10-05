@@ -151,8 +151,8 @@ const actionOptions: ActionOption[] = [
     roleClaim: 'Coronel',
     costLabel: 'Até C$ 2',
     costType: 'positive',
-    description: 'Exija até C$ 2 de um gabinete rival.',
-    defenseInfo: 'Bloqueável pela vítima alegando Coronel ou Marqueteira.',
+    description: 'Tome até C$ 2 de um rival.',
+    defenseInfo: 'O alvo pode bloquear alegando Coronel ou Marqueteira.',
   },
   {
     type: 'execution',
@@ -162,7 +162,7 @@ const actionOptions: ActionOption[] = [
     costLabel: '-C$ 3',
     costType: 'negative',
     description: 'Pague C$ 3 para forçar um rival a perder 1 apoio.',
-    defenseInfo: 'Bloqueável pela vítima alegando possuir a Advogada.',
+    defenseInfo: 'O alvo pode bloquear alegando Advogada.',
   },
   {
     type: 'exchange',
@@ -181,7 +181,7 @@ const actionOptions: ActionOption[] = [
     roleClaim: 'Investigador',
     costLabel: '-C$ 5',
     costType: 'negative',
-    description: 'Pague C$ 5, aponte um rival e nomeie um cargo para apreensão.',
+    description: 'Pague C$ 5, aponte um rival e nomeie um personagem.',
     defenseInfo: 'Qualquer adversário vivo pode contestar. Só o alvo pode bloquear, alegando Advogada ou Coronel. Se o personagem procurado estiver na mão, perde uma cópia; caso contrário, não perde apoio.',
   },
   {

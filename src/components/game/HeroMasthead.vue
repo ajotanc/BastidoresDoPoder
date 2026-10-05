@@ -23,15 +23,15 @@ import { ArrowDown, BookOpen } from '@lucide/vue';
     <!-- Conteúdo principal -->
     <div class="relative flex flex-col gap-6 z-10 max-w-xl">
       <div class="flex justify-center items-center gap-3">
-        <img src="/images/bdp.webp" :alt="`Brasão Oficial de ${GAME_NAME}`"
+        <img src="/images/bdp.webp" :alt="`Brasão de ${GAME_NAME}`"
           class="w-20 h-20 sm:w-32 sm:h-32 object-contain drop-shadow-md rounded-md" />
         <h1 class="font-serif font-bold text-3xl sm:text-5xl lg:text-6xl text-[#f7f0df] tracking-tight leading-tight">
           {{ GAME_NAME_FIRST_LINE }} <span class="text-gold">{{ GAME_NAME_SECOND_LINE }}</span>
         </h1>
       </div>
       <p class="text-ink-muted text-base sm:text-lg leading-relaxed max-w-lg">
-        Blefe, chantagem, conspiração e sobrevivência nos corredores de Brasília.
-        Gerencie seus Contos, declare seus apoios e elimine seus rivais até que reste apenas um no poder.
+        Blefe, chantagem e conspiração nos corredores de Brasília.
+        Cuide dos seus Contos, declare seus apoios e elimine os rivais até sobrar só um no poder.
       </p>
 
       <div>
@@ -39,7 +39,7 @@ import { ArrowDown, BookOpen } from '@lucide/vue';
           Manual completo para {{ MIN_PLAYERS_TO_START }} a {{ MAX_PLAYERS_PER_ROOM }} jogadores
         </span>
         <span class="block text-xs text-gold-muted/80">
-          Edição oficial de testes
+          Versão de testes
         </span>
       </div>
 

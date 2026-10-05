@@ -8,19 +8,19 @@ import { BOT_DIFFICULTIES, BOT_DIFFICULTY_TAG_CLASSES } from '@/game/bots/botDif
 import { ACTION_TIMEOUT_SECONDS, RESPONSE_TIMEOUT_SECONDS, MIN_PLAYERS_TO_START } from '@/constants/gameConfig';
 
 const levelDetails = {
-  easy: { example: 'Decisões menos precisas abrem espaço para você experimentar ações e aprender quando contestar.' },
-  intermediate: { example: 'Os bots observam ameaças e alegações recentes. Um blefe vantajoso pode funcionar, mas o risco entra na conta.' },
-  hard: { example: 'Podem extorquir para impedir um ataque, preservar uma defesa útil e preferir uma vitória garantida a uma jogada arriscada.' },
-  pro: { example: 'Comparam o risco de retaliação após cada ação, preservam moedas para defender e avaliam quando desarmar ou eliminar uma ameaça.' },
+  easy: { example: 'Os bots erram com mais frequência, o que dá espaço para testar ações e aprender a hora de contestar.' },
+  intermediate: { example: 'Os bots levam em conta quem está ameaçando e o que foi alegado há pouco. Blefam quando compensa, mas pesam o risco.' },
+  hard: { example: 'Usam a Extorsão para tirar dinheiro de quem está perto de atacar, guardam as cartas que servem de defesa e, quando dá para vencer sem risco, vencem.' },
+  pro: { example: 'Antes de cada jogada, pensam em quem pode revidar. Guardam moedas para a defesa e escolhem quando enfraquecer ou eliminar o jogador mais perigoso.' },
 };
 </script>
 
 <template>
   <section id="online-mode" class="border-t border-line/70 pt-12">
     <AppSectionHeader
-      label="Da leitura à mesa"
-      title="Jogue com amigos. Treine com bots."
-      description="No modo online, você coloca as regras em prática: experimenta ações, aprende a contestar e ganha confiança para blefar."
+      label="Online"
+      title="Jogue com amigos ou treine com bots"
+      description="Leu as regras? No modo online dá para testar tudo na prática. Amigos e bots podem dividir a mesma mesa."
     />
     <div class="my-6 grid gap-4 md:grid-cols-2">
       <article class="online-mode-card rounded border border-line p-5 sm:p-6">
@@ -28,7 +28,7 @@ const levelDetails = {
           <span class="flex h-11 w-11 items-center justify-center rounded border border-gold/30 bg-gold/10 text-gold"><Users class="h-5 w-5" aria-hidden="true" /></span>
           <div class="flex -space-x-2" aria-hidden="true"><img v-for="role in ['colonel', 'lawyer', 'baron']" :key="role" :src="`/images/characters/${role}.webp`" alt="" class="h-11 w-11 rounded border-2 border-surface object-cover" loading="lazy" /></div>
         </div>
-        <h3 class="mb-3 font-serif text-lg font-bold text-gold-light">Sua mesa, seus aliados.</h3>
+        <h3 class="mb-3 font-serif text-lg font-bold text-gold-light">Jogue com seus amigos</h3>
         <p class="text-sm leading-relaxed text-ink-muted">Crie uma sala e compartilhe o convite ou o código com seus amigos. Cada jogador entra pelo próprio navegador, escolhe seu perfil e marca que está pronto para começar.</p>
       </article>
       <article class="online-mode-card rounded border border-line p-5 sm:p-6">
@@ -36,7 +36,7 @@ const levelDetails = {
           <span class="flex h-11 w-11 items-center justify-center rounded border border-gold/30 bg-gold/10 text-gold"><Bot class="h-5 w-5" aria-hidden="true" /></span>
           <span class="rounded border border-line px-3 py-1.5 text-xs font-semibold text-ink-muted">Treino com bots</span>
         </div>
-        <h3 class="mb-3 font-serif text-lg font-bold text-gold-light">Seu próximo blefe começa aqui.</h3>
+        <h3 class="mb-3 font-serif text-lg font-bold text-gold-light">Treine contra bots</h3>
         <p class="text-sm leading-relaxed text-ink-muted">Ao criar a sala, marque “Adicionar bots à mesa”, escolha a quantidade e ajuste o seletor “Nível dos bots”. Os bots fazem jogadas, blefam e contestam. Você também pode reunir amigos e bots na mesma partida.</p>
       </article>
     </div>
@@ -48,8 +48,8 @@ const levelDetails = {
       <p class="text-sm leading-relaxed text-ink-muted">Ative a conversa no Discord nas configurações da partida para reunir os jogadores em uma sala de voz.</p>
     </article>
     <div class="mb-6">
-      <h3 class="mb-2 font-serif text-xl font-bold text-gold-light">A mesma mesa. Quatro desafios.</h3>
-      <p class="mb-5 max-w-2xl text-sm leading-relaxed text-ink-muted">Comece no seu ritmo e aumente a dificuldade quando quiser. Todos os níveis blefam e contestam; o que muda é o cuidado com cada decisão.</p>
+      <h3 class="mb-2 font-serif text-xl font-bold text-gold-light">Quatro níveis de bot</h3>
+      <p class="mb-5 max-w-2xl text-sm leading-relaxed text-ink-muted">Comece no nível que preferir e suba quando quiser. Todos os bots blefam e contestam; muda o cuidado que cada nível tem com a decisão.</p>
       <div class="grid gap-px overflow-hidden rounded border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
         <article v-for="level in BOT_DIFFICULTIES" :key="level.value" class="bg-surface p-5">
           <div class="mb-3 flex flex-wrap items-center gap-2">
@@ -72,7 +72,7 @@ const levelDetails = {
             <span class="min-w-0">
               <span class="block font-serif text-base font-bold leading-snug sm:hidden" aria-hidden="true">Mesa online</span>
               <span class="hidden font-serif text-base font-bold leading-snug sm:block" aria-hidden="true">Como a mesa online funciona</span>
-              <span class="mt-1 block text-xs font-normal leading-relaxed text-ink-muted"><span class="sm:hidden">Entenda como funciona</span><span class="hidden sm:inline">Do primeiro turno ao resultado da partida.</span></span>
+              <span class="mt-1 block text-xs font-normal leading-relaxed text-ink-muted"><span class="sm:hidden">Como funciona</span><span class="hidden sm:inline">Do primeiro turno ao resultado da partida.</span></span>
             </span>
           </span>
         </AccordionTrigger>
@@ -86,7 +86,7 @@ const levelDetails = {
       </AccordionItem>
     </Accordion>
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <p class="text-sm leading-relaxed text-ink-muted">Comece com bots para aprender o ritmo da mesa e depois desafie seus amigos.</p>
+      <p class="text-sm leading-relaxed text-ink-muted">Treine com bots para pegar o ritmo e depois chame os amigos.</p>
       <RouterLink to="/game" class="online-primary w-full justify-between shrink-0 sm:w-40">Jogar online<ArrowRight class="h-4 w-4" aria-hidden="true" /></RouterLink>
     </div>
   </section>

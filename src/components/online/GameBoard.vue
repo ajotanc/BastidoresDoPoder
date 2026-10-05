@@ -262,7 +262,7 @@ const previewSummary = computed<ResultSummary>(() => {
     supports: 2,
     coins: props.gameState.players[props.myPlayerId]?.coins ?? 5,
     durationSeconds: 245,
-    decisivePlay: 'Impeachment definitivo desarticulou o último gabinete adversário.',
+    decisivePlay: 'O Impeachment definitivo eliminou o último adversário.',
   };
 });
 
@@ -412,7 +412,7 @@ async function generateStoryPreview(): Promise<void> {
         <div v-if="gameState.phase === 'WAITING_CHALLENGE_ACTION' && canIChallenge"
           class="space-y-2.5 pt-2.5 border-t border-line/40">
           <div class="flex items-center gap-1.5 text-xs text-ink font-semibold">
-            <span>Você desconfia dessa alegação política?</span>
+            <span>Você acredita nessa alegação?</span>
           </div>
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
             <AppButton variant="danger" class="flex-1 text-xs" v-if="pending.sourcePlayerId !== myPlayerId"

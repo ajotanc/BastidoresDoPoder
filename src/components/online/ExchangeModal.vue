@@ -57,7 +57,7 @@ watch(() => props.isOpen, () => { selectedToReturn.value = []; });
         </div>
         <div class="min-w-0 break-words">
           <h2 class="app-dialog-title">
-            Troca de Cartas — Marqueteira
+            Troca de Cartas (Marqueteira)
           </h2>
           <p class="text-xs text-ink-muted">
             Você comprou 2 cartas do baralho. Selecione exatamente <strong>2 cartas para devolver</strong>.

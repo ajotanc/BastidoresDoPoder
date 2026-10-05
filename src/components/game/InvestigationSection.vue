@@ -25,7 +25,7 @@ import { UserCheck, UserX } from '@lucide/vue';
           <UserCheck class="w-6 h-6 text-status-green flex-shrink-0 mt-1" aria-hidden="true" />
           <p class="text-sm text-ink-muted leading-relaxed mb-0">
             O alvo <strong class="text-ink">revela e perde imediatamente</strong> um apoio daquele personagem procurado.
-            A carta fica aberta na mesa. Os C$ 5 de taxa judicial continuam no cofre.
+            A carta fica aberta na mesa. Os C$ 5 do Mandado continuam no cofre.
           </p>
         </div>
       </AppPanel>
@@ -34,8 +34,7 @@ import { UserCheck, UserX } from '@lucide/vue';
         <div class="flex items-start gap-3">
           <UserX class="w-6 h-6 text-status-red flex-shrink-0 mt-1" aria-hidden="true" />
           <p class="text-sm text-ink-muted leading-relaxed mb-0">
-            O alvo declara firmemente <strong class="text-ink">“Nada encontrado”</strong>. Ele NÃO mostra as cartas da
-            sua mão para provar a ausência, nem perde apoios. Os C$ 5 de taxa continuam gastos no cofre.
+            O alvo apenas diz <strong class="text-ink">“Nada encontrado”</strong>. Ele não mostra a mão para provar e não perde apoio. Os C$ 5 continuam no cofre.
           </p>
         </div>
       </AppPanel>
@@ -45,13 +44,11 @@ import { UserCheck, UserX } from '@lucide/vue';
     <AppCallout variant="green" title="Versão digital e cartas físicas:">
       <div class="space-y-3 text-sm leading-relaxed">
         <p>
-          <strong class="text-ink">No jogo digital:</strong> a verificação é feita automaticamente e em segredo
-          pelo sistema, revelando apenas o veredito final permitido. O alvo não pode mentir sobre a presença da carta.
+          <strong class="text-ink">No jogo digital:</strong> o jogo confere a mão em segredo e mostra só o resultado. O alvo não pode mentir sobre a presença da carta.
           “Nada encontrado” não abre um novo desafio.
         </p>
         <p class="mb-0">
-          <strong class="text-ink">Com cartas físicas na mesa:</strong> recomenda-se um mediador neutro fora da disputa,
-          ou confiança estrita na integridade dos participantes.
+          <strong class="text-ink">Com cartas físicas na mesa:</strong> o ideal é ter alguém de fora da partida conferindo. Sem essa pessoa, vale a palavra de cada jogador.
         </p>
       </div>
     </AppCallout>

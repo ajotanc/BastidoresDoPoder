@@ -90,7 +90,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     roleColor: ROLE_THEME_COLORS.executor,
     kind: 'Eliminação',
     summary:
-      'Eliminação rápida com custo moderado, bloqueável por Advogada.',
+      'Tira um apoio por C$ 3. A Advogada bloqueia.',
     characterSrc: '/images/characters/executor.webp',
     iconSrc: '/images/icons/executor.webp',
     gender: 'male',
@@ -195,7 +195,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     ],
 
     officialRuleNotice:
-      'Não possui ação própria em seu turno; atua exclusivamente como defesa contra ataques direcionados.'
+      'Não tem ação própria no turno. Serve só para se defender quando for o alvo.'
   },
   {
     id: 'card-baron',
@@ -237,7 +237,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
       }
     ],
     officialRuleNotice:
-      'O bloqueio da Vaquinha pode ser declarado por qualquer adversário, não apenas pelo jogador seguinte.'
+      'O bloqueio da Vaquinha pode ser declarado por qualquer adversário, e não só pelo jogador seguinte.'
   },
   {
     id: 'card-marketer',
@@ -290,7 +290,7 @@ export const ROLE_CARDS: readonly RoleCard[] = [
     roleColor: ROLE_THEME_COLORS.investigador,
     kind: 'Mandado de Busca',
     summary:
-      'Ataque focado por nome de personagem contra um rival.',
+      'Procura um personagem específico na mão de um rival.',
     characterSrc: '/images/characters/investigator.webp',
     iconSrc: '/images/icons/investigator.webp',
     gender: 'male',
@@ -638,7 +638,7 @@ export const QUICK_REFERENCE_DATA: readonly QuickReferenceRow[] = [
   },
   {
     action: 'Impeachment definitivo (C$ 10)',
-    allowedBlock: 'Nenhum (inviolável)',
+    allowedBlock: 'Nenhum',
     defender: '—',
     canChallengeAction: 'Não'
   },
@@ -748,9 +748,9 @@ export const GAME_COINS: readonly GameCoin[] = [
     label: 'C$ 1',
     material: 'Bronze',
     color: '#d39071',
-    summary: 'Moeda básica de arrecadação oficial e saldo inicial.',
-    description: 'A unidade elementar da economia do poder. Utilizada no Salário Oficial (C$ 1) e distribuída no início de cada partida (C$ 2 por jogador).',
-    usage: 'Salário Oficial (+C$ 1), saldo inicial de jogadores (+C$ 2), e trocas fracionadas no cofre.',
+    summary: 'A moeda do Salário Oficial e do saldo inicial.',
+    description: 'Rende no Salário Oficial (C$ 1) e é o saldo de início: cada jogador começa a partida com C$ 2.',
+    usage: 'Salário Oficial (+C$ 1), saldo inicial (C$ 2) e trocas no cofre.',
     imageAlt: `Moeda Conto de Bronze C$ 1 de ${GAME_NAME}`,
     imageSrc: '/images/coins/bronze.webp',
   },
@@ -762,9 +762,9 @@ export const GAME_COINS: readonly GameCoin[] = [
     label: 'C$ 5',
     material: 'Prata',
     color: '#a8c2d1',
-    summary: 'Moeda de influência tática, subornos e taxa judicial.',
-    description: 'Moeda de peso intermediário nos corredores de Brasília. Cobre exatamente a taxa judicial do Mandado de Busca do Investigador.',
-    usage: 'Taxa judicial do Mandado de Busca (C$ 5) e consolidação de trocas no cofre.',
+    summary: 'A moeda do Mandado de Busca.',
+    description: 'Vale exatamente o custo do Mandado de Busca do Investigador.',
+    usage: 'Mandado de Busca (C$ 5) e trocas no cofre.',
     imageAlt: `Moeda Conto de Prata C$ 5 de ${GAME_NAME}`,
     imageSrc: '/images/coins/silver.webp',
   },
@@ -776,9 +776,9 @@ export const GAME_COINS: readonly GameCoin[] = [
     label: 'C$ 10',
     material: 'Ouro',
     color: '#e6bf73',
-    summary: 'Moeda de hegemonia máxima e Impeachment compulsório.',
-    description: 'A moeda mais temida e cobiçada do jogo. Iniciar o turno com C$ 10 obriga a execução do Impeachment definitivo, um golpe irreversível e sem defesa.',
-    usage: 'Impeachment definitivo compulsório (C$ 10), garantia de eliminação direta de rivais.',
+    summary: 'A moeda que obriga ao Impeachment definitivo.',
+    description: 'Quem começa o turno com C$ 10 é obrigado a usar o Impeachment definitivo, que não pode ser bloqueado nem contestado.',
+    usage: 'Impeachment definitivo (C$ 10), obrigatório ao começar o turno com esse valor.',
     imageAlt: `Moeda Conto de Ouro C$ 10 de ${GAME_NAME}`,
     imageSrc: '/images/coins/gold.webp',
   }

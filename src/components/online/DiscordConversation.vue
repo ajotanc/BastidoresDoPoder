@@ -23,7 +23,7 @@ const ready = computed(() => props.conversation?.status === 'ready' && !!safeUrl
 const retryAllowed = computed(() => !!props.canRetry && !ready.value && props.conversation?.status !== 'loading' && (props.conversation?.retryAt ?? 0) <= now.value);
 const actionLabel = computed(() => props.conversation?.status === 'loading' ? 'Criando conversa' : retryAllowed.value ? props.conversation?.status === 'auth-required' ? 'Conectar Discord' : 'Tentar novamente' : expired.value ? 'Conversa expirada' : 'Conversa indisponível');
 const iconLabel = computed(() => ready.value ? 'Entrar na conversa no Discord' : `${actionLabel.value} — Discord`);
-const description = computed(() => props.conversation?.status === 'loading' ? 'Preparando o canal de voz…' : ready.value ? 'Combine alianças, negocie e ponha seu blefe à prova.' : props.conversation?.status === 'auth-required' ? props.canRetry ? 'Conecte sua conta para abrir a conversa da mesa.' : 'Aguardando o anfitrião conectar o Discord.' : expired.value ? 'O convite expirou. O anfitrião pode abrir uma nova conversa.' : 'Discord indisponível. Você pode continuar jogando.');
+const description = computed(() => props.conversation?.status === 'loading' ? 'Preparando o canal de voz…' : ready.value ? 'Combine alianças e negocie por voz durante a partida.' : props.conversation?.status === 'auth-required' ? props.canRetry ? 'Conecte sua conta para abrir a conversa da mesa.' : 'Aguardando o anfitrião conectar o Discord.' : expired.value ? 'O convite expirou. O anfitrião pode abrir uma nova conversa.' : 'Discord indisponível. Você pode continuar jogando.');
 </script>
 <template>
   <template v-if="conversation && compact">
