@@ -106,11 +106,11 @@ O host agenda e decide o vencimento usando deadlineAt absoluto. Clientes apenas 
 
 | Situação | Prazo padrão | Ação automática |
 | --- | --- | --- |
-| Decidir ação | 600 s | Salário; com C$10+, definitivo contra o próximo adversário vivo |
-| Oportunidade de bloqueio | 30 s por jogador | Passa somente esse jogador |
-| Oportunidade de desafio | 30 s por jogador | Passa somente esse jogador |
-| Escolher perda | 30 s | Primeiro apoio ativo na ordem da mão |
-| Escolher devolução | 30 s | Devolve as duas cartas recém-compradas |
+| Decidir ação | 300 s | Salário; com C$10+, definitivo contra o próximo adversário vivo |
+| Oportunidade de bloqueio | 60 s por jogador | Passa somente esse jogador |
+| Oportunidade de desafio | 60 s por jogador | Passa somente esse jogador |
+| Escolher perda | 60 s | Primeiro apoio ativo na ordem da mão |
+| Escolher devolução | 60 s | Devolve as duas cartas recém-compradas |
 
 O anfitrião pode alterar o prazo de ação e o de resposta ao criar a sala. Os padrões vêm de `gameplay` em `game.config.json`.
 

@@ -3,8 +3,8 @@
   "minPlayers": 2,
   "maxPlayers": 8,
   "gameplay": {
-    "actionTimeoutSeconds": 600,
-    "responseTimeoutSeconds": 30,
+    "actionTimeoutSeconds": 300,
+    "responseTimeoutSeconds": 60,
     "initialCoins": 2
   },
   "bots": {
