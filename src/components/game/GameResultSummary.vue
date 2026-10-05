@@ -63,9 +63,9 @@ const winnerSupports = computed(() => {
  */
 const siteUrl = computed(() => {
   if (typeof window !== 'undefined' && window.location) {
-    return window.location.host || window.location.hostname || 'bastidoresdopoder.com.br';
+    return window.location.host || window.location.hostname || 'bastidoresdopoder.ajotanc.com.br';
   }
-  return 'bastidoresdopoder.com.br';
+  return 'bastidoresdopoder.ajotanc.com.br';
 });
 </script>
 
