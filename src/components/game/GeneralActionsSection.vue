@@ -65,7 +65,7 @@ import { AlertTriangle } from '@lucide/vue';
         <AlertTriangle class="w-5 h-5 text-gold flex-shrink-0 mt-0.5" aria-hidden="true" />
         <div>
           <p class="text-sm leading-relaxed mb-0">
-            Você <strong class="text-ink">deve obrigatoriamente</strong> realizar um Impeachment definitivo. Ter exatamente C$ 10 já obriga o ataque. Não é permitido escolher Caixa 2, Salário, Vaquinha, Extorsão ou Troca. O alvo atacado não tem defesa e perde um apoio à escolha dele.
+            Você <strong class="text-ink">deve obrigatoriamente</strong> realizar um Impeachment definitivo. Ter exatamente C$ 10 já obriga o ataque. Nenhuma outra ação é permitida. O alvo atacado não tem defesa e perde um apoio à escolha dele.
           </p>
         </div>
       </div>

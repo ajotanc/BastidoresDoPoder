@@ -118,7 +118,7 @@ const { isOpen, activeCoin, closeCoinLightbox } = useCoinLightbox();
     <!-- Rodapé Fixo com Botão de Download -->
     <template #footer>
       <div v-if="activeCoin" class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-muted">
-        <span>Conto oficial para confecção e partidas de mesa</span>
+        <span>Arte para imprimir e usar na mesa física</span>
         <AppButton
           variant="gold"
           size="sm"

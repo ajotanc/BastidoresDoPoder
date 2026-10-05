@@ -33,9 +33,9 @@ import AppCallout from '@/components/ui/AppCallout.vue';
       </AppPanel>
     </div>
 
-    <AppCallout variant="gold" title="Segredo:">
+    <AppCallout variant="gold" title="Mantenha seus apoios em segredo:">
       <p class="text-sm leading-relaxed mb-0">
-        Durante a partida, mantenha seus apoios em segredo. Revele uma carta somente para comprovar uma alegação contestada ou ao perder esse apoio. No online, depois do encerramento, os apoios restantes do vencedor podem ser virados para consulta.
+        Durante a partida, revele uma carta somente para comprovar uma alegação contestada ou ao perder esse apoio. No online, depois do encerramento, os apoios restantes do vencedor podem ser virados para consulta.
       </p>
     </AppCallout>
   </section>

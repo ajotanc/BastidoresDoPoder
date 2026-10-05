@@ -340,7 +340,7 @@ export const executeCommand = (
       const existingPlayer = state.publicState.players[senderPlayerId];
       if (existingPlayer) return createRejection('UNAUTHORIZED', 'Jogador já registrado. Use reconexão.');
       if (state.publicState.playerOrder.length >= MAX_PLAYERS_PER_ROOM) {
-        return createRejection('ROOM_FULL', 'A sala comporta no máximo oito jogadores.');
+        return createRejection('ROOM_FULL', `A sala comporta no máximo ${MAX_PLAYERS_PER_ROOM} jogadores.`);
       }
 
       if (!existingPlayer) {
@@ -569,7 +569,7 @@ export const executeCommand = (
         return createRejection('PLAYER_NOT_ALIVE', 'Apenas jogadores ativos podem contestar.');
       }
       if (!getEligibleChallengers(state.publicState, pending, isBlockChallenge).includes(senderPlayerId)) {
-        return createRejection('NOT_ELIGIBLE_TO_REACT', 'Você não é o jogador afetado por esta alegação.');
+        return createRejection('NOT_ELIGIBLE_TO_REACT', 'Você não pode contestar esta alegação agora.');
       }
 
       const suspectPlayerId = isBlockChallenge ? pending.blockedByPlayerId : pending.sourcePlayerId;

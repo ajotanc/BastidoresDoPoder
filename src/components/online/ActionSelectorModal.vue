@@ -182,7 +182,7 @@ const actionOptions: ActionOption[] = [
     costLabel: '-C$ 5',
     costType: 'negative',
     description: 'Pague C$ 5, aponte um rival e nomeie um personagem.',
-    defenseInfo: 'Qualquer adversário vivo pode contestar. Só o alvo pode bloquear, alegando Advogada ou Coronel. Se o personagem procurado estiver na mão, perde uma cópia; caso contrário, não perde apoio.',
+    defenseInfo: 'Qualquer outro jogador vivo pode contestar. Só o alvo pode bloquear, alegando Advogada ou Coronel. Se o personagem procurado estiver na mão, perde uma cópia; caso contrário, não perde apoio.',
   },
   {
     type: 'backroomDeal',
@@ -192,7 +192,7 @@ const actionOptions: ActionOption[] = [
     costLabel: '+C$ 2 / +C$ 1',
     costType: 'positive',
     description: 'Ganhe C$ 2 e dê C$ 1 a outro jogador (ambos do cofre).',
-    defenseInfo: 'Qualquer adversário vivo pode contestar a alegação de Articuladora. Não pode ser bloqueado.',
+    defenseInfo: 'Qualquer outro jogador vivo, inclusive quem recebe o C$ 1, pode contestar a alegação de Articuladora. Não pode ser bloqueado.',
   },
   {
     type: 'commonImpeachment',

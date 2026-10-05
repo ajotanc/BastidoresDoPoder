@@ -152,7 +152,7 @@ import CoinsShowcase from '@/components/game/CoinsShowcase.vue';
     <p class="text-sm text-ink-muted leading-relaxed italic border-l-2 border-line pl-3 py-1">
       <strong>Variante física para 2 jogadores (duelo):</strong> use as mesmas {{ SUPPORT_CARDS_LENGTH }} cartas e dois apoios
       por pessoa. Quem começa recebe C$ 1; o segundo jogador recebe C$ 2. Sobram {{ SUPPORT_CARDS_LENGTH - 4 }} cartas
-      no baralho. O restante das regras segue inalterado. No online, o mínimo é de {{ MIN_PLAYERS_TO_START }} participantes, contando pessoas e bots.
+      no baralho. O restante das regras segue inalterado. No online, o mínimo é de {{ MIN_PLAYERS_TO_START }} participantes, contando pessoas e bots, e essa variante não se aplica: todos começam com C$ {{ INITIAL_COINS }}.
     </p>
   </section>
 </template>
